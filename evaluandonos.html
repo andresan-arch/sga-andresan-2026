@@ -541,11 +541,6 @@
       location.reload();
     }
 
-    function setPeriodo(p, btn) {
-      currentPeriodo = p;
-      document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
-      btn.classList.add('active');
-      cargarGrados();
     function setPeriodo(p) {
       currentPeriodo = p;
       document.querySelectorAll('.period-tab').forEach((t, i) => {
