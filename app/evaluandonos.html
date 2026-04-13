@@ -659,9 +659,7 @@
       const mediaElem = $(mediaId);
       textElem.innerText = "";
       mediaElem.innerHTML = "";
-
       if (!content) return;
-
       if (content.startsWith('http')) {
         mediaElem.innerHTML = `<img src="${content}">`;
       } else {
@@ -669,10 +667,9 @@
       }
     }
 
-    function renderChart(est, correctKey) {
-      const ctx = $('barChart').getContext('2d');
-      const labels = ['A', 'B', 'C', 'D'];
-      $('card-pregunta').innerText = mapping.texto_pregunta;
+    function renderUI(mapping, stats) {
+      $('resultado-container').style.display = 'block';
+      renderMedia('card-pregunta', 'media-pregunta', mapping.texto_pregunta);
       
       const key = (stats.key || "").trim().toUpperCase();
       const counts = [stats.resp_a_count, stats.resp_b_count, stats.resp_c_count, stats.resp_d_count];
@@ -684,13 +681,19 @@
         return `
           <div class="option-item ${isCorrect ? 'correct' : ''}">
             <div class="option-letter">${o}</div>
-            <div class="option-text">${renderContent(mapping[labels[i]])}</div>
+            <div class="option-text" id="opt-text-${o}">${mapping[labels[i]]}</div>
+            <div id="opt-media-${o}"></div>
           </div>
         `;
       }).join('');
       
       $('options-list').innerHTML = optionsHtml;
-      $('stat-completado').innerText = stats.cant_correctas + stats.resp_a_count + stats.resp_b_count + stats.resp_c_count + stats.resp_d_count; // Aproximado
+      
+      // Render media for each option
+      opts.forEach(o => renderMedia(`opt-text-${o}`, `opt-media-${o}`, $(`opt-text-${o}`).innerText));
+
+      const total = stats.cant_correctas + stats.resp_a_count + stats.resp_b_count + stats.resp_c_count + stats.resp_d_count;
+      $('stat-completado').innerText = stats.cant_correctas;
       $('stat-porcentaje').innerText = stats.porc_correctas + "%";
 
       updateChart(counts, key);
@@ -698,14 +701,14 @@
 
     function updateChart(counts, key) {
       if (myChart) myChart.destroy();
-      
       const ctx = $('chartCanvas').getContext('2d');
-      const colors = ["A","B","C","D"].map(o => o === key ? '#10b981' : '#6366f1');
+      const labels = ['A', 'B', 'C', 'D'];
+      const colors = labels.map(o => o === key ? '#10b981' : '#6366f1');
 
       myChart = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: ['A', 'B', 'C', 'D'],
+          labels: labels,
           datasets: [{
             label: 'Respuestas',
             data: counts,
@@ -718,11 +721,7 @@
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
-            y: { 
-              beginAtZero: true, 
-              grid: { display: false },
-              ticks: { precision: 0 }
-            },
+            y: { beginAtZero: true, ticks: { precision: 0 }, grid: { display: false } },
             x: { grid: { display: false } }
           }
         }
@@ -753,6 +752,7 @@
         encoding: "UTF-8",
         complete: async function(results) {
           const rows = results.data;
+          if(rows.length === 0) return alert("Archivo vacío");
           if(rows[0][0] === "grado" || rows[0][0] === "Grado") rows.shift();
           
           updateStatus(`Analizando ${rows.length} filas...`);
@@ -762,28 +762,24 @@
           const mapeoVisto = new Set();
           let periodoDetectado = 1;
 
-          // Helper para limpiar números con comas decimales
           const parseNum = (val) => {
             if (!val) return 0;
             const clean = val.toString().replace(',', '.').replace(/[^-0-9.]/g, '');
             return parseFloat(clean) || 0;
           };
 
-          // Detectar periodo desde la primera fila válida (Col B -> Quiz_Name)
           const firstRow = rows.find(r => r[1]);
           if (firstRow) {
-            const name = firstRow[1].toLowerCase();
+            const name = (firstRow[1] || "").toLowerCase();
             if (name.includes('1p')) periodoDetectado = 1;
             else if (name.includes('2p')) periodoDetectado = 2;
             else if (name.includes('final')) periodoDetectado = 3;
           }
 
-          const gradoDetectado = rows[0][0];
+          const gradoDetectado = parseInt(rows[0][0]);
 
-          rows.forEach((row, idx) => {
+          rows.forEach((row) => {
             if(row.length < 5) return; 
-
-            // 1. Resultados
             if(row[0] && row[4]) {
               resultadosData.push({
                 grado: parseInt(row[0]),
@@ -799,8 +795,6 @@
                 periodo: periodoDetectado
               });
             }
-
-            // 2. Mapeo
             const mapGrado = row[18];
             const mapNum = row[19];
             if(mapGrado && mapNum) {
@@ -823,22 +817,22 @@
           });
 
           try {
-            updateStatus(`Limpiando datos viejos del Periodo ${periodoDetectado} para el Grupo ${gradoDetectado}...`);
+            updateStatus(`Limpiando datos del Periodo ${periodoDetectado} para Grado ${gradoDetectado}...`);
             await supabaseClient.from('eval_resultados').delete().eq('periodo', periodoDetectado).eq('grado', gradoDetectado);
             await supabaseClient.from('eval_preguntas').delete().eq('periodo', periodoDetectado).eq('grado', gradoDetectado);
 
-            updateStatus(`Subiendo ${resultadosData.length} resultados...`);
+            updateStatus(`Subiendo resultados...`);
             if(resultadosData.length) await supabaseClient.from('eval_resultados').insert(resultadosData);
 
-            updateStatus(`Subiendo ${mapeoData.length} mapeo...`);
+            updateStatus(`Subiendo preguntas...`);
             if(mapeoData.length) await supabaseClient.from('eval_preguntas').insert(mapeoData);
 
-            updateStatus("✅ ¡Importación Exitosa!");
-            alert(`Se han cargado los datos para Evaluándonos ${periodoDetectado}.`);
+            updateStatus("✅ ¡Éxito!");
+            alert(`Carga completada para Evaluándonos ${periodoDetectado}.`);
             location.reload();
           } catch (err) {
             console.error(err);
-            updateStatus("❌ Error al subir a Supabase");
+            updateStatus("❌ Error Supabase");
           }
         }
       });
@@ -847,5 +841,4 @@
     checkSession();
   </script>
 </body>
-
 </html>
