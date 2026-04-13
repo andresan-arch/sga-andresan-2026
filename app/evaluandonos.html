@@ -521,15 +521,19 @@
       $('user-info').style.display = 'block';
       $('user-email').innerText = user.email;
 
-      // Obtener el ROL desde la tabla perfiles
-      const { data: p } = await supabaseClient.from('perfiles').select('rol').eq('id', user.id).maybeSingle();
-      if (p) {
-        currentRole = p.rol;
-        if (currentRole === 'admin') {
-          document.querySelector('.admin-trigger').style.display = 'block';
+      // BYPASS ADMIN PARA EL USUARIO PRINCIPAL
+      if (user.email === 'andresan@andresan.com') {
+        currentRole = 'admin';
+        document.querySelector('.admin-trigger').style.display = 'block';
+      } else {
+        const { data: p } = await supabaseClient.from('perfiles').select('rol').eq('id', user.id).maybeSingle();
+        if (p) {
+          currentRole = p.rol;
+          if (currentRole === 'admin') {
+            document.querySelector('.admin-trigger').style.display = 'block';
+          }
         }
       }
-      
       init();
     }
 
@@ -744,18 +748,23 @@
 
     async function procesarCSV() {
       const file = $('csv-file').files[0];
-      if(!file) return alert("Selecciona un archivo CSV");
-      if(currentRole !== 'admin') return alert("No tienes permisos");
+      if(!file) return alert("Selecciona un archivo CSV o TSV");
+      if(currentRole !== 'admin') return alert("No tienes permisos suficientes");
 
-      updateStatus("Leyendo archivo...");
+      updateStatus("Leyendo y detectando formato...");
+      
       Papa.parse(file, {
+        header: false,
+        skipEmptyLines: true,
         encoding: "UTF-8",
         complete: async function(results) {
           const rows = results.data;
-          if(rows.length === 0) return alert("Archivo vacío");
-          if(rows[0][0] === "grado" || rows[0][0] === "Grado") rows.shift();
+          if(!rows || rows.length === 0) return alert("El archivo parece estar vacío");
           
-          updateStatus(`Analizando ${rows.length} filas...`);
+          // Saltar cabecera si existe
+          if(rows[0][0].toLowerCase().includes("grado")) rows.shift();
+          
+          updateStatus(`Procesando ${rows.length} filas...`);
           
           const resultadosData = [];
           const mapeoData = [];
@@ -763,23 +772,28 @@
           let periodoDetectado = 1;
 
           const parseNum = (val) => {
-            if (!val) return 0;
-            const clean = val.toString().replace(',', '.').replace(/[^-0-9.]/g, '');
-            return parseFloat(clean) || 0;
+            if (val === undefined || val === null || val === '') return 0;
+            // Limpiar: quitar % y espacios, cambiar coma por punto
+            const s = val.toString().trim().replace('%','').replace(',','.');
+            const n = parseFloat(s);
+            return isNaN(n) ? 0 : n;
           };
 
-          const firstRow = rows.find(r => r[1]);
-          if (firstRow) {
-            const name = (firstRow[1] || "").toLowerCase();
+          // Auto-detección de periodo
+          const testRowLabels = rows.find(r => r[1] && r[1].length > 5);
+          if (testRowLabels) {
+            const name = testRowLabels[1].toLowerCase();
             if (name.includes('1p')) periodoDetectado = 1;
             else if (name.includes('2p')) periodoDetectado = 2;
             else if (name.includes('final')) periodoDetectado = 3;
           }
 
-          const gradoDetectado = parseInt(rows[0][0]);
+          const gradoRef = parseInt(rows[0][0]);
 
           rows.forEach((row) => {
             if(row.length < 5) return; 
+
+            // Datos de Resultados (A:Q)
             if(row[0] && row[4]) {
               resultadosData.push({
                 grado: parseInt(row[0]),
@@ -795,12 +809,14 @@
                 periodo: periodoDetectado
               });
             }
+
+            // Datos de Mapeo (S:Z)
             const mapGrado = row[18];
             const mapNum = row[19];
             if(mapGrado && mapNum) {
-              const key = `${mapGrado}-${mapNum}`;
-              if(!mapeoVisto.has(key)) {
-                mapeoVisto.add(key);
+              const mk = `${mapGrado}-${mapNum}`;
+              if(!mapeoVisto.has(mk)) {
+                mapeoVisto.add(mk);
                 mapeoData.push({
                   grado: parseInt(mapGrado),
                   pregunta_num: parseInt(mapNum),
@@ -816,23 +832,24 @@
             }
           });
 
+          // Mostramos en consola para depurar si hay errores de columnas
+          console.table(resultadosData.slice(0, 3));
+
           try {
-            updateStatus(`Limpiando datos del Periodo ${periodoDetectado} para Grado ${gradoDetectado}...`);
-            await supabaseClient.from('eval_resultados').delete().eq('periodo', periodoDetectado).eq('grado', gradoDetectado);
-            await supabaseClient.from('eval_preguntas').delete().eq('periodo', periodoDetectado).eq('grado', gradoDetectado);
+            updateStatus(`Limpiando datos de P${periodoDetectado} / Grado ${gradoRef}...`);
+            await supabaseClient.from('eval_resultados').delete().eq('periodo', periodoDetectado).eq('grado', gradoRef);
+            await supabaseClient.from('eval_preguntas').delete().eq('periodo', periodoDetectado).eq('grado', gradoRef);
 
-            updateStatus(`Subiendo resultados...`);
+            updateStatus(`Gaurdando ${resultadosData.length} registros...`);
             if(resultadosData.length) await supabaseClient.from('eval_resultados').insert(resultadosData);
-
-            updateStatus(`Subiendo preguntas...`);
             if(mapeoData.length) await supabaseClient.from('eval_preguntas').insert(mapeoData);
 
-            updateStatus("✅ ¡Éxito!");
-            alert(`Carga completada para Evaluándonos ${periodoDetectado}.`);
+            updateStatus("✅ ¡Datos actualizados!");
+            alert(`Carga exitosa para: Evaluándonos ${periodoDetectado} (Grado ${gradoRef})`);
             location.reload();
-          } catch (err) {
-            console.error(err);
-            updateStatus("❌ Error Supabase");
+          } catch (e) {
+            console.error(e);
+            updateStatus("❌ Error al guardar en base de datos");
           }
         }
       });
