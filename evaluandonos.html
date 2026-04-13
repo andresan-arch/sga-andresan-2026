@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Evaluándonos - Análisis Estadístico</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --success: #22c55e;
+      --gray: #94a3b8;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-bottom: 40px;
+    }
+
+    header {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      color: white;
+      padding: 2rem 1rem;
+      text-align: center;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    /* Selectores */
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      background: var(--card);
+      padding: 1.5rem;
+      border-radius: 16px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      margin-top: -3.5rem;
+      position: relative;
+      z-index: 10;
+    }
+
+    .control-group label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--primary);
+    }
+
+    select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      background: white;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    select:focus {
+      border-color: var(--primary);
+    }
+
+    /* Grid Principal */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    @media (max-width: 900px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .question-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--bg);
+    }
+
+    .media-container img {
+      max-width: 100%;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      border: 1px solid #e2e8f0;
+    }
+
+    /* Opciones */
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .option {
+      display: flex;
+      align-items: center;
+      padding: 1rem;
+      border: 2px solid #f1f5f9;
+      border-radius: 12px;
+      transition: all 0.2s;
+    }
+
+    .option.correct {
+      border-color: var(--success);
+      background: #f0fdf4;
+    }
+
+    .option-letter {
+      width: 32px;
+      height: 32px;
+      background: var(--primary);
+      color: white;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      margin-right: 1rem;
+      flex-shrink: 0;
+    }
+
+    .option.correct .option-letter {
+      background: var(--success);
+    }
+
+    .option-content {
+      font-size: 1rem;
+    }
+
+    /* Gráfica */
+    .chart-container {
+      position: relative;
+      height: 400px;
+      width: 100%;
+    }
+
+    .stats-summary {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #f1f5f9;
+    }
+
+    .stat-box {
+      text-align: center;
+    }
+
+    .stat-val {
+      display: block;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--gray);
+      text-transform: uppercase;
+    }
+
+    #loading {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(255,255,255,0.8);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 1000;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="loading">✨ Cargando análisis...</div>
+
+  <header>
+    <div class="container">
+      <h1>Evaluándonos: Estadísticas</h1>
+      <p>Resultados de Pruebas y Análisis por Pregunta</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Selectores -->
+    <div class="controls">
+      <div class="control-group">
+        <label>Grado</label>
+        <select id="sel-grado" onchange="cargarAsignaturas()">
+          <option value="">Seleccione grado...</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Asignatura</label>
+        <select id="sel-asig" onchange="cargarPreguntas()">
+          <option value="">Seleccione asignatura...</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Pregunta</label>
+        <select id="sel-pregunta" onchange="mostrarAnalisis()">
+          <option value="">Seleccione pregunta...</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Resultados -->
+    <div id="resultado-container" style="display: none;">
+      <div class="dashboard-grid">
+        <!-- Pregunta y Opciones -->
+        <div class="card">
+          <h2 class="question-title" id="pregunta-display-num">Pregunta #</h2>
+          <div id="pregunta-media" class="media-container"></div>
+          <p id="pregunta-texto" style="margin-bottom: 2rem;"></p>
+
+          <div class="options-list">
+            <div id="opt-a" class="option">
+              <span class="option-letter">A</span>
+              <div id="txt-a" class="option-content"></div>
+            </div>
+            <div id="opt-b" class="option">
+              <span class="option-letter">B</span>
+              <div id="txt-b" class="option-content"></div>
+            </div>
+            <div id="opt-c" class="option">
+              <span class="option-letter">C</span>
+              <div id="txt-c" class="option-content"></div>
+            </div>
+            <div id="opt-d" class="option">
+              <span class="option-letter">D</span>
+              <div id="txt-d" class="option-content"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gráfica -->
+        <div class="card">
+          <h2 class="question-title">Distribución de Respuestas</h2>
+          <div class="chart-container">
+            <canvas id="barChart"></canvas>
+          </div>
+          <div class="stats-summary">
+            <div class="stat-box">
+              <span id="stat-correctas" class="stat-val">0</span>
+              <span class="stat-label">Aciertos</span>
+            </div>
+            <div class="stat-box">
+              <span id="stat-porcentaje" class="stat-val">0%</span>
+              <span class="stat-label">% Éxito</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const SB_URL = "https://pmfrdrihzdhhjxokabjm.supabase.co";
+    const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtZnJkcmloemRoaGp4b2thYmptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NTA5OTIsImV4cCI6MjA5MTQyNjk5Mn0.FnQWmxg0p4oUgAQBVhoy6wqIMOk3qk4pifI2voeQvV0";
+    const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
+
+    let myChart = null;
+    let dataCache = { grados: [], mapeo: [], resultados: [] };
+
+    const $ = id => document.getElementById(id);
+
+    async function init() {
+      showLoading(true);
+      try {
+        // Cargar grados únicos disponibles en el mapeo
+        const { data, error } = await supabaseClient.from('eval_preguntas').select('grado');
+        if (data) {
+          const grados = [...new Set(data.map(i => i.grado))].sort();
+          $('sel-grado').innerHTML = '<option value="">Seleccione grado...</option>' + 
+            grados.map(g => `<option value="${g}">${g}° Grado</option>`).join('');
+        }
+      } catch (e) { console.error(e); }
+      showLoading(false);
+    }
+
+    async function cargarAsignaturas() {
+      const grado = $('sel-grado').value;
+      if (!grado) return;
+      
+      showLoading(true);
+      const { data } = await supabaseClient.from('eval_preguntas').select('asignatura').eq('grado', grado);
+      const asigs = [...new Set(data.map(i => i.asignatura))].sort();
+      
+      $('sel-asig').innerHTML = '<option value="">Seleccione asignatura...</option>' + 
+        asigs.map(a => `<option value="${a}">${a}</option>`).join('');
+      $('sel-pregunta').innerHTML = '<option value="">Seleccione pregunta...</option>';
+      $('resultado-container').style.display = 'none';
+      showLoading(false);
+    }
+
+    async function cargarPreguntas() {
+      const grado = $('sel-grado').value;
+      const asig = $('sel-asig').value;
+      if (!grado || !asig) return;
+
+      showLoading(true);
+      const { data } = await supabaseClient.from('eval_preguntas')
+        .select('pregunta_num')
+        .eq('grado', grado)
+        .eq('asignatura', asig)
+        .order('pregunta_num');
+      
+      $('sel-pregunta').innerHTML = '<option value="">Seleccione pregunta...</option>' + 
+        data.map(p => `<option value="${p.pregunta_num}">Pregunta ${p.pregunta_num}</option>`).join('');
+      showLoading(false);
+    }
+
+    async function mostrarAnalisis() {
+      const grado = $('sel-grado').value;
+      const asig = $('sel-asig').value;
+      const num = $('sel-pregunta').value;
+      if (!grado || !asig || !num) return;
+
+      showLoading(true);
+      
+      // Obtener mapeo y resultados en paralelo
+      const [mapRes, dataRes] = await Promise.all([
+        supabaseClient.from('eval_preguntas').select('*').eq('grado', grado).eq('asignatura', asig).eq('pregunta_num', num).maybeSingle(),
+        supabaseClient.from('eval_resultados').select('*').eq('grado', grado).eq('pregunta_num', num).maybeSingle()
+      ]);
+
+      if (mapRes.data && dataRes.data) {
+        renderUI(mapRes.data, dataRes.data);
+      } else {
+        alert("No se encontraron resultados completos para esta pregunta.");
+      }
+      
+      showLoading(false);
+    }
+
+    function renderUI(pregunta, estadistica) {
+      $('resultado-container').style.display = 'block';
+      $('pregunta-display-num').innerText = `Pregunta #${pregunta.pregunta_num}`;
+      
+      // Renderizar Pregunta (Texto o Imagen)
+      renderMedia('pregunta-texto', 'pregunta-media', pregunta.texto_pregunta);
+
+      // Renderizar Opciones y Resaltar Correcta
+      const correctKey = estadistica.key.trim().toUpperCase();
+      ['a', 'b', 'c', 'd'].forEach(letter => {
+        const up = letter.toUpperCase();
+        const container = $(`opt-${letter}`);
+        const textElem = $(`txt-${letter}`);
+        
+        container.classList.toggle('correct', up === correctKey);
+        
+        const content = pregunta[`opcion_${letter}`];
+        if (content && content.startsWith('http')) {
+          textElem.innerHTML = `<img src="${content}" style="max-width:150px; display:block; margin:5px 0; border-radius:8px">`;
+        } else {
+          textElem.innerText = content || 'N/A';
+        }
+      });
+
+      // Estadísticas
+      $('stat-correctas').innerText = estadistica.cant_correctas;
+      $('stat-porcentaje').innerText = (estadistica.porc_correctas || 0).toFixed(1) + '%';
+
+      // Gráfica
+      renderChart(estadistica, correctKey);
+    }
+
+    function renderMedia(textId, mediaId, content) {
+      const textElem = $(textId);
+      const mediaElem = $(mediaId);
+      textElem.innerText = "";
+      mediaElem.innerHTML = "";
+
+      if (!content) return;
+
+      if (content.startsWith('http')) {
+        mediaElem.innerHTML = `<img src="${content}">`;
+      } else {
+        textElem.innerText = content;
+      }
+    }
+
+    function renderChart(est, correctKey) {
+      const ctx = $('barChart').getContext('2d');
+      const labels = ['A', 'B', 'C', 'D'];
+      const dataValues = [est.resp_a_count, est.resp_b_count, est.resp_c_count, est.resp_d_count];
+      
+      // Colores: Verde para la correcta, azul/gris para el resto
+      const colors = labels.map(l => l === correctKey ? '#22c55e' : '#94a3b8');
+      const hoverColors = labels.map(l => l === correctKey ? '#16a34a' : '#64748b');
+
+      if (myChart) myChart.destroy();
+
+      myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Cantidad de Estudiantes',
+            data: dataValues,
+            backgroundColor: colors,
+            hoverBackgroundColor: hoverColors,
+            borderRadius: 8,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => ` ${ctx.raw} estudiantes`
+              }
+            }
+          },
+          scales: {
+            y: { 
+              beginAtZero: true, 
+              grid: { display: false },
+              ticks: { precision: 0 }
+            },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    function showLoading(show) {
+      $('loading').style.display = show ? 'flex' : 'none';
+    }
+
+    init();
+  </script>
+</body>
+
+</html>
