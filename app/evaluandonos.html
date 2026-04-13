@@ -7,6 +7,7 @@
   <title>Evaluándonos - Análisis Estadístico</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -200,8 +201,34 @@
       background: rgba(255,255,255,0.8);
       display: flex; justify-content: center; align-items: center;
       z-index: 1000;
-      display: none;
+    /* Admin Panel */
+    .admin-trigger {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background: var(--text);
+      color: white;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      z-index: 100;
     }
+    .admin-panel {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      width: 300px;
+      background: white;
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      display: none;
+      z-index: 100;
+    }
+    .admin-panel h4 { margin-bottom: 1rem; color: var(--primary); }
+    .status-msg { font-size: 0.75rem; margin-top: 5px; color: var(--gray); }
   </style>
 </head>
 
@@ -284,7 +311,16 @@
             </div>
           </div>
         </div>
-      </div>
+    </div>
+
+    <!-- Panel de Administración -->
+    <div class="admin-trigger" onclick="toggleAdmin()">⚙️ Administrar Datos</div>
+    <div class="admin-panel" id="admin-panel">
+      <h4>Importar CSV Inteligente</h4>
+      <p style="font-size: 0.8rem; margin-bottom: 10px; color: #64748b;">Suelta aquí tu archivo de Google Sheets (Columnas A-Z)</p>
+      <input type="file" id="csv-file" accept=".csv" style="font-size: 0.75rem; padding: 5px; border: 1px dashed #cbd5e1;">
+      <button onclick="procesarCSV()" style="margin-top: 10px; background: var(--text);">Procesar y Subir</button>
+      <div id="admin-status" class="status-msg"></div>
     </div>
   </main>
 
@@ -462,6 +498,96 @@
 
     function showLoading(show) {
       $('loading').style.display = show ? 'flex' : 'none';
+    }
+
+    // --- Lógica del Importador Inteligente ---
+    function toggleAdmin() {
+      const p = $('admin-panel');
+      p.style.display = p.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function updateStatus(msg) {
+      $('admin-status').innerText = msg;
+    }
+
+    async function procesarCSV() {
+      const file = $('csv-file').files[0];
+      if(!file) return alert("Selecciona un archivo CSV");
+
+      updateStatus("Leyendo archivo...");
+      Papa.parse(file, {
+        encoding: "UTF-8",
+        complete: async function(results) {
+          const rows = results.data;
+          // Ignorar cabecera si existe
+          if(rows[0][0] === "grado" || rows[0][0] === "Grado") rows.shift();
+          
+          updateStatus(`Analizando ${rows.length} filas...`);
+          
+          const resultadosData = [];
+          const mapeoData = [];
+          const mapeoVisto = new Set(); // Para no duplicar preguntas
+
+          rows.forEach((row, idx) => {
+            if(row.length < 5) return; // Fila vacía
+
+            // 1. Datos de Resultados (A-Q -> 0-16)
+            if(row[0] && row[4]) { // Grado y Pregunta_Num
+              resultadosData.push({
+                grado: parseInt(row[0]),
+                quiz_name: row[1],
+                key: (row[3] || "").trim().toUpperCase(),
+                pregunta_num: parseInt(row[4]),
+                cant_correctas: parseInt(row[6] || 0),
+                porc_correctas: parseFloat(row[7] || 0),
+                resp_a_count: parseInt(row[9] || 0),
+                resp_b_count: parseInt(row[11] || 0),
+                resp_c_count: parseInt(row[13] || 0),
+                resp_d_count: parseInt(row[15] || 0)
+              });
+            }
+
+            // 2. Datos de Mapeo (S-Z -> 18-25)
+            const mapGrado = row[18];
+            const mapNum = row[19];
+            if(mapGrado && mapNum) {
+              const key = `${mapGrado}-${mapNum}`;
+              if(!mapeoVisto.has(key)) {
+                mapeoVisto.add(key);
+                mapeoData.push({
+                  grado: parseInt(mapGrado),
+                  pregunta_num: parseInt(mapNum),
+                  asignatura: row[20],
+                  texto_pregunta: row[21],
+                  opcion_a: row[22],
+                  opcion_b: row[23],
+                  opcion_c: row[24],
+                  opcion_d: row[25]
+                });
+              }
+            }
+          });
+
+          try {
+            updateStatus(`Subiendo ${resultadosData.length} resultados...`);
+            if(resultadosData.length) {
+              await supabaseClient.from('eval_resultados').insert(resultadosData);
+            }
+
+            updateStatus(`Subiendo ${mapeoData.length} preguntas de mapeo...`);
+            if(mapeoData.length) {
+              await supabaseClient.from('eval_preguntas').insert(mapeoData);
+            }
+
+            updateStatus("✅ ¡Importación Exitosa!");
+            alert("Los datos se han cargado correctamente. Recarga la página para ver los cambios.");
+            location.reload();
+          } catch (err) {
+            console.error(err);
+            updateStatus("❌ Error al subir a Supabase");
+          }
+        }
+      });
     }
 
     init();
