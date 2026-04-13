@@ -208,48 +208,66 @@
     #login-mask {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.9) 0%, rgba(124, 58, 237, 0.9) 100%), 
+                  url('https://andresan.com/wp-content/uploads/2024/02/IMG_20240215_102553.jpg');
+      background-size: cover;
+      background-position: center;
       display: flex; justify-content: center; align-items: center;
       z-index: 2000;
     }
     .login-card {
-      background: white;
-      padding: 2.5rem;
-      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 3rem;
+      border-radius: 30px;
       width: 90%;
-      max-width: 400px;
+      max-width: 420px;
       text-align: center;
       box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.3);
     }
-    .login-card h2 { color: var(--text); margin-bottom: 2rem; }
+    .login-card h2 { color: var(--text); margin-bottom: 2rem; font-weight: 800; }
     .login-card input {
-      width: 100%; padding: 12px; margin-bottom: 1rem;
-      border: 1px solid #e2e8f0; border-radius: 12px;
+      width: 100%; padding: 14px; margin-bottom: 1.2rem;
+      border: 1px solid #e2e8f0; border-radius: 15px;
+      font-size: 1rem;
+      background: white;
     }
     .login-card button {
-      width: 100%; padding: 12px; background: var(--primary);
-      color: white; border: none; border-radius: 12px;
-      font-weight: 700; cursor: pointer;
+      width: 100%; padding: 14px; background: var(--primary);
+      color: white; border: none; border-radius: 15px;
+      font-weight: 700; cursor: pointer; font-size: 1rem;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
     }
 
     /* Period Selector */
-    .period-tabs {
+    .period-container {
       display: flex;
       justify-content: center;
-      gap: 10px;
-      margin-bottom: 2rem;
+      margin: 1.5rem 0;
+    }
+    .period-tabs {
+      display: inline-flex;
+      background: #e2e8f0;
+      padding: 5px;
+      border-radius: 100px;
+      gap: 5px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
     }
     .period-tab {
-      padding: 8px 20px;
-      background: rgba(255,255,255,0.2);
-      border-radius: 50px;
+      padding: 10px 25px;
+      border-radius: 100px;
       cursor: pointer;
-      font-weight: 600;
-      transition: all 0.2s;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #64748b;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select: none;
     }
     .period-tab.active {
       background: white;
       color: var(--primary);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
 
     /* Admin Panel */
@@ -298,23 +316,25 @@
   </div>
 
   <header>
-    <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+    <div class="container" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 1rem;">
       <div style="text-align: left;">
-        <h1>Evaluándonos</h1>
-        <p>Análisis Estadístico SGA AndréSán</p>
+        <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -1px;">Evaluándonos</h1>
+        <p style="opacity: 0.9; font-weight: 300;">Estadísticas SGA AndréSán</p>
       </div>
-      <div id="user-info" style="font-size: 0.8rem; display: none; text-align: right;">
-        <span id="user-email"></span><br>
-        <button onclick="logout()" style="background: none; border: none; color: white; text-decoration: underline; cursor: pointer; padding: 0;">Cerrar Sesión</button>
+      <div id="user-info" style="font-size: 0.85rem; display: none; text-align: right; background: rgba(255,255,255,0.1); padding: 10px 15px; border-radius: 15px; backdrop-filter: blur(5px);">
+        <span id="user-email" style="font-weight: 600;"></span><br>
+        <button onclick="logout()" style="background: none; border: none; color: white; text-decoration: underline; cursor: pointer; padding: 0; font-size: 0.75rem;">Cerrar Sesión</button>
       </div>
     </div>
   </header>
 
   <main class="container">
-    <div class="period-tabs">
-      <div class="period-tab active" onclick="setPeriodo(1, this)">Evaluándonos 1</div>
-      <div class="period-tab" onclick="setPeriodo(2, this)">Evaluándonos 2</div>
-      <div class="period-tab" onclick="setPeriodo(3, this)">Evaluándonos 3</div>
+    <div class="period-container">
+      <div class="period-tabs">
+        <div class="period-tab active" onclick="setPeriodo(1, this)">Evaluándonos 1</div>
+        <div class="period-tab" onclick="setPeriodo(2, this)">Evaluándonos 2</div>
+        <div class="period-tab" onclick="setPeriodo(3, this)">Evaluándonos 3</div>
+      </div>
     </div>
 
     <!-- Selectores -->
