@@ -45,15 +45,19 @@
     .header-banner {
       width: 100%;
       background: white;
-      padding: 20px 0;
+      padding: 0;
       display: flex;
       justify-content: center;
       align-items: center;
       border-bottom: 4px solid var(--primary);
+      max-height: 250px;
+      overflow: hidden;
     }
     .header-logo {
-      height: 80px;
-      width: auto;
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
     }
     .header-sub {
       background: var(--primary);
@@ -668,37 +672,51 @@
     function renderChart(est, correctKey) {
       const ctx = $('barChart').getContext('2d');
       const labels = ['A', 'B', 'C', 'D'];
-      const dataValues = [est.resp_a_count, est.resp_b_count, est.resp_c_count, est.resp_d_count];
+      $('card-pregunta').innerText = mapping.texto_pregunta;
       
-      // Colores: Verde para la correcta, azul/gris para el resto
-      const colors = labels.map(l => l === correctKey ? '#22c55e' : '#94a3b8');
-      const hoverColors = labels.map(l => l === correctKey ? '#16a34a' : '#64748b');
+      const key = (stats.key || "").trim().toUpperCase();
+      const counts = [stats.resp_a_count, stats.resp_b_count, stats.resp_c_count, stats.resp_d_count];
+      const opts = ["A", "B", "C", "D"];
+      const labels = ["opcion_a", "opcion_b", "opcion_c", "opcion_d"];
 
+      const optionsHtml = opts.map((o, i) => {
+        const isCorrect = (o === key);
+        return `
+          <div class="option-item ${isCorrect ? 'correct' : ''}">
+            <div class="option-letter">${o}</div>
+            <div class="option-text">${renderContent(mapping[labels[i]])}</div>
+          </div>
+        `;
+      }).join('');
+      
+      $('options-list').innerHTML = optionsHtml;
+      $('stat-completado').innerText = stats.cant_correctas + stats.resp_a_count + stats.resp_b_count + stats.resp_c_count + stats.resp_d_count; // Aproximado
+      $('stat-porcentaje').innerText = stats.porc_correctas + "%";
+
+      updateChart(counts, key);
+    }
+
+    function updateChart(counts, key) {
       if (myChart) myChart.destroy();
+      
+      const ctx = $('chartCanvas').getContext('2d');
+      const colors = ["A","B","C","D"].map(o => o === key ? '#10b981' : '#6366f1');
 
       myChart = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: labels,
+          labels: ['A', 'B', 'C', 'D'],
           datasets: [{
-            label: 'Cantidad de Estudiantes',
-            data: dataValues,
+            label: 'Respuestas',
+            data: counts,
             backgroundColor: colors,
-            hoverBackgroundColor: hoverColors,
-            borderRadius: 8,
+            borderRadius: 8
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: (ctx) => ` ${ctx.raw} estudiantes`
-              }
-            }
-          },
+          plugins: { legend: { display: false } },
           scales: {
             y: { 
               beginAtZero: true, 
