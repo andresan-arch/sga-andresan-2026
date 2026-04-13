@@ -796,11 +796,10 @@
 
       const parseNum = (val) => {
         if (val === undefined || val === null || val === '') return 0;
-        // Limpieza extrema: solo dejar números, puntos, comas y signos menos
         let s = val.toString().trim().replace('%','').replace(' ','');
         s = s.replace(',', '.');
         const n = parseFloat(s);
-        return isNaN(n) ? 0 : n;
+        return isNaN(n) ? 0 : Math.round(n); // REDONDEO PARA EVITAR ERROR DE INTEGER
       };
 
       // Detección de periodo
