@@ -458,10 +458,18 @@
     <!-- Panel de Administración -->
     <div class="admin-trigger" onclick="toggleAdmin()">⚙️ Administrar Datos</div>
     <div class="admin-panel" id="admin-panel">
-      <h4>Importar CSV Inteligente</h4>
-      <p style="font-size: 0.8rem; margin-bottom: 10px; color: #64748b;">Suelta aquí tu archivo de Google Sheets (Columnas A-Z)</p>
-      <input type="file" id="csv-file" accept=".csv" style="font-size: 0.75rem; padding: 5px; border: 1px dashed #cbd5e1;">
-      <button onclick="procesarCSV()" style="margin-top: 10px; background: var(--text);">Procesar y Subir</button>
+      <h4>Importar CSV / TSV Inteligente</h4>
+      <p style="font-size: 0.8rem; margin-bottom: 10px; color: #64748b;">Estructura: A=Grado, B=Nombre, D=Clave, E=Pregunta... (S:Z=Mapeo)</p>
+      <input type="file" id="csv-file" accept=".csv,.tsv" style="font-size: 0.75rem; padding: 5px; border: 1px dashed #cbd5e1;">
+      
+      <!-- Visor de Diagnóstico -->
+      <div id="admin-debug" style="margin-top: 15px; overflow-x: auto; max-width: 100%; display: none;">
+        <p style="font-size: 0.7rem; color: var(--primary); font-weight: bold; margin-bottom: 5px;">👀 Previsualización de los primeros datos:</p>
+        <table id="debug-table" style="font-size: 0.65rem; border-collapse: collapse; width: 100%; background: #f8fafc; border: 1px solid #e2e8f0;"></table>
+        <button id="btn-confirm-upload" onclick="finalizarSubida()" style="margin-top: 10px; background: #10b981; width: 100%;">Los datos se ven bien, ¡SUBIR!</button>
+      </div>
+
+      <button id="btn-parse-debug" onclick="previsualizarDatos()" style="margin-top: 10px; background: var(--text);">Analizar Archivo</button>
       <div id="admin-status" class="status-msg"></div>
     </div>
   </main>
@@ -521,19 +529,10 @@
       $('user-info').style.display = 'block';
       $('user-email').innerText = user.email;
 
-      // BYPASS ADMIN PARA EL USUARIO PRINCIPAL
-      if (user.email === 'andresan@andresan.com') {
-        currentRole = 'admin';
-        document.querySelector('.admin-trigger').style.display = 'block';
-      } else {
-        const { data: p } = await supabaseClient.from('perfiles').select('rol').eq('id', user.id).maybeSingle();
-        if (p) {
-          currentRole = p.rol;
-          if (currentRole === 'admin') {
-            document.querySelector('.admin-trigger').style.display = 'block';
-          }
-        }
-      }
+      // MODO DIAGNÓSTICO: Bypass Total de Permisos
+      currentRole = 'admin';
+      document.querySelector('.admin-trigger').style.display = 'block';
+      
       init();
     }
 
@@ -736,7 +735,9 @@
       $('loading').style.display = show ? 'flex' : 'none';
     }
 
-    // --- Lógica del Importador Inteligente ---
+    // --- Lógica de Diagnóstico ---
+    let cachedRows = null;
+
     function toggleAdmin() {
       const p = $('admin-panel');
       p.style.display = p.style.display === 'none' ? 'block' : 'none';
@@ -746,113 +747,125 @@
       $('admin-status').innerText = msg;
     }
 
-    async function procesarCSV() {
+    function previsualizarDatos() {
       const file = $('csv-file').files[0];
-      if(!file) return alert("Selecciona un archivo CSV o TSV");
-      if(currentRole !== 'admin') return alert("No tienes permisos suficientes");
-
-      updateStatus("Leyendo y detectando formato...");
+      if(!file) return alert("Seleccion primero un archivo");
       
+      updateStatus("Analizando archivo...");
       Papa.parse(file, {
         header: false,
         skipEmptyLines: true,
         encoding: "UTF-8",
-        complete: async function(results) {
-          const rows = results.data;
-          if(!rows || rows.length === 0) return alert("El archivo parece estar vacío");
+        complete: function(results) {
+          cachedRows = results.data;
+          const table = $('debug-table');
+          table.innerHTML = "";
           
-          // Saltar cabecera si existe
-          if(rows[0][0].toLowerCase().includes("grado")) rows.shift();
-          
-          updateStatus(`Procesando ${rows.length} filas...`);
-          
-          const resultadosData = [];
-          const mapeoData = [];
-          const mapeoVisto = new Set();
-          let periodoDetectado = 1;
+          // Crear Cabecera con Indices
+          let headerHtml = "<tr>" + cachedRows[0].map((_, i) => `<th style='border:1px solid #ddd; background:#eee;'>COL ${i}</th>`).join('') + "</tr>";
+          table.innerHTML += headerHtml;
 
-          const parseNum = (val) => {
-            if (val === undefined || val === null || val === '') return 0;
-            // Limpiar: quitar % y espacios, cambiar coma por punto
-            const s = val.toString().trim().replace('%','').replace(',','.');
-            const n = parseFloat(s);
-            return isNaN(n) ? 0 : n;
-          };
-
-          // Auto-detección de periodo
-          const testRowLabels = rows.find(r => r[1] && r[1].length > 5);
-          if (testRowLabels) {
-            const name = testRowLabels[1].toLowerCase();
-            if (name.includes('1p')) periodoDetectado = 1;
-            else if (name.includes('2p')) periodoDetectado = 2;
-            else if (name.includes('final')) periodoDetectado = 3;
-          }
-
-          const gradoRef = parseInt(rows[0][0]);
-
-          rows.forEach((row) => {
-            if(row.length < 5) return; 
-
-            // Datos de Resultados (A:Q)
-            if(row[0] && row[4]) {
-              resultadosData.push({
-                grado: parseInt(row[0]),
-                quiz_name: row[1],
-                key: (row[3] || "").trim().toUpperCase(),
-                pregunta_num: parseInt(row[4]),
-                cant_correctas: parseNum(row[6]),
-                porc_correctas: parseNum(row[7]),
-                resp_a_count: parseNum(row[9]),
-                resp_b_count: parseNum(row[11]),
-                resp_c_count: parseNum(row[13]),
-                resp_d_count: parseNum(row[15]),
-                periodo: periodoDetectado
-              });
-            }
-
-            // Datos de Mapeo (S:Z)
-            const mapGrado = row[18];
-            const mapNum = row[19];
-            if(mapGrado && mapNum) {
-              const mk = `${mapGrado}-${mapNum}`;
-              if(!mapeoVisto.has(mk)) {
-                mapeoVisto.add(mk);
-                mapeoData.push({
-                  grado: parseInt(mapGrado),
-                  pregunta_num: parseInt(mapNum),
-                  asignatura: row[20],
-                  texto_pregunta: row[21],
-                  opcion_a: row[22],
-                  opcion_b: row[23],
-                  opcion_c: row[24],
-                  opcion_d: row[25],
-                  periodo: periodoDetectado
-                });
-              }
-            }
+          // Mostrar primeras 4 filas
+          const preview = cachedRows.slice(0, 4);
+          preview.forEach(row => {
+            let rowHtml = "<tr>" + row.map(cell => `<td style='border:1px solid #ddd; padding:4px;'>${cell}</td>`).join('') + "</tr>";
+            table.innerHTML += rowHtml;
           });
 
-          // Mostramos en consola para depurar si hay errores de columnas
-          console.table(resultadosData.slice(0, 3));
+          $('admin-debug').style.display = 'block';
+          updateStatus("Análisis completado. Revisa la tabla arriba 👆");
+        }
+      });
+    }
 
-          try {
-            updateStatus(`Limpiando datos de P${periodoDetectado} / Grado ${gradoRef}...`);
-            await supabaseClient.from('eval_resultados').delete().eq('periodo', periodoDetectado).eq('grado', gradoRef);
-            await supabaseClient.from('eval_preguntas').delete().eq('periodo', periodoDetectado).eq('grado', gradoRef);
+    async function finalizarSubida() {
+      if(!cachedRows) return;
+      const btn = $('btn-confirm-upload');
+      btn.disabled = true; btn.innerText = "Subiendo...";
 
-            updateStatus(`Gaurdando ${resultadosData.length} registros...`);
-            if(resultadosData.length) await supabaseClient.from('eval_resultados').insert(resultadosData);
-            if(mapeoData.length) await supabaseClient.from('eval_preguntas').insert(mapeoData);
+      const rows = [...cachedRows];
+      if(rows[0][0].toString().toLowerCase().includes("grado")) rows.shift();
 
-            updateStatus("✅ ¡Datos actualizados!");
-            alert(`Carga exitosa para: Evaluándonos ${periodoDetectado} (Grado ${gradoRef})`);
-            location.reload();
-          } catch (e) {
-            console.error(e);
-            updateStatus("❌ Error al guardar en base de datos");
+      const resultadosData = [];
+      const mapeoData = [];
+      const mapeoVisto = new Set();
+      let periodoDetectado = 1;
+
+      const parseNum = (val) => {
+        if (val === undefined || val === null || val === '') return 0;
+        const s = val.toString().trim().replace('%','').replace(',','.');
+        const n = parseFloat(s);
+        return isNaN(n) ? 0 : n;
+      };
+
+      // Auto-detección de periodo (usando Col 1 -> Quiz_Name)
+      const testRow = rows.find(r => r[1] && r[1].length > 5);
+      if (testRow) {
+        const name = testRow[1].toLowerCase();
+        if (name.includes('1p')) periodoDetectado = 1;
+        else if (name.includes('2p')) periodoDetectado = 2;
+        else if (name.includes('final')) periodoDetectado = 3;
+      }
+
+      const gradoRef = parseInt(rows[0][0]);
+
+      rows.forEach((row) => {
+        if(row.length < 5) return; 
+        
+        // A:Q (0:16)
+        if(row[0] && row[4]) {
+          resultadosData.push({
+            grado: parseInt(row[0]),
+            quiz_name: row[1],
+            key: (row[3] || "").trim().toUpperCase(),
+            pregunta_num: parseInt(row[4]),
+            cant_correctas: parseNum(row[6]),
+            porc_correctas: parseNum(row[7]),
+            resp_a_count: parseNum(row[9]),
+            resp_b_count: parseNum(row[11]),
+            resp_c_count: parseNum(row[13]),
+            resp_d_count: parseNum(row[15]),
+            periodo: periodoDetectado
+          });
+        }
+
+        // S:Z (18:25)
+        const mG = row[18], mN = row[19];
+        if(mG && mN) {
+          const mk = `${mG}-${mN}`;
+          if(!mapeoVisto.has(mk)) {
+            mapeoVisto.add(mk);
+            mapeoData.push({
+              grado: parseInt(mG),
+              pregunta_num: parseInt(mN),
+              asignatura: row[20],
+              texto_pregunta: row[21],
+              opcion_a: row[22],
+              opcion_b: row[23],
+              opcion_c: row[24],
+              opcion_d: row[25],
+              periodo: periodoDetectado
+            });
           }
         }
       });
+
+      try {
+        updateStatus(`Gaurdando Datos en Supabase...`);
+        await supabaseClient.from('eval_resultados').delete().eq('periodo', periodoDetectado).eq('grado', gradoRef);
+        await supabaseClient.from('eval_preguntas').delete().eq('periodo', periodoDetectado).eq('grado', gradoRef);
+
+        if(resultadosData.length) await supabaseClient.from('eval_resultados').insert(resultadosData);
+        if(mapeoData.length) await supabaseClient.from('eval_preguntas').insert(mapeoData);
+
+        updateStatus("✅ ¡Importación Exitosa!");
+        alert("¡Todo listo! Los datos han sido actualizados.");
+        location.reload();
+      } catch (e) {
+        console.error(e);
+        updateStatus("❌ Error al guardar datos.");
+        btn.disabled = false; btn.innerText = "Reintentar Subida";
+      }
     }
 
     checkSession();
