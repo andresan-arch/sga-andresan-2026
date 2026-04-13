@@ -784,6 +784,7 @@
       btn.disabled = true; btn.innerText = "Subiendo...";
 
       const rows = [...cachedRows];
+      // Saltar cabecera
       if(rows[0][0].toString().toLowerCase().includes("grado")) rows.shift();
 
       const resultadosData = [];
@@ -812,24 +813,42 @@
       rows.forEach((row) => {
         if(row.length < 5) return; 
         
-        // A:Q (0:16)
+        // --- LOGICA DE RESULTADOS (A:Q) ---
         if(row[0] && row[4]) {
+          // Detectar la respuesta correcta (Key)
+          let actualKey = (row[3] || "").toString().trim().toUpperCase();
+          if (actualKey === "PRIMARY KEY") {
+            actualKey = (row[5] || "").toString().trim().toUpperCase();
+          }
+
+          // Mapeo Dinámico de Respuestas (J:Q)
+          const rMap = {};
+          // Pares: Letra en (J, L, N, P) y Valor en (K, M, O, Q)
+          const indicesLetras = [9, 11, 13, 15];
+          const indicesValores = [10, 12, 14, 16];
+          
+          indicesLetras.forEach((idx, i) => {
+            const letra = (row[idx] || "").toString().trim().toUpperCase();
+            const valor = parseNum(row[indicesValores[i]]);
+            if (letra) rMap[letra] = valor;
+          });
+
           resultadosData.push({
             grado: parseInt(row[0]),
             quiz_name: row[1],
-            key: (row[3] || "").trim().toUpperCase(),
+            key: actualKey,
             pregunta_num: parseInt(row[4]),
             cant_correctas: parseNum(row[6]),
             porc_correctas: parseNum(row[7]),
-            resp_a_count: parseNum(row[9]),
-            resp_b_count: parseNum(row[11]),
-            resp_c_count: parseNum(row[13]),
-            resp_d_count: parseNum(row[15]),
+            resp_a_count: rMap["A"] || 0,
+            resp_b_count: rMap["B"] || 0,
+            resp_c_count: rMap["C"] || 0,
+            resp_d_count: rMap["D"] || 0,
             periodo: periodoDetectado
           });
         }
 
-        // S:Z (18:25)
+        // --- LOGICA DE MAPEO (S:Z) ---
         const mG = row[18], mN = row[19];
         if(mG && mN) {
           const mk = `${mG}-${mN}`;
@@ -851,15 +870,16 @@
       });
 
       try {
-        updateStatus(`Gaurdando Datos en Supabase...`);
+        updateStatus(`Limpiando Datos de P${periodoDetectado} / Grado ${gradoRef}...`);
         await supabaseClient.from('eval_resultados').delete().eq('periodo', periodoDetectado).eq('grado', gradoRef);
         await supabaseClient.from('eval_preguntas').delete().eq('periodo', periodoDetectado).eq('grado', gradoRef);
 
+        updateStatus(`Insertando ${resultadosData.length} resultados...`);
         if(resultadosData.length) await supabaseClient.from('eval_resultados').insert(resultadosData);
         if(mapeoData.length) await supabaseClient.from('eval_preguntas').insert(mapeoData);
 
         updateStatus("✅ ¡Importación Exitosa!");
-        alert("¡Todo listo! Los datos han sido actualizados.");
+        alert(`¡Todo listo! Se cargaron los datos de Evaluándonos ${periodoDetectado}.`);
         location.reload();
       } catch (e) {
         console.error(e);
