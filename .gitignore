@@ -1,0 +1,12 @@
+# Excluir archivos grandes o no necesarios para la web
+*.xlsx
+*.gs
+sga_andresan_2026*.html
+andresan_2026.html
+gestión de notas 2026.html
+html new app.html
+
+# Mantener solo:
+# index.html
+# app/
+# *.csv

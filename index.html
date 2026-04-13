@@ -1,0 +1,2133 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SGA AndréSán 2026</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0891b2">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="AndréSán">
+  <link rel="apple-touch-icon"
+    href="https://pmfrdrihzdhhjxokabjm.supabase.co/storage/v1/object/public/assets/andresan.png">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    /* ═══ RESET & VARS ═══ */
+    :root {
+      --notas: #8b5cf6;
+      --asist: #10b981;
+      --res: #f59e0b;
+      --ing: #ec4899;
+      --act: #14b8a6;
+      --inf: #06b6d4;
+      --sup: #7030a0;
+      --alt: #00b050;
+      --bas: #ffff00;
+      --baj: #ff0000;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f0f2f5;
+      color: #1c1c1a;
+      min-height: 100vh;
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.82);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    #login-screen,
+    #app-screen {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ═══ LOGIN ═══ */
+    #login-screen {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: rgba(0, 0, 0, .55);
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+    }
+
+    .login-box {
+      background: #fff;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 6px 30px rgba(0, 0, 0, .2);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .login-box h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 10px 0 6px;
+    }
+
+    .login-box p {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 22px;
+    }
+
+    .login-input {
+      display: block;
+      width: 100%;
+      padding: 11px 14px;
+      margin-bottom: 12px;
+      border: 2px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .login-input:focus {
+      border-color: #6366f1;
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 12px;
+      background: #6366f1;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .login-btn:hover {
+      background: #4f46e5;
+    }
+
+    .login-btn:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+
+    .login-err {
+      background: #fee2e2;
+      color: #dc2626;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      display: none;
+    }
+
+    /* ═══ APP SHELL ═══ */
+    #app-screen {
+      display: none;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .app-header {
+      background: #fff;
+      padding: 10px 14px;
+      border-bottom: 2px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .app-header h1 {
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .ctrl {
+      padding: 6px 10px;
+      border: 1.5px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 13px;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    .badge {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    .b-ok {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .b-no {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .b-wait {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .btn-logout {
+      padding: 6px 12px;
+      background: #ef4444;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .user-lbl {
+      font-size: 12px;
+      color: #6b7280;
+      max-width: 140px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      gap: 5px;
+      padding: 12px 12px 0;
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      flex: 1;
+      min-width: 100px;
+      padding: 11px 6px;
+      font-size: 13px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: all .2s;
+      opacity: .65;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .tab:hover {
+      opacity: .85;
+    }
+
+    .tab.active {
+      opacity: 1;
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, .15);
+    }
+
+    .tab-notas {
+      background: var(--notas);
+      color: #fff;
+    }
+
+    .tab-asist {
+      background: var(--asist);
+      color: #fff;
+    }
+
+    .tab-res {
+      background: var(--res);
+      color: #fff;
+    }
+
+    .tab-ing {
+      background: var(--ing);
+      color: #fff;
+    }
+
+    .tab-act {
+      background: var(--act);
+      color: #fff;
+    }
+
+    .tab-inf {
+      background: var(--inf);
+      color: #fff;
+    }
+
+    .tab-notas.active {
+      background: #6d28d9;
+    }
+
+    .tab-asist.active {
+      background: #059669;
+    }
+
+    .tab-res.active {
+      background: #d97706;
+    }
+
+    .tab-ing.active {
+      background: #db2777;
+    }
+
+    .tab-act.active {
+      background: #0d9488;
+    }
+
+    .tab-inf.active {
+      background: #0891b2;
+    }
+
+    /* ── Secciones ── */
+    .app-body {
+      padding: 12px;
+      flex: 1;
+    }
+
+    .sec {
+      display: none;
+    }
+
+    .sec.active {
+      display: block;
+    }
+
+    /* ── Cards ── */
+    .card {
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+      backdrop-filter: blur(4px);
+    }
+
+    .card-notas {
+      background: rgba(139, 92, 246, .07);
+      border: 2px solid var(--notas);
+    }
+
+    .card-asist {
+      background: rgba(16, 185, 129, .07);
+      border: 2px solid var(--asist);
+    }
+
+    .card-res {
+      background: rgba(245, 158, 11, .07);
+      border: 2px solid var(--res);
+    }
+
+    .card-ing {
+      background: rgba(236, 72, 153, .07);
+      border: 2px solid var(--ing);
+    }
+
+    .card-act {
+      background: rgba(20, 184, 166, .07);
+      border: 2px solid var(--act);
+    }
+
+    .card-inf {
+      background: rgba(6, 182, 212, .07);
+      border: 2px solid var(--inf);
+    }
+
+    .card h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      padding-left: 10px;
+      border-left-width: 4px;
+      border-left-style: solid;
+    }
+
+    .card-notas h3 {
+      color: #6d28d9;
+      border-color: var(--notas);
+    }
+
+    .card-asist h3 {
+      color: #059669;
+      border-color: var(--asist);
+    }
+
+    .card-res h3 {
+      color: #d97706;
+      border-color: var(--res);
+    }
+
+    .card-ing h3 {
+      color: #db2777;
+      border-color: var(--ing);
+    }
+
+    .card-act h3 {
+      color: #0d9488;
+      border-color: var(--act);
+    }
+
+    .card-inf h3 {
+      color: #0891b2;
+      border-color: var(--inf);
+    }
+
+    /* ── Pills ── */
+    .pill {
+      display: inline-block;
+      padding: 8px 16px;
+      margin: 4px;
+      border: 2px solid #d1d5db;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      background: #f9fafb;
+      transition: all .2s;
+    }
+
+    .pill:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
+    }
+
+    .pill-notas.pill-sel {
+      background: var(--notas);
+      border-color: var(--notas);
+      color: #fff;
+    }
+
+    .pill-asist.pill-sel {
+      background: var(--asist);
+      border-color: var(--asist);
+      color: #fff;
+    }
+
+    .pill-res.pill-sel {
+      background: var(--res);
+      border-color: var(--res);
+      color: #fff;
+    }
+
+    /* ── Forms ── */
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+      align-items: end;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .lbl {
+      font-size: 12px;
+      color: #374151;
+      font-weight: 700;
+    }
+
+    input,
+    select {
+      padding: 10px 12px;
+      border: 2px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      background: #fff;
+      outline: none;
+      width: 100%;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: #6366f1;
+    }
+
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .15s;
+      width: 100%;
+    }
+
+    .btn:hover {
+      opacity: .9;
+      transform: translateY(-1px);
+    }
+
+    .btn-save {
+      background: #6366f1;
+      color: #fff;
+    }
+
+    .btn-create {
+      background: var(--asist);
+      color: #fff;
+    }
+
+    .btn-multi {
+      background: var(--notas);
+      color: #fff;
+    }
+
+    .btn-gen {
+      background: var(--inf);
+      color: #fff;
+    }
+
+    .btn-print {
+      background: #4f46e5;
+      color: #fff;
+    }
+
+    /* ── Tablas ── */
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 8px;
+      font-size: 13px;
+    }
+
+    th,
+    td {
+      border: 1px solid #e5e7eb;
+      padding: 1px 6px;
+      text-align: center;
+    }
+
+    th {
+      background: #f1f5f9;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    td:first-child {
+      text-align: left;
+      font-weight: 500;
+    }
+
+    .overflow-x {
+      overflow-x: auto;
+    }
+
+    /* ── Desempeño ── */
+    .ds {
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 10px;
+      font-weight: 700;
+      display: inline-block;
+    }
+
+    .ds-sup {
+      background: var(--sup);
+      color: #fff;
+    }
+
+    .ds-alt {
+      background: var(--alt);
+      color: #fff;
+    }
+
+    .ds-bas {
+      background: var(--bas);
+      color: #5a5000;
+    }
+
+    .ds-baj {
+      background: var(--baj);
+      color: #fff;
+    }
+
+    .ds-sin {
+      background: #e5e7eb;
+      color: #6b7280;
+    }
+
+    /* ── Nota Cell ── */
+    .nc {
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 12px;
+      display: inline-block;
+    }
+
+    /* ── Iconos actividades ── */
+    .icons-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 4px 2px;
+    }
+
+    /* ── Modal Pop-up ── */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      padding: 15px;
+    }
+    .modal-card {
+      background: #fff;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+      animation: modalSlide 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes modalSlide {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal-head {
+      background: #f8fafc;
+      padding: 16px 20px;
+      border-bottom: 1px solid #e2e8f0;
+      font-weight: 800;
+      font-size: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #1e293b;
+    }
+    .modal-body { padding: 20px; }
+    .modal-foot {
+      padding: 16px 20px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      gap: 12px;
+      background: #f8fafc;
+    }
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+    .stat-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 10px 8px;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .stat-num { font-size: 20px; font-weight: 800; display: block; margin-bottom: 2px; }
+
+    .icon-item {
+      min-width: 72px;
+      height: 72px;
+      background: #f9fafb;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      gap: 3px;
+      transition: all .2s;
+      flex-shrink: 0;
+    }
+
+    .icon-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
+    }
+
+    .icon-item.selected {
+      border-color: var(--act);
+      background: #f0fdfa;
+      color: var(--act);
+    }
+
+    /* ── Asistencia botones ── */
+    .asis-grp {
+      display: flex;
+      gap: 3px;
+      justify-content: center;
+    }
+
+    .asis-btn {
+      width: 30px;
+      height: 30px;
+      border: 2px solid #e5e7eb;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      background: #f9fafb;
+      padding: 0;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .asis-btn.on {
+      border-width: 3px;
+    }
+
+    /* ── Print ── */
+    @page {
+      size: A4 landscape;
+      margin: 8mm 10mm;
+    }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+
+      #s-informe,
+      #s-informe * {
+        visibility: visible;
+      }
+
+      #s-informe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        padding: 8px;
+        background: #fff;
+      }
+
+      .no-print,
+      .tabs,
+      .app-header {
+        display: none !important;
+      }
+
+      /* Contenedor principal del informe: escalar para que quepa */
+      #p-inf>div {
+        max-width: 100% !important;
+        zoom: 0.78;
+      }
+
+      /* Cabecera más compacta */
+      #p-inf .card {
+        padding: 8px 10px !important;
+        margin-bottom: 8px !important;
+      }
+
+      /* Tarjetas de asignaturas: font más pequeño */
+      #p-inf [style*="border:2px solid #e5e7eb;border-radius:12px"] {
+        break-inside: avoid;
+      }
+
+      #p-inf [style*="background:#f8fafc;padding:16px"] {
+        padding: 8px !important;
+      }
+
+      #p-inf [style*="padding:16px"] {
+        padding: 8px !important;
+      }
+    }
+
+    @media(max-width:600px) {
+      .tab {
+        font-size: 12px;
+        padding: 9px 5px;
+        min-width: 80px;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ═══════════════════════ LOGIN ═══════════════════════ -->
+  <div id="login-screen">
+    <div class="login-box">
+      <div id="login-logo-wrap"
+        style="margin-bottom:8px;min-height:64px;display:flex;justify-content:center;align-items:center">
+        <img id="login-logo" src="" alt="Logo" style="max-height:80px;border-radius:10px;display:none">
+        <span id="login-emoji" style="font-size:54px">🏫</span>
+      </div>
+      <h1>Control AndréSán 2026</h1>
+      <p>Ingresa tus credenciales para continuar</p>
+      <div id="login-err" class="login-err"></div>
+      <input type="email" id="li-email" class="login-input" placeholder="Correo electrónico">
+      <input type="password" id="li-pass" class="login-input" placeholder="Contraseña"
+        onkeydown="if(event.key==='Enter')login()">
+      <button id="li-btn" class="login-btn" onclick="login()">Ingresar</button>
+      <p style="margin-top:14px;font-size:11px;color:#9ca3af">
+        ¿No tienes cuenta? Pídele al administrador que la cree en Supabase Auth.
+      </p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ APP ═══════════════════════ -->
+  <div id="app-screen">
+
+    <!-- Header -->
+    <div class="app-header">
+      <h1>
+        <img id="header-logo" src="" alt="Logo"
+          style="height:38px;border-radius:6px;display:none;vertical-align:middle">
+        Control AndréSán 2026
+      </h1>
+      <div class="header-right">
+        <select id="sel-anio" class="ctrl" onchange="recargar()">
+          <option value="2026">2026</option>
+          <option value="2025">2025</option>
+        </select>
+        <select id="sel-periodo" class="ctrl" onchange="recargar()">
+          <option value="1">Periodo 1</option>
+          <option value="2">Periodo 2</option>
+          <option value="3">Periodo 3</option>
+        </select>
+        <span id="user-lbl" class="user-lbl"></span>
+        <span id="badge" class="badge b-wait">Cargando…</span>
+        <button class="btn-logout" onclick="logout()">Salir</button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs no-print">
+      <button class="tab tab-notas active" onclick="tab('notas',this)">📝 Notas</button>
+      <button class="tab tab-asist" onclick="tab('asistencia',this);abrirAsistencia()">✅ Asistencia</button>
+      <button class="tab tab-res" onclick="tab('resumen',this)">📊 Resumen</button>
+      <button class="tab tab-ing" onclick="tab('ingreso',this)">✏️ Ingreso</button>
+      <button class="tab tab-act" onclick="tab('actividades',this)">📋 Actividades</button>
+      <button class="tab tab-inf" onclick="tab('informe',this)">📄 Informe</button>
+    </div>
+
+    <div class="app-body">
+
+      <!-- ── NOTAS ── -->
+      <div id="s-notas" class="sec active">
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div class="card card-notas" style="flex:1;margin-bottom:0">
+            <h3>Selecciona un grupo</h3>
+            <div id="pills-notas"></div>
+          </div>
+          <div id="asig-notas-wrap" style="display:none;flex:1;margin-bottom:0" class="card card-notas">
+            <h3>Selecciona una asignatura</h3>
+            <select id="asig-notas-sel" onchange="cargarTablaNotas()">
+              <option value="">-- Selecciona --</option>
+            </select>
+          </div>
+        </div>
+        <div id="p-notas"></div>
+      </div>
+
+      <!-- ── ASISTENCIA ── -->
+      <div id="s-asistencia" class="sec">
+        <div id="p-asist"></div>
+      </div>
+
+      <!-- ── RESUMEN ── -->
+      <div id="s-resumen" class="sec">
+        <div class="card card-res">
+          <h3>Selecciona un grupo</h3>
+          <div id="pills-res"></div>
+        </div>
+        <div id="p-res"></div>
+      </div>
+
+      <!-- ── INGRESO ── -->
+      <div id="s-ingreso" class="sec">
+        <div class="card card-ing">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+            <span id="ing-icon" style="font-size:40px">📝</span>
+            <h3 style="margin:0;border:none;padding:0">Ingreso de Notas</h3>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="lbl">Grupo</label>
+              <select id="ing-grado" onchange="ingCargarEst()">
+                <option value="">Selecciona grupo…</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="lbl">Estudiante</label>
+              <select id="ing-est" onchange="ingCargarAct()">
+                <option value="">Selecciona estudiante…</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="lbl">Actividad</label>
+              <select id="ing-act">
+                <option value="">Selecciona actividad…</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="lbl">Nota (0 – 10)</label>
+              <input type="number" id="ing-nota" step="0.1" min="0" max="10" placeholder="0.0"
+                onkeydown="if(event.key==='Enter')guardarNota()">
+            </div>
+            <div class="form-group">
+              <button class="btn btn-save" onclick="guardarNota()">💾 Guardar nota</button>
+            </div>
+          </div>
+          <div id="ing-msg" style="font-size:13px;color:#059669;min-height:20px"></div>
+        </div>
+      </div>
+
+      <!-- ── ACTIVIDADES ── -->
+      <div id="s-actividades" class="sec">
+        <div class="card card-act">
+          <h3>Gestión de Actividades</h3>
+          <p style="font-size:12px;color:#6b7280;margin-bottom:10px">
+            Toca el ícono de cada asignatura para seleccionarla (puede ser más de una)
+          </p>
+          <div id="icons-act" class="icons-row"></div>
+          <div class="form-row" style="margin-top:14px">
+            <div class="form-group">
+              <label class="lbl">Nombre de la actividad</label>
+              <input type="text" id="act-nom" placeholder="Ej. Taller 1">
+            </div>
+            <div class="form-group">
+              <label class="lbl">Tipo / Peso</label>
+              <select id="act-por">
+                <option value="1">Saber / Hacer (70%)</option>
+                <option value="0">Evaluándonos (30%)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <button class="btn btn-create" onclick="crearActividadesMulti()">✅ Crear actividad</button>
+            </div>
+          </div>
+          <div id="act-msg" style="font-size:13px;color:#059669;min-height:20px;margin-top:4px"></div>
+        </div>
+      </div>
+
+      <!-- ── INFORME ── -->
+      <div id="s-informe" class="sec">
+        <div class="card card-inf no-print">
+          <h3>Informe de Estudiante</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="lbl">Grupo</label>
+              <select id="inf-grado" onchange="infCargarEst()">
+                <option value="">Selecciona grupo…</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="lbl">Estudiante</label>
+              <select id="inf-est">
+                <option value="">Selecciona estudiante…</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <button class="btn btn-gen" onclick="generarInforme()">📊 Generar informe</button>
+            </div>
+            <div class="form-group">
+              <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir</button>
+            </div>
+          </div>
+        </div>
+        <div id="p-inf"></div>
+      </div>
+
+    </div><!-- /app-body -->
+  </div><!-- /app-screen -->
+
+  <!-- ═══════════════════════ SCRIPT ═══════════════════════ -->
+  <script>
+    // ⚙️ CONFIGURACIÓN — cambia solo estas dos líneas
+    const LOGO_URL = "https://pmfrdrihzdhhjxokabjm.supabase.co/storage/v1/object/public/assets/andresanbordessinfondo.png";
+    const FONDO_URL = "https://pmfrdrihzdhhjxokabjm.supabase.co/storage/v1/object/public/assets/DSC06323.JPG";
+
+    // ── Supabase config ──────────────────────────────────────
+    const SB_URL = "https://pmfrdrihzdhhjxokabjm.supabase.co";
+    const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtZnJkcmloemRoaGp4b2thYmptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NTA5OTIsImV4cCI6MjA5MTQyNjk5Mn0.FnQWmxg0p4oUgAQBVhoy6wqIMOk3qk4pifI2voeQvV0";
+    const sb = supabase.createClient(SB_URL, SB_KEY);
+
+    // ── Estado global ────────────────────────────────────────
+    let DB = { asigs: [], ests: [], acts: [], hor: [] };
+    let anio = 2026;
+    let periodo = 1;
+    let gNotas = null, gAsist = null, gRes = null;
+
+    // ════════════════════════════════════════════════════════
+    // AUTH
+    // ════════════════════════════════════════════════════════
+    async function login() {
+      const email = document.getElementById('li-email').value.trim();
+      const pass = document.getElementById('li-pass').value;
+      const btn = document.getElementById('li-btn');
+      const err = document.getElementById('login-err');
+      err.style.display = 'none';
+      if (!email || !pass) { showErr('Completa todos los campos.'); return; }
+      btn.disabled = true; btn.textContent = 'Verificando…';
+      const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+      if (error) {
+        showErr(error.message.includes('Invalid') ? 'Correo o contraseña incorrectos.' : error.message);
+      } else {
+        mostrarApp(data.user.email);
+        await init();
+      }
+      btn.disabled = false; btn.textContent = 'Ingresar';
+    }
+
+    function showErr(msg) {
+      const e = document.getElementById('login-err');
+      e.textContent = msg; e.style.display = 'block';
+    }
+
+    function mostrarApp(email) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app-screen').style.display = 'flex';
+      document.getElementById('user-lbl').textContent = email;
+      aplicarBranding(); // re-aplicar para que ing-logo ya esté en el DOM visible
+    }
+
+    async function logout() {
+      if (!confirm('¿Cerrar sesión?')) return;
+      await sb.auth.signOut(); location.reload();
+    }
+
+    // ════════════════════════════════════════════════════════
+    // INIT — cargar datos base
+    // ════════════════════════════════════════════════════════
+    async function init() {
+      badge('wait', 'Cargando…');
+      anio = parseInt(document.getElementById('sel-anio').value) || 2026;
+      periodo = parseInt(document.getElementById('sel-periodo').value) || 1;
+
+      const [ra, re, rac, rh] = await Promise.all([
+        sb.from('asignaturas').select('*').order('grado').order('nombre'),
+        sb.from('estudiantes').select('*').order('nombre_completo'),
+        sb.from('actividades').select('*').eq('periodo', periodo),
+        sb.from('horarios').select('*')
+      ]);
+
+      DB.asigs = ra.data || [];
+      DB.ests = re.data || [];
+      DB.acts = rac.data || [];
+      DB.hor = rh.data || [];
+
+      const grados = [...new Set(DB.asigs.map(a => a.grado))].sort();
+      const gradoOpts = '<option value="">Selecciona grupo…</option>' +
+        grados.map(g => `<option value="${g}">${g}</option>`).join('');
+
+      // Pills
+      renderPills('pills-notas', grados, 'notas', g => selNotas(g));
+      renderPills('pills-res', grados, 'res', g => selRes(g));
+
+      // Selectores de formularios
+      document.getElementById('ing-grado').innerHTML = gradoOpts;
+      document.getElementById('inf-grado').innerHTML = gradoOpts;
+
+      // Iconos de actividades
+      renderIconos();
+
+
+      // Detectar clase actual por horario
+      detectarClase();
+
+      badge('ok', 'Listo ✓');
+    }
+
+    function detectarClase() {
+      const hoyStr = hoy();
+      const d = new Date();
+      const diaJS = d.getDay();
+      if (diaJS === 0 || diaJS === 6) return;
+
+      const horaActual = d.toTimeString().slice(0, 8);
+
+      // Intentar encontrar un bloque activo ahora
+      const bloque = DB.hor.find(h =>
+        parseInt(h.dia_semana) === diaJS &&
+        horaActual >= h.hora_inicio.slice(0, 8) &&
+        horaActual <= h.hora_fin.slice(0, 8)
+      );
+
+      if (bloque) {
+        const asig = DB.asigs.find(a => a.id === bloque.asignatura_id);
+        if (asig) {
+          badge('ok', `Clase actual: ${asig.nombre} (${asig.grado})`);
+        }
+      }
+    }
+
+    async function recargar() { await init(); }
+
+    // ════════════════════════════════════════════════════════
+    // HELPERS UI
+    // ════════════════════════════════════════════════════════
+    function badge(t, txt) {
+      const b = document.getElementById('badge');
+      b.className = 'badge b-' + t; b.textContent = txt;
+    }
+
+    function tab(nombre, btn) {
+      document.querySelectorAll('.sec').forEach(s => s.classList.remove('active'));
+      document.getElementById('s-' + nombre).classList.add('active');
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function renderPills(id, grados, tipo, fn) {
+      document.getElementById(id).innerHTML = grados.map(g =>
+        `<span class="pill pill-${tipo}" data-g="${g}"
+      onclick="activarPill('${id}','${tipo}','${g}');(${fn.toString()})('${g}')">${g}</span>`
+      ).join('');
+    }
+
+    function activarPill(id, tipo, grado) {
+      document.querySelectorAll(`#${id} .pill`).forEach(p => {
+        p.classList.toggle('pill-sel', p.dataset.g === grado);
+      });
+    }
+
+    // ── Cálculo desempeño ──
+    function dsClass(n) {
+      if (n === null || n === undefined || isNaN(n)) return 'ds-sin';
+      n = Number(n);
+      return n >= 8.4 ? 'ds-sup' : n >= 7.2 ? 'ds-alt' : n >= 6.0 ? 'ds-bas' : 'ds-baj';
+    }
+    function dsLabel(n) {
+      if (n === null || n === undefined || isNaN(n)) return '–';
+      n = Number(n);
+      return n >= 8.4 ? 'Superior' : n >= 7.2 ? 'Alto' : n >= 6.0 ? 'Básico' : 'Bajo';
+    }
+
+    // ── Cálculo definitiva 70/30 ──
+    function prom(arr) {
+      if (!arr || arr.length === 0) return null;
+      const sum = arr.reduce((acc, x) => {
+        const n = parseFloat(x);
+        return acc + (isNaN(n) ? 0 : n);
+      }, 0);
+      return sum / arr.length;
+    }
+    function defin(n70, n30) {
+      const p70 = prom(n70), p30 = prom(n30);
+      if (p70 === null && p30 === null) return null;
+      // Si falta una categoría, mostrar el promedio de lo que hay
+      if (p70 === null) return p30;
+      if (p30 === null) return p70;
+      return (p70 * 0.7) + (p30 * 0.3);
+    }
+    function hoy() { return new Date().toISOString().split('T')[0]; }
+
+    // ════════════════════════════════════════════════════════
+    // TAB NOTAS
+    // ════════════════════════════════════════════════════════
+    function selNotas(g) {
+      gNotas = g;
+      const asigs = DB.asigs.filter(a => a.grado === g);
+      const sel = document.getElementById('asig-notas-sel');
+      sel.innerHTML = '<option value="">-- Selecciona asignatura --</option>' +
+        asigs.map(a => `<option value="${a.id}">${a.nombre} (${a.codigo})</option>`).join('');
+      document.getElementById('asig-notas-wrap').style.display = 'block';
+      document.getElementById('p-notas').innerHTML = '';
+    }
+
+    // ════════════════════════════════════════════════════════
+    // TAB NOTAS - SOLO ACTIVIDADES CON SU DESEMPEÑO (SIN PROMEDIOS NI DEFINITIVA)
+    // ════════════════════════════════════════════════════════
+
+    async function cargarTablaNotas() {
+      const asigId = parseInt(document.getElementById('asig-notas-sel').value);
+      if (!asigId) return;
+
+      badge('wait', 'Cargando actividades…');
+
+      const asig = DB.asigs.find(a => a.id === asigId);
+      const ests = DB.ests.filter(e => e.grado === asig.grado);
+      const acts = DB.acts.filter(a => a.asignatura_id === asigId);
+
+      if (!acts.length) {
+        document.getElementById('p-notas').innerHTML =
+          `<div class="card card-notas"><p style="text-align:center;padding:40px;color:#6b7280">
+        No hay actividades creadas para <strong>${asig.nombre}</strong></p></div>`;
+        badge('ok', 'Listo ✓');
+        return;
+      }
+
+      // Cargar notas
+      const { data: notas } = await sb.from('notas')
+        .select('*')
+        .in('actividad_id', acts.map(a => a.id));
+
+      const nMap = {};
+      (notas || []).forEach(n => {
+        nMap[`${n.estudiante_id}_${n.actividad_id}`] = Number(n.valor);
+      });
+
+      let html = `<div class="card card-notas">
+    <h3>${asig.nombre} · <small style="font-weight:400">${asig.codigo}</small></h3>
+    <div class="overflow-x">
+      <table>
+        <thead>
+          <tr>
+            <th style="min-width:220px; text-align:left">Estudiante</th>`;
+
+      // Cabeceras de solo las actividades
+      acts.forEach(act => {
+        const tipo = act.porcentaje === 1 ? '70%' : '30%';
+        html += `<th style="min-width:100px">
+      <div>${act.nombre}</div>
+      <small style="font-size:10px;color:#6b7280">${tipo}</small>
+    </th>`;
+      });
+
+      html += `</tr></thead><tbody>`;
+
+      // Filas de estudiantes
+      ests.forEach(est => {
+        html += `<tr>
+      <td style="font-size:13px;font-weight:500">${est.nombre_completo}</td>`;
+
+        acts.forEach(act => {
+          const valor = nMap[`${est.id}_${act.id}`];
+
+          let clase = 'nc ds-sin';
+          let texto = '–';
+
+          if (valor !== undefined && valor !== null) {
+            clase = `nc ${dsClass(valor)}`;
+            texto = dsLabel(valor);
+          }
+
+          html += `<td style="text-align:center">
+        <span class="${clase}" style="padding:6px 12px; font-size:13px;">
+          ${texto}
+        </span>
+      </td>`;
+        });
+
+        html += `</tr>`;
+      });
+
+      html += `</tbody></table>
+    </div>
+    <p style="font-size:12px;color:#6b7280;text-align:center;margin-top:12px">
+      Desempeño por actividad individual
+    </p>
+  </div>`;
+
+      document.getElementById('p-notas').innerHTML = html;
+      badge('ok', `Listo ✓ (${acts.length} actividades)`);
+    }
+    // ════════════════════════════════════════════════════════
+    // TAB ASISTENCIA — sin selector de grupo, horario del día completo
+    // ════════════════════════════════════════════════════════
+    const ESTADOS = [
+      { v: 'Asistió', e: '✅', c: '#22c55e' },
+      { v: 'No asistió', e: '❌', c: '#ef4444' },
+      { v: 'Retraso', e: '⏰', c: '#f97316' },
+      { v: 'Permiso', e: '📋', c: '#3b82f6' },
+      { v: 'Enfermo', e: '🤒', c: '#a855f7' },
+    ];
+    let pendienteAsist = {}; // [asigId][estId] = estado
+    let fechaAsist = new Date().toISOString().split('T')[0];
+    let bloqueAbierto = null; // id del bloque actualmente expandido
+    let currentSavedMap = {}; // Asistencia guardada para el día actual
+
+    // Llamada al cambiar de tab o al recargar fecha
+    async function abrirAsistencia(fechaSel) {
+      if (fechaSel) fechaAsist = fechaSel;
+      pendienteAsist = {};
+      bloqueAbierto = null;
+      await renderHorarioDia(fechaAsist);
+    }
+
+    async function renderHorarioDia(fecha) {
+      const contenedor = document.getElementById('p-asist');
+      const dFecha = new Date(fecha + 'T12:00:00');
+      const diaJS = dFecha.getDay(); // 0=Dom … 6=Sab (horarios: 1=Lun…5=Vie)
+      const DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+      const esHoy = fecha === new Date().toISOString().split('T')[0];
+      const horaActual = new Date().toTimeString().slice(0, 8);
+
+      // Selector de fecha + día — cabecera siempre visible
+      let html = `<div class="card card-asist" style="margin-bottom:10px">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:18px;font-weight:700;color:#059669">${DIAS[diaJS]}</div>
+        <div style="font-size:13px;color:#6b7280">${fecha}</div>
+      </div>
+      <input type="date" value="${fecha}"
+        style="padding:7px 10px;border:2px solid var(--asist);border-radius:8px;font-size:14px;width:auto"
+        onchange="abrirAsistencia(this.value)">
+      ${!esHoy ? `<button onclick="abrirAsistencia('${new Date().toISOString().split('T')[0]}')"
+        style="padding:6px 14px;border:2px solid var(--asist);border-radius:8px;
+               background:#fff;color:#059669;font-size:12px;font-weight:700;cursor:pointer">
+        Hoy</button>` : ''}
+    </div>
+  </div>`;
+
+      if (diaJS === 0 || diaJS === 6) {
+        html += `<div class="card card-asist">
+      <p style="text-align:center;padding:20px;color:#6b7280">
+        ${DIAS[diaJS]} — no hay clases programadas.</p></div>`;
+        contenedor.innerHTML = html; return;
+      }
+
+      // Todos los bloques del día (todos los grupos)
+      const bloquesDelDia = DB.hor
+        .filter(h => parseInt(h.dia_semana) === diaJS)
+        .sort((a, b) => a.hora_inicio.localeCompare(b.hora_inicio));
+
+      if (!bloquesDelDia.length) {
+        html += `<div class="card card-asist">
+      <p style="text-align:center;padding:20px;color:#6b7280">
+        No hay clases programadas para el ${DIAS[diaJS]}.</p></div>`;
+        contenedor.innerHTML = html; return;
+      }
+
+      // Cargar asistencia ya guardada para toda esta fecha
+      const asigIds = [...new Set(bloquesDelDia.map(h => h.asignatura_id))];
+      const { data: regsExist } = await sb.from('asistencia').select('*')
+        .eq('fecha', fecha).in('asignatura_id', asigIds);
+      
+      // savedMap[asigId][bloque][estId] = estado
+      currentSavedMap = {};
+      (regsExist || []).forEach(r => {
+        const aid = r.asignatura_id, bn = r.bloque_nombre || 'S/B', eid = r.estudiante_id;
+        if (!currentSavedMap[aid]) currentSavedMap[aid] = {};
+        if (!currentSavedMap[aid][bn]) currentSavedMap[aid][bn] = {};
+        currentSavedMap[aid][bn][eid] = r.estado;
+      });
+
+      // ── Caja del día con mini-bloques ──
+      html += `<div class="card card-asist">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px">`;
+
+      bloquesDelDia.forEach((bloque, idx) => {
+        const asig = DB.asigs.find(a => a.id === bloque.asignatura_id);
+        const grado = asig?.grado || '–';
+        const asigMap = currentSavedMap[bloque.asignatura_id] || {};
+        const saved = asigMap[bloque.bloque_nombre] || asigMap['S/B'] || {};
+        const registrada = Object.keys(saved).length > 0;
+        const esActiva = esHoy &&
+          horaActual >= bloque.hora_inicio.slice(0, 8) &&
+          horaActual <= bloque.hora_fin.slice(0, 8);
+
+        const bordeColor = esActiva ? '#f59e0b' : (registrada ? '#10b981' : '#e5e7eb');
+        const bgColor = esActiva ? '#fffbeb' : (registrada ? '#f0fdfa' : '#f9fafb');
+
+        html += `<div onclick="seleccionarBloque(${idx},'${fecha}')"
+      id="mini-${idx}"
+      style="border:2px solid ${bordeColor};border-radius:10px;padding:10px 12px;
+             cursor:pointer;background:${bgColor};min-width:100px;transition:all .2s;
+             text-align:center">
+      <div style="font-size:11px;font-weight:700;color:#059669">${asig?.codigo || '–'}</div>
+      <div style="font-size:10px;color:#6b7280;margin:2px 0">${grado}</div>
+      <div style="font-size:10px;color:#6b7280">Blq ${bloque.bloque_nombre}</div>
+      <div style="font-size:10px;color:#6b7280">${bloque.hora_inicio.slice(0, 5)}-${bloque.hora_fin.slice(0, 5)}</div>
+      ${registrada ? '<div style="font-size:9px;color:#059669;font-weight:700;margin-top:2px">✓ Registrada</div>' : ''}
+      ${esActiva ? '<div style="font-size:9px;color:#d97706;font-weight:700;margin-top:2px">● En curso</div>' : ''}
+    </div>`;
+      });
+
+      html += `</div></div>`;
+
+      // ── Zona de lista de asistencia (se rellena al seleccionar bloque) ──
+      html += `<div id="zona-lista"></div>`;
+
+      contenedor.innerHTML = html;
+
+      // Si hay clase activa ahora, abrirla automáticamente
+      const idxActivo = bloquesDelDia.findIndex(h =>
+        esHoy &&
+        horaActual >= h.hora_inicio.slice(0, 8) &&
+        horaActual <= h.hora_fin.slice(0, 8)
+      );
+      if (idxActivo >= 0) seleccionarBloque(idxActivo, fecha);
+    }
+
+    function seleccionarBloque(idx, fecha) {
+      // Guardar datos en variable para poder regenerar la lista
+      const dFecha = new Date(fecha + 'T12:00:00');
+      const diaJS = dFecha.getDay();
+      const bloquesDelDia = DB.hor
+        .filter(h => parseInt(h.dia_semana) === diaJS)
+        .sort((a, b) => a.hora_inicio.localeCompare(b.hora_inicio));
+
+      const bloque = bloquesDelDia[idx];
+      if (!bloque) return;
+
+      // Autocompletar con "Asistió" si es la primera vez que se abre y no hay nada guardado
+      const asigMap = currentSavedMap[bloque.asignatura_id] || {};
+      const saved = asigMap[bloque.bloque_nombre] || asigMap['S/B'] || {};
+      const actualPend = pendienteAsist[bloque.asignatura_id] || {};
+      
+      if (Object.keys(saved).length === 0 && Object.keys(actualPend).length === 0) {
+        const asig = DB.asigs.find(a => a.id === bloque.asignatura_id);
+        const ests = DB.ests.filter(e => e.grado === asig?.grado);
+        if (!pendienteAsist[bloque.asignatura_id]) pendienteAsist[bloque.asignatura_id] = {};
+        ests.forEach(e => { pendienteAsist[bloque.asignatura_id][e.id] = 'Asistió'; });
+      }
+
+      // Resaltar mini-bloque seleccionado
+      document.querySelectorAll('[id^="mini-"]').forEach(el => {
+        el.style.boxShadow = '';
+        el.style.borderWidth = '2px';
+      });
+      const mini = document.getElementById(`mini-${idx}`);
+      if (mini) { mini.style.boxShadow = '0 0 0 3px #10b981'; mini.style.borderWidth = '2px'; }
+
+      bloqueAbierto = { bloque, idx, fecha };
+      renderListaBloque(bloque, fecha);
+    }
+
+    function renderListaBloque(bloque, fecha) {
+      const asig = DB.asigs.find(a => a.id === bloque.asignatura_id);
+      const grado = asig?.grado || '';
+      const ests = DB.ests.filter(e => e.grado === grado);
+
+      // Leer pendientes y lo guardado para este bloque específico
+      const pend = pendienteAsist[bloque.asignatura_id] || {};
+      const asigMap = currentSavedMap[bloque.asignatura_id] || {};
+      const saved = asigMap[bloque.bloque_nombre] || asigMap['S/B'] || {};
+      const esCorreccion = Object.keys(saved).length > 0;
+
+      // Calcular estadísticas actuales
+      const counts = {};
+      ESTADOS.forEach(s => counts[s.v] = 0);
+      ests.forEach(est => {
+        const estStatus = pend[est.id] !== undefined ? pend[est.id] : (saved[est.id] || '');
+        if (estStatus) counts[estStatus] = (counts[estStatus] || 0) + 1;
+      });
+
+      const statsHtml = `<div id="stats-asist" class="stats-container">` +
+        ESTADOS.map(s => `
+        <div class="stat-card" style="border-bottom: 3px solid ${s.c}">
+          <span class="stat-num" style="color:${s.c}">${counts[s.v] || 0}</span>
+          ${s.v}
+        </div>`).join('') + `</div>`;
+
+      // leyenda
+      const leyenda = `<div style="display:flex;gap:10px;flex-wrap:wrap;font-size:11px;margin:10px 0">` +
+        ESTADOS.map(s => `<span style="display:flex;align-items:center;gap:4px">
+      <span style="width:10px;height:10px;border-radius:50%;background:${s.c};display:inline-block"></span>${s.v}
+    </span>`).join('') + `</div>`;
+
+      const btnRegistrar = (pos) => `<div style="text-align:center;margin:${pos === 'top' ? '0 0 12px' : '12px 0 0'}">
+    <button onclick="mostrarConfirmacionAsistencia()"
+      style="padding:11px 28px;background:#10b981;color:#fff;border:none;
+             border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;width:100%">
+      💾 Revisar y Registrar Asistencia
+    </button></div>`;
+
+      let html = `<div class="card card-asist" style="margin-top:10px">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:4px">
+      <div>
+        <span style="font-size:15px;font-weight:700;color:#059669">${asig?.nombre || '–'}</span>
+        <span style="font-size:12px;color:#6b7280;margin-left:8px">
+          Grado ${grado} · Bloque ${bloque.bloque_nombre} · ${bloque.hora_inicio.slice(0, 5)}–${bloque.hora_fin.slice(0, 5)} · ${fecha}
+        </span>
+      </div>
+    </div>
+    ${statsHtml}
+
+    ${esCorreccion ? `
+    <div style="background:#fff1f2;border:1px solid #fecade;padding:10px;border-radius:10px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:20px">⚠️</span>
+        <div>
+            <b style="color:#9f1239;font-size:13px;display:block">Modo Edición / Corrección</b>
+            <span style="font-size:11px;color:#be123c">Estás modificando un registro que ya existía en la base de datos.</span>
+        </div>
+    </div>` : ''}
+
+    <div id="area-correccion-main" style="display:none;margin-bottom:12px;background:#fffbeb;border:1px solid #fde68a;padding:12px;border-radius:12px">
+        <label style="font-size:12px;font-weight:700;display:block;margin-bottom:4px;color:#92400e">Motivo de la corrección:</label>
+        <textarea id="motivo-txt-main" style="width:100%;height:60px;border:1px solid #fcd34d;border-radius:8px;padding:8px;font-size:13px" 
+                  placeholder="Escribe aquí el motivo si estás corrigiendo algo..."
+                  oninput="document.getElementById('motivo-txt') ? document.getElementById('motivo-txt').value = this.value : null"></textarea>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+        ${esCorreccion ? `
+        <button onclick="document.getElementById('area-correccion-main').style.display='block';this.style.display='none'" 
+                style="padding:8px 12px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;flex:1">
+            ✍️ Justificar Cambio
+        </button>` : ''}
+        <button onclick="mostrarConfirmacionAsistencia()"
+                style="padding:8px 12px;background:${esCorreccion ? '#f43f5e' : '#10b981'};color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;flex:2">
+            ${esCorreccion ? '💾 Registrar Corrección' : '💾 Revisar y Registrar'}
+        </button>
+    </div>
+    <div class="overflow-x"><table>
+      <thead><tr>
+        <th style="text-align:left;min-width:180px">Estudiante</th>
+        <th>Marcar</th>
+      </tr></thead><tbody>`;
+
+      ests.forEach(est => {
+        const actual = pend[est.id] !== undefined ? pend[est.id] : (saved[est.id] || '');
+        html += `<tr><td style="font-size:12px">${est.nombre_completo}</td><td>
+      <div class="asis-grp">`;
+        ESTADOS.forEach(s => {
+          const on = actual === s.v;
+          const st = on ? `background:${s.c};border-color:${s.c};border-width:3px` : '';
+          html += `<button class="asis-btn${on ? ' on' : ''}" style="${st}" title="${s.v}"
+        onclick="marcarPend(${bloque.asignatura_id},${est.id},'${s.v}',this)">${s.e}</button>`;
+        });
+        html += `</div></td></tr>`;
+      });
+
+      html += `</tbody></table></div>
+    ${btnRegistrar('bottom')}
+  </div>`;
+
+      document.getElementById('zona-lista').innerHTML = html;
+    }
+
+    function marcarPend(asigId, estId, estado, btn) {
+      if (!pendienteAsist[asigId]) pendienteAsist[asigId] = {};
+      pendienteAsist[asigId][estId] = estado;
+      console.log('Pendiente:', asigId, estId, estado);
+      const C = { 'Asistió': '#22c55e', 'No asistió': '#ef4444', 'Retraso': '#f97316', 'Permiso': '#3b82f6', 'Enfermo': '#a855f7' };
+      const grp = btn.closest('.asis-grp');
+      grp.querySelectorAll('.asis-btn').forEach(b => {
+        b.classList.remove('on');
+        b.style.background = b.style.borderColor = b.style.borderWidth = '';
+      });
+      btn.classList.add('on');
+      btn.style.background = btn.style.borderColor = C[estado];
+      btn.style.borderWidth = '3px';
+
+      // Actualizar estadísticas visuales en tiempo real
+      if (bloqueAbierto) {
+        const asig = DB.asigs.find(a => a.id === asigId);
+        const ests = DB.ests.filter(e => e.grado === asig?.grado);
+        const asigMap = currentSavedMap[asigId] || {};
+        const saved = asigMap[bloqueAbierto.bloque.bloque_nombre] || asigMap['S/B'] || {};
+        
+        const counts = {};
+        ESTADOS.forEach(s => counts[s.v] = 0);
+        ests.forEach(est => {
+          const estStatus = pendienteAsist[asigId][est.id] !== undefined ? pendienteAsist[asigId][est.id] : (saved[est.id] || '');
+          if (estStatus) counts[estStatus]++;
+        });
+
+        const statsDiv = document.getElementById('stats-asist');
+        if (statsDiv) {
+          statsDiv.innerHTML = ESTADOS.map(s => `
+            <div class="stat-card" style="border-bottom: 3px solid ${s.c}">
+              <span class="stat-num" style="color:${s.c}">${counts[s.v] || 0}</span>
+              ${s.v}
+            </div>`).join('');
+        }
+      }
+    }
+
+    /**
+     * Muestra el pop-up de confirmación antes de guardar
+     */
+    function mostrarConfirmacionAsistencia() {
+      if (!bloqueAbierto) return;
+      const { bloque, fecha } = bloqueAbierto;
+      const asig = DB.asigs.find(a => a.id === bloque.asignatura_id);
+      const ests = DB.ests.filter(e => e.grado === asig?.grado);
+      const pend = pendienteAsist[bloque.asignatura_id] || {};
+      const asigMap = currentSavedMap[bloque.asignatura_id] || {};
+      const saved = asigMap[bloque.bloque_nombre] || asigMap['S/B'] || {};
+
+      // Calcular novedades (quienes NO asistieron)
+      const novedades = [];
+      const counts = {};
+      ESTADOS.forEach(s => counts[s.v] = 0);
+
+      ests.forEach(est => {
+        const estStatus = pend[est.id] !== undefined ? pend[est.id] : (saved[est.id] || '');
+        if (estStatus) {
+            counts[estStatus]++;
+            const anterior = saved[est.id];
+            if (estStatus !== 'Asistió' || (anterior && anterior !== estStatus)) {
+                novedades.push({ 
+                    nombre: est.nombre_completo, 
+                    estado: estStatus,
+                    anterior: anterior === estStatus ? null : anterior
+                });
+            }
+        }
+      });
+
+      const esCorreccion = Object.keys(saved).length > 0;
+      const motivoPre = document.getElementById('motivo-txt-main')?.value || "";
+
+      const modalHtml = `
+      <div class="modal-overlay" id="modal-confirm">
+        <div class="modal-card">
+          <div class="modal-head" style="background:${esCorreccion ? '#fff1f2' : '#f8fafc'}">
+            <span>${esCorreccion ? 'Confirmar Corrección' : 'Confirmar Asistencia'}</span>
+            <button onclick="cerrarModal()" style="background:none;border:none;font-size:24px;cursor:pointer">&times;</button>
+          </div>
+          <div class="modal-body">
+            <p style="font-size:14px;color:#475569;margin-bottom:15px">
+              Resumen para <b>${asig?.nombre}</b> - Bloque ${bloque.bloque_nombre}
+            </p>
+            
+            <div style="background:#f1f5f9;border-radius:12px;padding:12px;margin-bottom:15px">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                    ${ESTADOS.map(s => `<div style="font-size:13px"><b>${counts[s.v] || 0}</b> ${s.v}</div>`).join('')}
+                </div>
+            </div>
+
+            <h4 style="font-size:14px;margin-bottom:8px">${esCorreccion ? 'Cambios realizados:' : 'Novedades:'}</h4>
+            <div style="max-height:150px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:8px;padding:8px;font-size:12px">
+                ${novedades.length === 0 ? '<p style="color:#64748b">Sin cambios significativos.</p>' : 
+                  novedades.map(n => `
+                    <div style="padding:6px 0;border-bottom:1px solid #f1f5f9">
+                        <div style="display:flex;justify-content:space-between">
+                            <span>${n.nombre}</span>
+                            <b style="color:${ESTADOS.find(s=>s.v===n.estado)?.c}">${n.estado}</b>
+                        </div>
+                        ${n.anterior ? `<div style="font-size:10px;color:#94a3b8">Anteriormente: ${n.anterior}</div>` : ''}
+                    </div>
+                  `).join('')
+                }
+            </div>
+
+            <div id="area-correccion" style="display:${esCorreccion || motivoPre ? 'block' : 'none'};margin-top:15px">
+                <label style="font-size:12px;font-weight:700;display:block;margin-bottom:4px">Motivo de la corrección:</label>
+                <textarea id="motivo-txt" style="width:100%;height:60px;border:1px solid #cbd5e1;border-radius:8px;padding:8px;font-size:13px" placeholder="Escribe aquí por qué cambiaste el registro...">${motivoPre}</textarea>
+            </div>
+            
+            ${!esCorreccion && !motivoPre ? `
+            <button onclick="document.getElementById('area-correccion').style.display='block';this.style.display='none'" 
+                    style="margin-top:15px;background:#f1f5f9;border:1px solid #cbd5e1;padding:8px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;width:100%">
+                ✍️ Agregar observación
+            </button>` : ''}
+          </div>
+          <div class="modal-foot">
+            <button onclick="cerrarModal()" style="flex:1;padding:10px;border:1px solid #cbd5e1;background:#fff;border-radius:8px;font-weight:700;cursor:pointer">Cancelar</button>
+            <button onclick="confirmarYGuardar()" style="flex:2;padding:10px;background:${esCorreccion ? '#f43f5e' : '#10b981'};color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">
+                ${esCorreccion ? 'Confirmar y Actualizar' : 'Confirmar y Guardar'}
+            </button>
+          </div>
+        </div>
+      </div>`;
+
+      const div = document.createElement('div');
+      div.id = 'modal-container';
+      div.innerHTML = modalHtml;
+      document.body.appendChild(div);
+    }
+
+    function cerrarModal() {
+      const m = document.getElementById('modal-container');
+      if (m) m.remove();
+    }
+
+    async function confirmarYGuardar() {
+      if (!bloqueAbierto) return;
+      const { bloque, fecha } = bloqueAbierto;
+      const asig = DB.asigs.find(a => a.id === bloque.asignatura_id);
+      const grado = asig?.grado || '';
+      
+      cerrarModal();
+      await registrarBloque(bloque.asignatura_id, fecha, grado, bloque.bloque_nombre);
+    }
+
+    async function registrarBloque(asigId, fecha, grado, bloqueNombre) {
+      if (!bloqueNombre) {
+        alert("Atención: El nombre del bloque no se detectó. Por favor, recarga la página.");
+        return;
+      }
+      const pend = pendienteAsist[asigId] || {};
+      const count = Object.keys(pend).length;
+      if (!count) {
+        badge('wait', 'Sin cambios pendientes');
+        setTimeout(() => badge('ok', 'Listo ✓'), 2000); return;
+      }
+      badge('wait', `Guardando ${count} registros en Bloque ${bloqueNombre}...`);
+
+      const { data: exist, error: errExist } = await sb.from('asistencia').select('id,estudiante_id')
+        .eq('asignatura_id', Number(asigId)).eq('fecha', fecha).eq('bloque_nombre', String(bloqueNombre));
+      
+      if (errExist) {
+        alert("Error al consultar registros existentes: " + errExist.message);
+        badge('no', 'Error'); return;
+      }
+      const exMap = {};
+      (exist || []).forEach(r => { exMap[r.estudiante_id] = r.id; });
+
+      let errores = 0;
+      for (const [estId, estado] of Object.entries(pend)) {
+        const eId = parseInt(estId);
+        let error;
+        // console.log(`Guardando: Est=${eId}, Asig=${asigId}, Blq=${bloqueNombre}, Estado=${estado}`);
+        if (exMap[eId]) {
+          ({ error } = await sb.from('asistencia').update({ estado }).eq('id', exMap[eId]));
+        } else {
+          ({ error } = await sb.from('asistencia').insert({
+            estudiante_id: eId, asignatura_id: Number(asigId),
+            fecha, estado, periodo, bloque_nombre: String(bloqueNombre)
+          }));
+        }
+        if (error) { 
+          console.error('Error Supabase:', error); 
+          alert("Error al guardar: " + (error.message || JSON.stringify(error)));
+          errores++; 
+        }
+      }
+
+      delete pendienteAsist[asigId];
+      if (errores) { badge('no', `${errores} error(es)`); return; }
+      badge('ok', '✅ Asistencia registrada');
+      await renderHorarioDia(fecha); // recarga para mostrar ✓ en mini-bloque
+    }
+    // ════════════════════════════════════════════════════════
+    // TAB RESUMEN
+    // ════════════════════════════════════════════════════════
+    async function selRes(g) {
+      gRes = g;
+      badge('wait', 'Cargando resumen…');
+
+      const asigs = DB.asigs.filter(a => a.grado === g);
+      const ests = DB.ests.filter(e => e.grado === g);
+      const asigIds = asigs.map(a => a.id);
+      const estIds = ests.map(e => e.id);
+      const actIds = DB.acts.filter(a => asigIds.includes(a.asignatura_id)).map(a => a.id);
+
+      const [rn, ra, rh] = await Promise.all([
+        actIds.length
+          ? sb.from('notas').select('*').in('actividad_id', actIds)
+          : Promise.resolve({ data: [] }),
+        sb.from('asistencia').select('*').eq('periodo', periodo).in('asignatura_id', asigIds),
+        sb.from('asistencia_historica').select('*')
+          .eq('periodo', periodo).eq('año', anio)
+          .in('estudiante_id', estIds).in('asignatura_id', asigIds)
+      ]);
+      if (rh.error) {
+        console.warn('Error en asistencia_historica, probando asistencia_historial...', rh.error);
+        const rh2 = await sb.from('asistencia_historial').select('*')
+          .eq('periodo', periodo).eq('año', anio)
+          .in('estudiante_id', estIds).in('asignatura_id', asigIds);
+        if (!rh2.error) rh.data = rh2.data;
+      }
+
+      const notas = rn.data || [];
+      const asist = ra.data || [];
+      const historial = rh.data || [];
+
+      // Índices
+      const notasEst = {}, asistEst = {};
+      notas.forEach(n => { (notasEst[n.estudiante_id] = notasEst[n.estudiante_id] || []).push(n); });
+      asist.forEach(a => { (asistEst[a.estudiante_id] = asistEst[a.estudiante_id] || []).push(a); });
+
+      // Índice de faltas históricas: histMap[estId][asigId] = faltas
+      const histMap = {};
+      (rh.data || []).forEach(h => {
+        if (!histMap[h.estudiante_id]) histMap[h.estudiante_id] = {};
+        histMap[h.estudiante_id][h.asignatura_id] = h.faltas;
+      });
+
+      let html = `<div class="card card-res">
+    <h3>Resumen grupo ${g}</h3>
+    <div class="overflow-x"><table><thead><tr>
+      <th style="text-align:left;min-width:150px">Estudiante</th>
+      ${asigs.map(a => `<th title="${a.nombre}">${a.codigo}</th>`).join('')}
+    </tr></thead><tbody>`;
+
+      ests.forEach(est => {
+        const mis_n = notasEst[est.id] || [];
+        const mis_a = asistEst[est.id] || [];
+        const defs = [];
+        html += `<tr><td style="font-size:12px">${est.nombre_completo}</td>`;
+
+        asigs.forEach(asig => {
+          const actsA = DB.acts.filter(a => a.asignatura_id === asig.id);
+          const v70 = actsA.filter(a => a.porcentaje === 1).map(a => {
+            const n = mis_n.find(n => n.actividad_id === a.id); return n ? Number(n.valor) : null;
+          });
+          const v30 = actsA.filter(a => a.porcentaje === 0).map(a => {
+            const n = mis_n.find(n => n.actividad_id === a.id); return n ? Number(n.valor) : null;
+          });
+          const d = defin(v70, v30);
+          defs.push(d);
+
+          // Faltas de esta asignatura específica
+          const aid = asig.id, eid = est.id;
+          const fNuevas = mis_a.filter(a => a.asignatura_id == aid && a.estado === 'No asistió').length;
+          const fHist = (histMap[eid] || {})[aid] || (histMap[eid] || {})[String(aid)] || 0;
+          const fTotal = fNuevas + fHist;
+
+          html += `<td>
+            <span class="ds ${dsClass(d)}" style="font-size:10px;padding:2px 7px">${dsLabel(d)}</span>
+            <div style="font-size:9px;color:${fTotal > 3 ? '#dc2626' : '#6b7280'};margin-top:2px">F: ${fTotal}</div>
+          </td>`;
+        });
+
+        html += `</tr>`;
+      });
+
+      html += `</tbody></table></div></div>`;
+      document.getElementById('p-res').innerHTML = html;
+      badge('ok', 'Listo ✓');
+    }
+
+    // ════════════════════════════════════════════════════════
+    // TAB INGRESO
+    // ════════════════════════════════════════════════════════
+    function ingCargarEst() {
+      const g = document.getElementById('ing-grado').value;
+      document.getElementById('ing-est').innerHTML =
+        '<option value="">Selecciona estudiante…</option>' +
+        DB.ests.filter(e => e.grado === g)
+          .map(e => `<option value="${e.id}">${e.nombre_completo}</option>`).join('');
+      document.getElementById('ing-act').innerHTML = '<option value="">Selecciona estudiante primero…</option>';
+    }
+
+    function ingCargarAct() {
+      // FIX: parseInt para comparar id (int8) con value (string)
+      const estId = parseInt(document.getElementById('ing-est').value);
+      const est = DB.ests.find(e => e.id === estId);
+      if (!est) return;
+      const asigIds = DB.asigs.filter(a => a.grado === est.grado).map(a => a.id);
+      const acts = DB.acts.filter(a => asigIds.includes(a.asignatura_id));
+      document.getElementById('ing-act').innerHTML =
+        '<option value="">Selecciona actividad…</option>' +
+        acts.map(a => {
+          const asig = DB.asigs.find(x => x.id === a.asignatura_id);
+          const tipo = a.porcentaje === 1 ? '70%' : '30%';
+          return `<option value="${a.id}">${asig?.codigo || ''} – ${a.nombre} (${tipo})</option>`;
+        }).join('');
+    }
+
+    async function guardarNota() {
+      const estId = parseInt(document.getElementById('ing-est').value);
+      const actId = parseInt(document.getElementById('ing-act').value);
+      const valor = parseFloat(document.getElementById('ing-nota').value);
+      const msg = document.getElementById('ing-msg');
+
+      if (!estId || !actId || isNaN(valor) || valor < 0 || valor > 10) {
+        msg.style.color = '#dc2626';
+        msg.textContent = '⚠️ Datos incompletos o nota fuera de rango (0–10)';
+        return;
+      }
+      badge('wait', 'Guardando…');
+      const act = DB.acts.find(a => a.id === actId);
+
+      const { data: existente } = await sb.from('notas').select('id')
+        .eq('estudiante_id', estId).eq('actividad_id', actId).maybeSingle();
+
+      let error;
+      if (existente) {
+        ({ error } = await sb.from('notas').update({ valor }).eq('id', existente.id));
+      } else {
+        ({ error } = await sb.from('notas').insert({
+          estudiante_id: estId, actividad_id: actId,
+          asignatura_id: act?.asignatura_id,
+          valor, periodo, año: anio
+        }));
+      }
+
+      if (error) {
+        msg.style.color = '#dc2626';
+        msg.textContent = '❌ Error: ' + error.message;
+        badge('no', 'Error');
+      } else {
+        msg.style.color = '#059669';
+        msg.textContent = existente ? '✅ Nota actualizada' : '✅ Nota guardada';
+        document.getElementById('ing-nota').value = '';
+        badge('ok', 'Guardado ✓');
+        setTimeout(() => { msg.textContent = ''; }, 3000);
+      }
+    }
+
+    // ════════════════════════════════════════════════════════
+    // TAB ACTIVIDADES
+    // ════════════════════════════════════════════════════════
+    function renderIconos() {
+      document.getElementById('icons-act').innerHTML = DB.asigs.map(a =>
+        `<div class="icon-item" data-id="${a.id}"
+      onclick="this.classList.toggle('selected')">
+      📚<span>${a.codigo}</span><span style="font-size:10px;color:#6b7280">${a.grado}</span>
+    </div>`
+      ).join('');
+    }
+
+    async function crearActividadesMulti() {
+      const nombre = document.getElementById('act-nom').value.trim();
+      const porcentaje = parseInt(document.getElementById('act-por').value);
+      const msg = document.getElementById('act-msg');
+      msg.textContent = '';
+
+      if (!nombre) {
+        msg.style.color = '#dc2626';
+        msg.textContent = '⚠️ Escribe el nombre de la actividad';
+        return;
+      }
+
+      // FIX: asignaturas seleccionadas (ícono con clase .selected)
+      const selIds = [...document.querySelectorAll('#icons-act .icon-item.selected')]
+        .map(el => parseInt(el.dataset.id));
+
+      if (!selIds.length) {
+        msg.style.color = '#dc2626';
+        msg.textContent = '⚠️ Selecciona al menos una asignatura (toca su ícono)';
+        return;
+      }
+
+      badge('wait', 'Creando…');
+      // Construir una fila por asignatura seleccionada
+      const rows = selIds.map(asigId => {
+        const asig = DB.asigs.find(a => a.id === asigId);
+        return {
+          nombre: `${asig?.codigo || ''} ${nombre}`.trim(),
+          asignatura_id: asigId,
+          periodo,
+          porcentaje
+        };
+      });
+
+      const { error } = await sb.from('actividades').insert(rows);
+      if (error) {
+        msg.style.color = '#dc2626';
+        msg.textContent = '❌ Error: ' + error.message;
+        badge('no', 'Error'); return;
+      }
+
+      // Recargar actividades en memoria
+      const { data } = await sb.from('actividades').select('*').eq('periodo', periodo);
+      DB.acts = data || [];
+
+      // Limpiar selección
+      document.querySelectorAll('#icons-act .icon-item.selected')
+        .forEach(el => el.classList.remove('selected'));
+      document.getElementById('act-nom').value = '';
+
+      msg.style.color = '#059669';
+      msg.textContent = `✅ Actividad "${nombre}" creada en ${rows.length} asignatura(s)`;
+      badge('ok', 'Listo ✓');
+      setTimeout(() => { msg.textContent = ''; }, 4000);
+    }
+
+    // ════════════════════════════════════════════════════════
+    // TAB INFORME
+    // ════════════════════════════════════════════════════════
+    function infCargarEst() {
+      const g = document.getElementById('inf-grado').value;
+      document.getElementById('inf-est').innerHTML =
+        '<option value="">Selecciona estudiante…</option>' +
+        DB.ests.filter(e => e.grado === g)
+          .map(e => `<option value="${e.id}">${e.nombre_completo}</option>`).join('');
+    }
+
+    // ════════════════════════════════════════════════════════
+    // TAB INFORME - SIN RESULTADO GENERAL + SOLO DESEMPEÑO (SIN NÚMERO)
+    // ════════════════════════════════════════════════════════
+    async function generarInforme() {
+      const estId = parseInt(document.getElementById('inf-est').value);
+      const grado = document.getElementById('inf-grado').value;
+
+      if (!estId) {
+        alert('Selecciona un estudiante');
+        return;
+      }
+
+      badge('wait', 'Generando informe…');
+
+      const est = DB.ests.find(e => e.id === estId);
+      const asigs = DB.asigs.filter(a => a.grado === grado);
+      const asigIds = asigs.map(a => a.id);
+      const actIds = DB.acts.filter(a => asigIds.includes(a.asignatura_id)).map(a => a.id);
+
+      const [rn, ra, rh] = await Promise.all([
+        actIds.length
+          ? sb.from('notas').select('*').eq('estudiante_id', estId).in('actividad_id', actIds)
+          : Promise.resolve({ data: [] }),
+        sb.from('asistencia').select('*').eq('estudiante_id', estId).eq('periodo', periodo),
+        sb.from('asistencia_historica').select('*')
+          .eq('estudiante_id', estId).eq('periodo', periodo).eq('año', anio)
+      ]);
+
+      if (rh.error) {
+        console.warn('Reintentando asistencia_historial en informe...');
+        const rh2 = await sb.from('asistencia_historial').select('*')
+          .eq('estudiante_id', estId).eq('periodo', periodo).eq('año', anio);
+        if (!rh2.error) rh.data = rh2.data;
+      }
+
+      const notas = rn.data || [];
+      const asist = ra.data || [];
+      // histMap[asigId] = faltas previas
+      const histMap = {};
+      (rh.data || []).forEach(h => { histMap[h.asignatura_id] = h.faltas; });
+
+      let html = `<div style="max-width:1200px;margin:0 auto">
+
+    <div class="card card-inf" style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:28px">📋</span>
+          <h2 style="font-size:20px;font-weight:700;color:#0891b2;margin:0">Informe Individual de Desempeño</h2>
+        </div>
+        ${LOGO_URL ? `<img src="${LOGO_URL}" alt="Logo" style="height:64px;border-radius:10px;object-fit:contain">` : ""}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px">
+        <div style="border:2px solid #e5e7eb;border-radius:10px;padding:10px 12px;text-align:center">
+          <div style="font-size:10px;font-weight:700;color:#0891b2">GRUPO</div>
+          <div style="font-size:15px;font-weight:600">${grado}</div>
+        </div>
+        <div style="border:2px solid #e5e7eb;border-radius:10px;padding:10px 14px;min-width:0">
+          <div style="font-size:10px;font-weight:700;color:#0891b2">ESTUDIANTE</div>
+          <div style="font-size:16px;font-weight:600;word-break:break-word">${est.nombre_completo}</div>
+        </div>
+        <div style="border:2px solid #e5e7eb;border-radius:10px;padding:10px 12px;text-align:center">
+          <div style="font-size:10px;font-weight:700;color:#0891b2">AÑO</div>
+          <div style="font-size:15px;font-weight:600">${anio}</div>
+        </div>
+        <div style="border:2px solid #e5e7eb;border-radius:10px;padding:10px 12px;text-align:center">
+          <div style="font-size:10px;font-weight:700;color:#0891b2">PERIODO</div>
+          <div style="font-size:15px;font-weight:600">${periodo}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-inf">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <span style="font-size:22px">📊</span>
+        <h3 style="font-size:18px;font-weight:700;color:#1c1c1a;margin:0">Desempeño por Asignatura</h3>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px">`;
+
+      asigs.forEach(asig => {
+        const actsAsig = DB.acts.filter(a => a.asignatura_id === asig.id);
+
+        const v70 = actsAsig.filter(a => a.porcentaje === 1).map(a => {
+          const n = notas.find(n => n.actividad_id === a.id);
+          return n ? Number(n.valor) : null;
+        });
+        const v30 = actsAsig.filter(a => a.porcentaje === 0).map(a => {
+          const n = notas.find(n => n.actividad_id === a.id);
+          return n ? Number(n.valor) : null;
+        });
+
+        const def = defin(v70, v30);
+        const aid = asig.id;
+        const fallasNuevas = asist.filter(a => a.asignatura_id == aid && String(a.estado).trim() === 'No asistió').length;
+        const fallasHist = Number(histMap[aid] || histMap[String(aid)] || 0);
+        const fallas = fallasNuevas + fallasHist;
+
+        html += `<div style="border:2px solid #e5e7eb;border-radius:12px;overflow:hidden">
+      <div style="background:#f8fafc;padding:16px;text-align:center;border-bottom:2px solid #e5e7eb">
+        <div style="font-size:15px;font-weight:700;color:#0891b2">${asig.nombre}</div>
+        <div style="font-size:12px;color:#6b7280">${asig.codigo}</div>
+      </div>
+      <div style="padding:16px">`;
+
+        if (actsAsig.length === 0) {
+          html += `<p style="text-align:center;color:#9ca3af;padding:20px">Sin actividades</p>`;
+        } else {
+          actsAsig.forEach((a, i) => {
+            const n = notas.find(n => n.actividad_id === a.id);
+            const val = n ? Number(n.valor) : null;
+            html += `<div style="padding:10px 0;border-bottom:${i < actsAsig.length - 1 ? '1px solid #f1f5f9' : 'none'}">
+          <div style="font-size:13px;color:#374151;text-align:center">${a.nombre}</div>
+          <div style="text-align:center;margin-top:6px">
+            <span class="ds ${dsClass(val)}" style="font-size:12.5px;padding:5px 14px">
+              ${dsLabel(val)}
+            </span>
+          </div>
+        </div>`;
+          });
+
+          html += `<div style="margin-top:16px;padding-top:12px;border-top:2px solid #e5e7eb;text-align:center">
+        <div style="font-size:11px;color:#6b7280;font-weight:700">DEFINITIVA DE LA ASIGNATURA</div>
+        <span class="ds ${dsClass(def)}" style="font-size:16px;padding:10px 24px;display:inline-block;margin-top:8px">
+          ${dsLabel(def)}
+        </span>
+        <div style="margin-top:10px;font-size:13px;color:${fallas > 5 ? '#dc2626' : '#6b7280'}">
+          ${fallas} falla${fallas !== 1 ? 's' : ''}
+        </div>
+      </div>`;
+        }
+
+        html += `</div></div>`;
+      });
+
+      html += `</div></div></div>`;
+
+      document.getElementById('p-inf').innerHTML = html;
+      badge('ok', 'Informe generado ✓');
+    }
+    // ════════════════════════════════════════════════════════
+    // ARRANQUE — verificar sesión existente
+    // ════════════════════════════════════════════════════════
+    function aplicarBranding() {
+      if (FONDO_URL) document.body.style.backgroundImage = `url("${FONDO_URL}")`;
+      ['login-logo','header-logo'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && LOGO_URL) { el.src = LOGO_URL; el.style.display = 'inline-block'; }
+      });
+      const emoji = document.getElementById('login-emoji');
+      if (emoji && LOGO_URL) emoji.style.display = 'none';
+    }
+
+    (async () => {
+      aplicarBranding();
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        mostrarApp(session.user.email);
+        await init();
+      }
+    })();
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
+</body>
+
+</html>
