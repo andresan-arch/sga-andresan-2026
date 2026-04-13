@@ -36,10 +36,31 @@
     header {
       background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
       color: white;
-      padding: 2rem 1rem;
+      padding: 0;
       text-align: center;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .header-banner {
+      width: 100%;
+      background: white;
+      padding: 20px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-bottom: 4px solid var(--primary);
+    }
+    .header-logo {
+      height: 80px;
+      width: auto;
+    }
+    .header-sub {
+      background: var(--primary);
+      color: white;
+      padding: 10px 0;
+      font-size: 0.9rem;
+      font-weight: 600;
     }
 
     .container {
@@ -316,14 +337,16 @@
   </div>
 
   <header>
-    <div class="container" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 1rem;">
-      <div style="text-align: left;">
-        <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -1px;">Evaluándonos</h1>
-        <p style="opacity: 0.9; font-weight: 300;">Estadísticas SGA AndréSán</p>
-      </div>
-      <div id="user-info" style="font-size: 0.85rem; display: none; text-align: right; background: rgba(255,255,255,0.1); padding: 10px 15px; border-radius: 15px; backdrop-filter: blur(5px);">
-        <span id="user-email" style="font-weight: 600;"></span><br>
-        <button onclick="logout()" style="background: none; border: none; color: white; text-decoration: underline; cursor: pointer; padding: 0; font-size: 0.75rem;">Cerrar Sesión</button>
+    <div class="header-banner">
+      <img src="https://pmfrdrihzdhhjxokabjm.supabase.co/storage/v1/object/public/assets/logo%20vectorizado.png" class="header-logo" alt="SGA AndréSán">
+    </div>
+    <div class="header-sub">
+      <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+        <span>Evaluándonos: Análisis Estadístico</span>
+        <div id="user-info" style="font-size: 0.8rem; display: none;">
+          <span id="user-email" style="margin-right: 15px;"></span>
+          <button onclick="logout()" style="background: white; color: var(--primary); border: none; padding: 4px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.7rem;">Cerrar Sesión</button>
+        </div>
       </div>
     </div>
   </header>
