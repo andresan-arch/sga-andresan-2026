@@ -762,6 +762,13 @@
           const mapeoVisto = new Set();
           let periodoDetectado = 1;
 
+          // Helper para limpiar números con comas decimales
+          const parseNum = (val) => {
+            if (!val) return 0;
+            const clean = val.toString().replace(',', '.').replace(/[^-0-9.]/g, '');
+            return parseFloat(clean) || 0;
+          };
+
           // Detectar periodo desde la primera fila válida (Col B -> Quiz_Name)
           const firstRow = rows.find(r => r[1]);
           if (firstRow) {
@@ -783,12 +790,12 @@
                 quiz_name: row[1],
                 key: (row[3] || "").trim().toUpperCase(),
                 pregunta_num: parseInt(row[4]),
-                cant_correctas: parseInt(row[6] || 0),
-                porc_correctas: parseFloat(row[7] || 0),
-                resp_a_count: parseInt(row[9] || 0),
-                resp_b_count: parseInt(row[11] || 0),
-                resp_c_count: parseInt(row[13] || 0),
-                resp_d_count: parseInt(row[15] || 0),
+                cant_correctas: parseNum(row[6]),
+                porc_correctas: parseNum(row[7]),
+                resp_a_count: parseNum(row[9]),
+                resp_b_count: parseNum(row[11]),
+                resp_c_count: parseNum(row[13]),
+                resp_d_count: parseNum(row[15]),
                 periodo: periodoDetectado
               });
             }
