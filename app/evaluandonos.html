@@ -794,12 +794,13 @@
       const mapeoVisto = new Set();
       let periodoDetectado = 1;
 
-      const parseNum = (val) => {
+      // Helper para limpiar números sin redondear
+      const parseRawNum = (val) => {
         if (val === undefined || val === null || val === '') return 0;
         let s = val.toString().trim().replace('%','').replace(' ','');
         s = s.replace(',', '.');
         const n = parseFloat(s);
-        return isNaN(n) ? 0 : Math.round(n); // REDONDEO PARA EVITAR ERROR DE INTEGER
+        return isNaN(n) ? 0 : n;
       };
 
       // Detección de periodo
@@ -818,19 +819,38 @@
         if(row.length < 5) return; 
         
         if(row[0] && row[4]) {
+          // 1. Datos básicos de aciertos (Col G y H)
+          const nCorrect = parseRawNum(row[6]); // # Correct (ej: 55)
+          const pCorrect = parseRawNum(row[7]); // % Correct (ej: 77.46)
+          
+          // 2. REGLA DE TRES: Calcular Total de Alumnos
+          let totalEst = 0;
+          if (pCorrect > 0) {
+            totalEst = (nCorrect * 100) / pCorrect;
+          }
+
           let actualKey = (row[3] || "").toString().trim().toUpperCase();
           if (actualKey === "PRIMARY KEY") {
             actualKey = (row[5] || "").toString().trim().toUpperCase();
           }
 
+          // 3. Conversión de Porcentajes a Cantidades (Col J a Q)
           const rMap = {};
           const indicesLetras = [9, 11, 13, 15];
           const indicesValores = [10, 12, 14, 16];
           
           indicesLetras.forEach((idx, i) => {
             const letra = (row[idx] || "").toString().trim().toUpperCase();
-            const valor = parseNum(row[indicesValores[i]]);
-            if (letra) rMap[letra] = valor;
+            const perc = parseRawNum(row[indicesValores[i]]);
+            
+            // Calculamos la cantidad de alumnos para esta opción
+            let count = 0;
+            if (letra === actualKey) {
+              count = nCorrect;
+            } else {
+              count = Math.round((perc * totalEst) / 100);
+            }
+            if (letra) rMap[letra] = count;
           });
 
           resultadosData.push({
@@ -838,8 +858,8 @@
             quiz_name: row[1],
             key: actualKey,
             pregunta_num: parseInt(row[4]),
-            cant_correctas: parseNum(row[6]),
-            porc_correctas: parseNum(row[7]),
+            cant_correctas: Math.round(nCorrect),
+            porc_correctas: Math.round(pCorrect), 
             resp_a_count: rMap["A"] || 0,
             resp_b_count: rMap["B"] || 0,
             resp_c_count: rMap["C"] || 0,
