@@ -204,6 +204,54 @@
       display: none;
     }
 
+    /* Login Overlay */
+    #login-mask {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 2000;
+    }
+    .login-card {
+      background: white;
+      padding: 2.5rem;
+      border-radius: 24px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    }
+    .login-card h2 { color: var(--text); margin-bottom: 2rem; }
+    .login-card input {
+      width: 100%; padding: 12px; margin-bottom: 1rem;
+      border: 1px solid #e2e8f0; border-radius: 12px;
+    }
+    .login-card button {
+      width: 100%; padding: 12px; background: var(--primary);
+      color: white; border: none; border-radius: 12px;
+      font-weight: 700; cursor: pointer;
+    }
+
+    /* Period Selector */
+    .period-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 2rem;
+    }
+    .period-tab {
+      padding: 8px 20px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .period-tab.active {
+      background: white;
+      color: var(--primary);
+    }
+
     /* Admin Panel */
     .admin-trigger {
       position: fixed;
@@ -238,14 +286,37 @@
 <body>
   <div id="loading">✨ Cargando análisis...</div>
 
+  <div id="login-mask">
+    <div class="login-card">
+      <img src="https://andresan.com/wp-content/uploads/2024/02/Logo-Andresan-Vectorizado-Peque.png" style="width: 120px; margin-bottom: 1rem;">
+      <h2>Acceso Seguro</h2>
+      <input type="text" id="li-user" placeholder="Usuario">
+      <input type="password" id="li-pass" placeholder="Contraseña">
+      <div id="login-err" style="color: #ef4444; font-size: 0.8rem; margin-bottom: 1rem; display: none;"></div>
+      <button onclick="intentarLogin()" id="btn-login">Ingresar</button>
+    </div>
+  </div>
+
   <header>
-    <div class="container">
-      <h1>Evaluándonos: Estadísticas</h1>
-      <p>Resultados de Pruebas y Análisis por Pregunta</p>
+    <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+      <div style="text-align: left;">
+        <h1>Evaluándonos</h1>
+        <p>Análisis Estadístico SGA AndréSán</p>
+      </div>
+      <div id="user-info" style="font-size: 0.8rem; display: none; text-align: right;">
+        <span id="user-email"></span><br>
+        <button onclick="logout()" style="background: none; border: none; color: white; text-decoration: underline; cursor: pointer; padding: 0;">Cerrar Sesión</button>
+      </div>
     </div>
   </header>
 
   <main class="container">
+    <div class="period-tabs">
+      <div class="period-tab active" onclick="setPeriodo(1, this)">Evaluándonos 1</div>
+      <div class="period-tab" onclick="setPeriodo(2, this)">Evaluándonos 2</div>
+      <div class="period-tab" onclick="setPeriodo(3, this)">Evaluándonos 3</div>
+    </div>
+
     <!-- Selectores -->
     <div class="controls">
       <div class="control-group">
@@ -334,21 +405,89 @@
     const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
 
     let myChart = null;
-    let dataCache = { grados: [], mapeo: [], resultados: [] };
+    let currentPeriodo = 1;
+    let currentUser = null;
+    let currentRole = 'lector';
 
     const $ = id => document.getElementById(id);
 
+    async function checkSession() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session) {
+        loguearExitoso(session.user);
+      }
+    }
+
+    async function intentarLogin() {
+      const userVal = $('li-user').value.trim();
+      const pass = $('li-pass').value;
+      const btn = $('btn-login');
+      const err = $('login-err');
+      
+      if (!userVal || !pass) return alert("Completa los datos");
+      
+      const email = userVal.includes('@') ? userVal : `${userVal}@andresan.com`;
+      err.style.display = 'none';
+      btn.disabled = true; btn.innerText = "Verificando...";
+
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
+      
+      if (error) {
+        err.innerText = "Usuario o contraseña incorrectos";
+        err.style.display = 'block';
+      } else {
+        loguearExitoso(data.user);
+      }
+      btn.disabled = false; btn.innerText = "Ingresar";
+    }
+
+    async function loguearExitoso(user) {
+      currentUser = user;
+      $('login-mask').style.display = 'none';
+      $('user-info').style.display = 'block';
+      $('user-email').innerText = user.email;
+
+      // Obtener el ROL desde la tabla perfiles
+      const { data: p } = await supabaseClient.from('perfiles').select('rol').eq('id', user.id).maybeSingle();
+      if (p) {
+        currentRole = p.rol;
+        if (currentRole === 'admin') {
+          document.querySelector('.admin-trigger').style.display = 'block';
+        }
+      }
+      
+      init();
+    }
+
+    async function logout() {
+      await supabaseClient.auth.signOut();
+      location.reload();
+    }
+
+    function setPeriodo(p, btn) {
+      currentPeriodo = p;
+      document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      cargarGrados();
+    }
+
     async function init() {
+      cargarGrados();
+    }
+
+    async function cargarGrados() {
       showLoading(true);
       try {
-        // Cargar grados únicos disponibles en el mapeo
-        const { data, error } = await supabaseClient.from('eval_preguntas').select('grado');
+        const { data } = await supabaseClient.from('eval_preguntas').select('grado').eq('periodo', currentPeriodo);
         if (data) {
           const grados = [...new Set(data.map(i => i.grado))].sort();
           $('sel-grado').innerHTML = '<option value="">Seleccione grado...</option>' + 
             grados.map(g => `<option value="${g}">${g}° Grado</option>`).join('');
         }
       } catch (e) { console.error(e); }
+      $('sel-asig').innerHTML = '<option value="">Seleccione asignatura...</option>';
+      $('sel-pregunta').innerHTML = '<option value="">Seleccione pregunta...</option>';
+      $('resultado-container').style.display = 'none';
       showLoading(false);
     }
 
@@ -357,13 +496,15 @@
       if (!grado) return;
       
       showLoading(true);
-      const { data } = await supabaseClient.from('eval_preguntas').select('asignatura').eq('grado', grado);
+      const { data } = await supabaseClient.from('eval_preguntas')
+        .select('asignatura')
+        .eq('grado', grado)
+        .eq('periodo', currentPeriodo);
+      
       const asigs = [...new Set(data.map(i => i.asignatura))].sort();
       
       $('sel-asig').innerHTML = '<option value="">Seleccione asignatura...</option>' + 
         asigs.map(a => `<option value="${a}">${a}</option>`).join('');
-      $('sel-pregunta').innerHTML = '<option value="">Seleccione pregunta...</option>';
-      $('resultado-container').style.display = 'none';
       showLoading(false);
     }
 
@@ -377,6 +518,7 @@
         .select('pregunta_num')
         .eq('grado', grado)
         .eq('asignatura', asig)
+        .eq('periodo', currentPeriodo)
         .order('pregunta_num');
       
       $('sel-pregunta').innerHTML = '<option value="">Seleccione pregunta...</option>' + 
@@ -392,10 +534,9 @@
 
       showLoading(true);
       
-      // Obtener mapeo y resultados en paralelo
       const [mapRes, dataRes] = await Promise.all([
-        supabaseClient.from('eval_preguntas').select('*').eq('grado', grado).eq('asignatura', asig).eq('pregunta_num', num).maybeSingle(),
-        supabaseClient.from('eval_resultados').select('*').eq('grado', grado).eq('pregunta_num', num).maybeSingle()
+        supabaseClient.from('eval_preguntas').select('*').eq('grado', grado).eq('asignatura', asig).eq('pregunta_num', num).eq('periodo', currentPeriodo).maybeSingle(),
+        supabaseClient.from('eval_resultados').select('*').eq('grado', grado).eq('pregunta_num', num).eq('periodo', currentPeriodo).maybeSingle()
       ]);
 
       if (mapRes.data && dataRes.data) {
@@ -517,26 +658,38 @@
     async function procesarCSV() {
       const file = $('csv-file').files[0];
       if(!file) return alert("Selecciona un archivo CSV");
+      if(currentRole !== 'admin') return alert("No tienes permisos");
 
       updateStatus("Leyendo archivo...");
       Papa.parse(file, {
         encoding: "UTF-8",
         complete: async function(results) {
           const rows = results.data;
-          // Ignorar cabecera si existe
           if(rows[0][0] === "grado" || rows[0][0] === "Grado") rows.shift();
           
           updateStatus(`Analizando ${rows.length} filas...`);
           
           const resultadosData = [];
           const mapeoData = [];
-          const mapeoVisto = new Set(); // Para no duplicar preguntas
+          const mapeoVisto = new Set();
+          let periodoDetectado = 1;
+
+          // Detectar periodo desde la primera fila válida (Col B -> Quiz_Name)
+          const firstRow = rows.find(r => r[1]);
+          if (firstRow) {
+            const name = firstRow[1].toLowerCase();
+            if (name.includes('1p')) periodoDetectado = 1;
+            else if (name.includes('2p')) periodoDetectado = 2;
+            else if (name.includes('final')) periodoDetectado = 3;
+          }
+
+          const gradoDetectado = rows[0][0];
 
           rows.forEach((row, idx) => {
-            if(row.length < 5) return; // Fila vacía
+            if(row.length < 5) return; 
 
-            // 1. Datos de Resultados (A-Q -> 0-16)
-            if(row[0] && row[4]) { // Grado y Pregunta_Num
+            // 1. Resultados
+            if(row[0] && row[4]) {
               resultadosData.push({
                 grado: parseInt(row[0]),
                 quiz_name: row[1],
@@ -547,11 +700,12 @@
                 resp_a_count: parseInt(row[9] || 0),
                 resp_b_count: parseInt(row[11] || 0),
                 resp_c_count: parseInt(row[13] || 0),
-                resp_d_count: parseInt(row[15] || 0)
+                resp_d_count: parseInt(row[15] || 0),
+                periodo: periodoDetectado
               });
             }
 
-            // 2. Datos de Mapeo (S-Z -> 18-25)
+            // 2. Mapeo
             const mapGrado = row[18];
             const mapNum = row[19];
             if(mapGrado && mapNum) {
@@ -566,25 +720,26 @@
                   opcion_a: row[22],
                   opcion_b: row[23],
                   opcion_c: row[24],
-                  opcion_d: row[25]
+                  opcion_d: row[25],
+                  periodo: periodoDetectado
                 });
               }
             }
           });
 
           try {
-            updateStatus(`Subiendo ${resultadosData.length} resultados...`);
-            if(resultadosData.length) {
-              await supabaseClient.from('eval_resultados').insert(resultadosData);
-            }
+            updateStatus(`Limpiando datos viejos del Periodo ${periodoDetectado} para el Grupo ${gradoDetectado}...`);
+            await supabaseClient.from('eval_resultados').delete().eq('periodo', periodoDetectado).eq('grado', gradoDetectado);
+            await supabaseClient.from('eval_preguntas').delete().eq('periodo', periodoDetectado).eq('grado', gradoDetectado);
 
-            updateStatus(`Subiendo ${mapeoData.length} preguntas de mapeo...`);
-            if(mapeoData.length) {
-              await supabaseClient.from('eval_preguntas').insert(mapeoData);
-            }
+            updateStatus(`Subiendo ${resultadosData.length} resultados...`);
+            if(resultadosData.length) await supabaseClient.from('eval_resultados').insert(resultadosData);
+
+            updateStatus(`Subiendo ${mapeoData.length} mapeo...`);
+            if(mapeoData.length) await supabaseClient.from('eval_preguntas').insert(mapeoData);
 
             updateStatus("✅ ¡Importación Exitosa!");
-            alert("Los datos se han cargado correctamente. Recarga la página para ver los cambios.");
+            alert(`Se han cargado los datos para Evaluándonos ${periodoDetectado}.`);
             location.reload();
           } catch (err) {
             console.error(err);
@@ -594,7 +749,7 @@
       });
     }
 
-    init();
+    checkSession();
   </script>
 </body>
 
