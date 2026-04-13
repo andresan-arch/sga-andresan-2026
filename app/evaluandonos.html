@@ -785,11 +785,8 @@
 
     async function finalizarSubida() {
       if(!cachedRows) return;
-      const btn = $('btn-confirm-upload');
-      btn.disabled = true; btn.innerText = "Subiendo...";
-
+      
       const rows = [...cachedRows];
-      // Saltar cabecera
       if(rows[0][0].toString().toLowerCase().includes("grado")) rows.shift();
 
       const resultadosData = [];
@@ -799,12 +796,14 @@
 
       const parseNum = (val) => {
         if (val === undefined || val === null || val === '') return 0;
-        const s = val.toString().trim().replace('%','').replace(',','.');
+        // Limpieza extrema: solo dejar números, puntos, comas y signos menos
+        let s = val.toString().trim().replace('%','').replace(' ','');
+        s = s.replace(',', '.');
         const n = parseFloat(s);
         return isNaN(n) ? 0 : n;
       };
 
-      // Auto-detección de periodo (usando Col 1 -> Quiz_Name)
+      // Detección de periodo
       const testRow = rows.find(r => r[1] && r[1].length > 5);
       if (testRow) {
         const name = testRow[1].toLowerCase();
@@ -814,21 +813,18 @@
       }
 
       const gradoRef = parseInt(rows[0][0]);
+      if (isNaN(gradoRef)) return alert("Error: No se pudo detectar el Grado en la COL 0.");
 
       rows.forEach((row) => {
         if(row.length < 5) return; 
         
-        // --- LOGICA DE RESULTADOS (A:Q) ---
         if(row[0] && row[4]) {
-          // Detectar la respuesta correcta (Key)
           let actualKey = (row[3] || "").toString().trim().toUpperCase();
           if (actualKey === "PRIMARY KEY") {
             actualKey = (row[5] || "").toString().trim().toUpperCase();
           }
 
-          // Mapeo Dinámico de Respuestas (J:Q)
           const rMap = {};
-          // Pares: Letra en (J, L, N, P) y Valor en (K, M, O, Q)
           const indicesLetras = [9, 11, 13, 15];
           const indicesValores = [10, 12, 14, 16];
           
@@ -853,7 +849,6 @@
           });
         }
 
-        // --- LOGICA DE MAPEO (S:Z) ---
         const mG = row[18], mN = row[19];
         if(mG && mN) {
           const mk = `${mG}-${mN}`;
@@ -874,20 +869,37 @@
         }
       });
 
+      console.log("DATOS A SUBIR:", resultadosData);
+
+      const confirmar = confirm(`¿Confirmas la subida?\n- Grado: ${gradoRef}\n- Periodo Detectado: ${periodoDetectado}\n- Filas de Resultados: ${resultadosData.length}\n- Filas de Mapeo: ${mapeoData.length}`);
+      if(!confirmar) return;
+
+      const btn = $('btn-confirm-upload');
+      btn.disabled = true; btn.innerText = "Subiendo...";
+
       try {
-        updateStatus(`Limpiando Datos de P${periodoDetectado} / Grado ${gradoRef}...`);
+        updateStatus(`Paso 1: Limpiando base de datos...`);
         await supabaseClient.from('eval_resultados').delete().eq('periodo', periodoDetectado).eq('grado', gradoRef);
         await supabaseClient.from('eval_preguntas').delete().eq('periodo', periodoDetectado).eq('grado', gradoRef);
 
-        updateStatus(`Insertando ${resultadosData.length} resultados...`);
-        if(resultadosData.length) await supabaseClient.from('eval_resultados').insert(resultadosData);
-        if(mapeoData.length) await supabaseClient.from('eval_preguntas').insert(mapeoData);
+        updateStatus(`Paso 2: Insertando resultados...`);
+        if(resultadosData.length) {
+          const { error: err1 } = await supabaseClient.from('eval_resultados').insert(resultadosData);
+          if (err1) throw err1;
+        }
 
-        updateStatus("✅ ¡Importación Exitosa!");
-        alert(`¡Todo listo! Se cargaron los datos de Evaluándonos ${periodoDetectado}.`);
+        updateStatus(`Paso 3: Insertando mapeo de preguntas...`);
+        if(mapeoData.length) {
+          const { error: err2 } = await supabaseClient.from('eval_preguntas').insert(mapeoData);
+          if (err2) throw err2;
+        }
+
+        updateStatus("✅ ¡Importación EXITOSA!");
+        alert(`¡Carga completada con éxito para el Periodo ${periodoDetectado}!`);
         location.reload();
       } catch (e) {
-        console.error(e);
+        console.error("ERROR SUPABASE:", e);
+        alert("Hubo un error al subir: " + (e.message || "Error desconocido"));
         updateStatus("❌ Error al guardar datos.");
         btn.disabled = false; btn.innerText = "Reintentar Subida";
       }
