@@ -805,7 +805,7 @@
       <h1>Control AndréSán 2026</h1>
       <p>Ingresa tus credenciales para continuar</p>
       <div id="login-err" class="login-err"></div>
-      <input type="email" id="li-email" class="login-input" placeholder="Correo electrónico">
+      <input type="text" id="li-email" class="login-input" placeholder="Nombre de usuario">
       <input type="password" id="li-pass" class="login-input" placeholder="Contraseña"
         onkeydown="if(event.key==='Enter')login()">
       <button id="li-btn" class="login-btn" onclick="login()">Ingresar</button>
@@ -1003,12 +1003,16 @@
     // AUTH
     // ════════════════════════════════════════════════════════
     async function login() {
-      const email = document.getElementById('li-email').value.trim();
+      let userVal = document.getElementById('li-email').value.trim();
       const pass = document.getElementById('li-pass').value;
       const btn = document.getElementById('li-btn');
       const err = document.getElementById('login-err');
       err.style.display = 'none';
-      if (!email || !pass) { showErr('Completa todos los campos.'); return; }
+      if (!userVal || !pass) { showErr('Completa todos los campos.'); return; }
+      
+      // Convertir a formato correo si es solo un usuario
+      const email = userVal.includes('@') ? userVal : `${userVal}@andresan.com`;
+      
       btn.disabled = true; btn.textContent = 'Verificando…';
       const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
       if (error) {
