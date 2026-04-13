@@ -379,12 +379,12 @@
   <main class="container">
     <div class="period-container">
       <div class="period-tabs">
-        <div class="period-tab active" onclick="setPeriodo(1, this)">Evaluándonos 1</div>
-        <div class="period-tab" onclick="setPeriodo(2, this)">Evaluándonos 2</div>
-        <div class="period-tab" onclick="setPeriodo(3, this)">Evaluándonos 3</div>
+        <div id="tab-1" class="period-tab active" onclick="setPeriodo(1)">1° Periodo (1P)</div>
+        <div id="tab-2" class="period-tab" onclick="setPeriodo(2)">2° Periodo (2P)</div>
+        <div id="tab-3" class="period-tab" onclick="setPeriodo(3)">Examen Final</div>
       </div>
     </div>
-
+ biographical
     <!-- Selectores -->
     <div class="controls">
       <div class="control-group">
@@ -447,7 +447,7 @@
               <span id="stat-correctas" class="stat-val">0</span>
               <span class="stat-label">Aciertos</span>
             </div>
-            <div class="stat-box">
+            <div id="stat-p-box" class="stat-box">
               <span id="stat-porcentaje" class="stat-val">0%</span>
               <span class="stat-label">% Éxito</span>
             </div>
@@ -547,22 +547,34 @@
       document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
       btn.classList.add('active');
       cargarGrados();
+    function setPeriodo(p) {
+      currentPeriodo = p;
+      document.querySelectorAll('.period-tab').forEach((t, i) => {
+        t.classList.toggle('active', (i + 1) === p);
+      });
+      init();
     }
 
     async function init() {
-      cargarGrados();
+      await cargarGrados();
     }
 
     async function cargarGrados() {
       showLoading(true);
       try {
-        const { data } = await supabaseClient.from('eval_preguntas').select('grado').eq('periodo', currentPeriodo);
-        if (data) {
-          const grados = [...new Set(data.map(i => i.grado))].sort();
-          $('sel-grado').innerHTML = '<option value="">Seleccione grado...</option>' + 
-            grados.map(g => `<option value="${g}">${g}° Grado</option>`).join('');
-        }
-      } catch (e) { console.error(e); }
+        const { data, error } = await supabaseClient.from('eval_preguntas')
+          .select('grado')
+          .eq('periodo', currentPeriodo);
+        
+        if (error) throw error;
+        const distinct = [...new Set(data.map(i => i.grado))].sort((a,b) => a - b);
+        
+        $('sel-grado').innerHTML = '<option value="">Seleccione grado...</option>' + 
+          distinct.map(g => `<option value="${g}">${g}° Grado</option>`).join('');
+      } catch (e) {
+        console.error("Error grados:", e);
+      }
+      
       $('sel-asig').innerHTML = '<option value="">Seleccione asignatura...</option>';
       $('sel-pregunta').innerHTML = '<option value="">Seleccione pregunta...</option>';
       $('resultado-container').style.display = 'none';
@@ -626,51 +638,6 @@
       showLoading(false);
     }
 
-    function renderUI(pregunta, estadistica) {
-      $('resultado-container').style.display = 'block';
-      $('pregunta-display-num').innerText = `Pregunta #${pregunta.pregunta_num}`;
-      
-      // Renderizar Pregunta (Texto o Imagen)
-      renderMedia('pregunta-texto', 'pregunta-media', pregunta.texto_pregunta);
-
-      // Renderizar Opciones y Resaltar Correcta
-      const correctKey = estadistica.key.trim().toUpperCase();
-      ['a', 'b', 'c', 'd'].forEach(letter => {
-        const up = letter.toUpperCase();
-        const container = $(`opt-${letter}`);
-        const textElem = $(`txt-${letter}`);
-        
-        container.classList.toggle('correct', up === correctKey);
-        
-        const content = pregunta[`opcion_${letter}`];
-        if (content && content.startsWith('http')) {
-          textElem.innerHTML = `<img src="${content}" style="max-width:150px; display:block; margin:5px 0; border-radius:8px">`;
-        } else {
-          textElem.innerText = content || 'N/A';
-        }
-      });
-
-      // Estadísticas
-      $('stat-correctas').innerText = estadistica.cant_correctas;
-      $('stat-porcentaje').innerText = (estadistica.porc_correctas || 0).toFixed(1) + '%';
-
-      // Gráfica
-      renderChart(estadistica, correctKey);
-    }
-
-    function renderMedia(textId, mediaId, content) {
-      const textElem = $(textId);
-      const mediaElem = $(mediaId);
-      textElem.innerText = "";
-      mediaElem.innerHTML = "";
-      if (!content) return;
-      if (content.startsWith('http')) {
-        mediaElem.innerHTML = `<img src="${content}">`;
-      } else {
-        textElem.innerText = content;
-      }
-    }
-
     function renderUI(mapping, stats) {
       $('resultado-container').style.display = 'block';
       renderMedia('card-pregunta', 'media-pregunta', mapping.texto_pregunta);
@@ -685,7 +652,7 @@
         return `
           <div class="option-item ${isCorrect ? 'correct' : ''}">
             <div class="option-letter">${o}</div>
-            <div class="option-text" id="opt-text-${o}">${mapping[labels[i]]}</div>
+            <div class="option-text" id="opt-text-${o}">${mapping[labels[i]] || 'N/A'}</div>
             <div id="opt-media-${o}"></div>
           </div>
         `;
@@ -693,19 +660,33 @@
       
       $('options-list').innerHTML = optionsHtml;
       
-      // Render media for each option
-      opts.forEach(o => renderMedia(`opt-text-${o}`, `opt-media-${o}`, $(`opt-text-${o}`).innerText));
+      // Render media individualmente
+      opts.forEach(o => renderMedia(`opt-text-${o}`, `opt-media-${o}`, mapping[`opcion_${o.toLowerCase()}`]));
 
-      const total = stats.cant_correctas + stats.resp_a_count + stats.resp_b_count + stats.resp_c_count + stats.resp_d_count;
       $('stat-completado').innerText = stats.cant_correctas;
       $('stat-porcentaje').innerText = stats.porc_correctas + "%";
 
       updateChart(counts, key);
     }
 
+    function renderMedia(textId, mediaId, content) {
+      const textElem = $(textId);
+      const mediaElem = $(mediaId);
+      if(!textElem || !mediaElem) return;
+      
+      textElem.innerText = "";
+      mediaElem.innerHTML = "";
+      if (!content) return;
+      if (content.toString().startsWith('http')) {
+        mediaElem.innerHTML = `<img src="${content}" style="max-width:100%; border-radius:10px;">`;
+      } else {
+        textElem.innerText = content;
+      }
+    }
+
     function updateChart(counts, key) {
       if (myChart) myChart.destroy();
-      const ctx = $('chartCanvas').getContext('2d');
+      const ctx = $('barChart').getContext('2d');
       const labels = ['A', 'B', 'C', 'D'];
       const colors = labels.map(o => o === key ? '#10b981' : '#6366f1');
 
