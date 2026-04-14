@@ -600,6 +600,8 @@
           <p style="font-size:0.8rem; font-weight:700; margin-bottom:0.75rem; color:#4f46e5;">➕ Agregar usuario</p>
           <input type="email" id="nu-email" placeholder="email@andresan.com"
             style="width:100%; padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.85rem; margin-bottom:0.5rem;">
+          <input type="text" id="nu-nombre" placeholder="Nombre completo"
+            style="width:100%; padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.85rem; margin-bottom:0.5rem;">
           <input type="password" id="nu-pass" placeholder="Contraseña"
             style="width:100%; padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.85rem; margin-bottom:0.5rem;">
           <select id="nu-rol"
@@ -614,7 +616,7 @@
         <!-- Importación masiva CSV -->
         <div style="background:#f8fafc; border-radius:12px; padding:1rem;">
           <p style="font-size:0.8rem; font-weight:700; margin-bottom:0.5rem; color:#4f46e5;">📋 Importar desde CSV</p>
-          <p style="font-size:0.72rem; color:#64748b; margin-bottom:0.75rem;">Columnas requeridas: <code>email</code>, <code>password</code>, <code>rol</code></p>
+          <p style="font-size:0.72rem; color:#64748b; margin-bottom:0.75rem;">Columnas requeridas: <code>email</code>, <code>password</code>, <code>nombre</code>, <code>rol</code></p>
           <input type="file" id="users-csv" accept=".csv"
             style="font-size:0.75rem; padding:5px; border:1px dashed #cbd5e1; width:100%; margin-bottom:0.5rem;">
           <button onclick="importarUsuariosCSV()"
@@ -1043,11 +1045,12 @@
 
     async function crearUsuario() {
       const email = $('nu-email').value.trim();
+      const nombre = $('nu-nombre').value.trim();
       const pass = $('nu-pass').value;
       const rol = $('nu-rol').value;
       const status = $('users-status');
 
-      if (!email || !pass) return alert('Completa el email y la contraseña.');
+      if (!email || !pass || !nombre) return alert('Completa el nombre, email y la contraseña.');
 
       status.innerText = '⏳ Creando usuario...';
       try {
@@ -1060,11 +1063,12 @@
 
         // 2. Insertar en perfiles con el UUID del usuario
         const { error: pErr } = await supabaseClient.from('perfiles')
-          .upsert({ id: userId, email, rol }, { onConflict: 'email' });
+          .upsert({ id: userId, email, nombre, rol }, { onConflict: 'email' });
         if (pErr) throw pErr;
 
-        status.innerText = `✅ Usuario creado: ${email} (${rol})`;
+        status.innerText = `✅ Usuario creado: ${nombre} (${email}) — ${rol}`;
         $('nu-email').value = '';
+        $('nu-nombre').value = '';
         $('nu-pass').value = '';
       } catch (e) {
         status.innerText = `❌ Error: ${e.message}`;
@@ -1089,6 +1093,7 @@
           for (const row of rows) {
             const email = (row.email || '').trim();
             const pass  = (row.password || row.contraseña || '').trim();
+            const nombre = (row.nombre || '').trim();
             const rol   = (row.rol || 'lector').trim().toLowerCase();
 
             if (!email || !pass) { fail++; continue; }
@@ -1099,10 +1104,9 @@
               
               const userId = signData?.user?.id;
               if (userId) {
-                await supabaseClient.from('perfiles').upsert({ id: userId, email, rol }, { onConflict: 'email' });
+                await supabaseClient.from('perfiles').upsert({ id: userId, email, nombre, rol }, { onConflict: 'email' });
               } else {
-                // Usuario ya existente: actualizar solo el rol
-                await supabaseClient.from('perfiles').update({ rol }).eq('email', email);
+                await supabaseClient.from('perfiles').update({ nombre, rol }).eq('email', email);
               }
               ok++;
             } catch (e) { fail++; }
