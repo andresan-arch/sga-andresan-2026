@@ -356,31 +356,37 @@
     }
 
     /* Colores Específicos por Periodo */
-    #tab-1 {
-      color: #3b82f6;
+    #tab-1 { color: #3b82f6; }
+    #tab-1.active { background: #3b82f6; color: white; }
+    
+    #tab-2 { color: #10b981; }
+    #tab-2.active { background: #10b981; color: white; }
+    
+    #tab-3 { color: #8b5cf6; }
+    #tab-3.active { background: #8b5cf6; color: white; }
+
+    /* Botones de Asignatura */
+    .asig-btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding: 0.25rem 0;
     }
 
-    #tab-1.active {
-      background: #3b82f6;
-      color: white;
+    .asig-btn {
+      padding: 7px 16px;
+      border-radius: 100px;
+      border: 2px solid;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.82rem;
+      transition: all 0.25s;
+      background: transparent;
+      font-family: 'Outfit', sans-serif;
     }
 
-    #tab-2 {
-      color: #10b981;
-    }
-
-    #tab-2.active {
-      background: #10b981;
-      color: white;
-    }
-
-    #tab-3 {
-      color: #8b5cf6;
-    }
-
-    #tab-3.active {
-      background: #8b5cf6;
-      color: white;
+    .asig-btn.selected {
+      color: white !important;
     }
 
     /* Admin Panel */
@@ -429,8 +435,8 @@
 
   <div id="login-mask">
     <div class="login-card">
-      <img src="https://pmfrdrihzdhhjxokabjm.supabase.co/storage/v1/object/public/assets/logo%20solo%20copia.png"
-        style="height: 100px; width: auto; margin-bottom: 1rem; object-fit: contain;">
+      <img src="https://andresan.com/wp-content/uploads/2024/02/Logo-Andresan-Vectorizado-Peque.png"
+        style="width: 120px; margin-bottom: 1rem;">
       <h2>Acceso Seguro</h2>
       <input type="text" id="li-user" placeholder="Usuario">
       <input type="password" id="li-pass" placeholder="Contraseña">
@@ -440,7 +446,7 @@
   </div>
 
   <header>
-    <div class="header-banner" style="max-height:280px; overflow: hidden;">
+    <div class="header-banner" style="max-height:250px; overflow: hidden;">
       <img src="https://pmfrdrihzdhhjxokabjm.supabase.co/storage/v1/object/public/assets/evaluandonos.png"
         style="width: 100%; height: 100%; object-fit: cover; display: block;" alt="Evaluándonos Banner">
     </div>
@@ -475,11 +481,10 @@
           <option value="">Seleccione grado...</option>
         </select>
       </div>
-      <div class="control-group">
+      <div class="control-group" style="flex: 0 0 auto;">
         <label>Asignatura</label>
-        <select id="sel-asig" onchange="cargarPreguntas()">
-          <option value="">Seleccione asignatura...</option>
-        </select>
+        <div id="sel-asig-btns" class="asig-btns"></div>
+        <input type="hidden" id="sel-asig" value="">
       </div>
       <div class="control-group">
         <label>Pregunta</label>
@@ -679,7 +684,10 @@
         console.error("Error grados:", e);
       }
 
-      $('sel-asig').innerHTML = '<option value="">Seleccione examen...</option>';
+      const asigBtns = $('sel-asig-btns');
+      if (asigBtns) asigBtns.innerHTML = '<span style="color:#94a3b8; font-size:0.8rem;">Seleccione grado primero...</span>';
+      const asigHidden = $('sel-asig');
+      if(asigHidden) asigHidden.value = '';
       $('sel-pregunta').innerHTML = '<option value="">Seleccione pregunta...</option>';
       $('resultado-container').style.display = 'none';
       showLoading(false);
@@ -689,40 +697,66 @@
       const grado = $('sel-grado').value;
       if (!grado) return;
 
+      const COLORES = ['#6366f1','#10b981','#f59e0b','#ef4444','#3b82f6','#8b5cf6','#ec4899','#14b8a6','#f97316','#06b6d4'];
+
       showLoading(true);
       try {
-        // Intento 1: Buscar Asignaturas (Materias) en el Mapeo
-        const { data: mapData, error: mapErr } = await supabaseClient.from('eval_preguntas')
+        const { data: mapData } = await supabaseClient.from('eval_preguntas')
           .select('asignatura')
           .eq('grado', grado)
           .eq('periodo', currentPeriodo);
 
-        let options = [];
-        let label = "asignatura";
+        const container = $('sel-asig-btns');
+        const hidden = $('sel-asig');
+        hidden.value = '';
+        $('sel-pregunta').innerHTML = '<option value="">Seleccione pregunta...</option>';
+
+        let items = [];
+        let prefix = 'MAPPING';
 
         if (mapData && mapData.length > 0) {
-          const asignaturas = [...new Set(mapData.map(i => i.asignatura))].sort((a, b) => a.localeCompare(b, "es"));
-          options = asignaturas.map(a => `<option value="MAPPING:${a}">${a}</option>`);
+          items = [...new Set(mapData.map(i => i.asignatura))].sort((a, b) => a.localeCompare(b, 'es'));
         } else {
-          // Intento 2: Fallback a Nombre del Examen si no hay mapeo
           const { data: resData } = await supabaseClient.from('eval_resultados')
-            .select('quiz_name')
-            .eq('grado', grado)
-            .eq('periodo', currentPeriodo);
-
+            .select('quiz_name').eq('grado', grado).eq('periodo', currentPeriodo);
           if (resData && resData.length > 0) {
-            const examenes = [...new Set(resData.map(i => i.quiz_name))].sort((a, b) => a.localeCompare(b, "es"));
-            options = examenes.map(e => `<option value="QUIZ:${e}">${e}</option>`);
-            label = "examen";
+            items = [...new Set(resData.map(i => i.quiz_name))].sort((a, b) => a.localeCompare(b, 'es'));
+            prefix = 'QUIZ';
           }
         }
 
-        $('sel-asig').innerHTML = `<option value="">Seleccione ${label}...</option>` + options.join('');
+        if (items.length === 0) {
+          container.innerHTML = '<span style="color:#ef4444; font-size:0.8rem;">Sin asignaturas para este grado/periodo</span>';
+          return;
+        }
+
+        container.innerHTML = items.map((item, i) => {
+          const color = COLORES[i % COLORES.length];
+          return `<button class="asig-btn" 
+            data-value="${prefix}:${item}" 
+            style="color:${color}; border-color:${color};" 
+            onclick="seleccionarAsignatura(this, '${color}')">${item}</button>`;
+        }).join('');
+
       } catch (e) {
-        console.error("Error Asignaturas:", e);
+        console.error('Error Asignaturas:', e);
       } finally {
         showLoading(false);
       }
+    }
+
+    function seleccionarAsignatura(btn, color) {
+      // Deselect all
+      document.querySelectorAll('.asig-btn').forEach(b => {
+        b.classList.remove('selected');
+        b.style.background = 'transparent';
+      });
+      // Select clicked
+      btn.classList.add('selected');
+      btn.style.background = color;
+      // Set hidden value and trigger questions
+      $('sel-asig').value = btn.dataset.value;
+      cargarPreguntas();
     }
 
     async function cargarPreguntas() {
