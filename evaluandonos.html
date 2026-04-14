@@ -975,10 +975,13 @@
 
           // 3. Conversión de Porcentajes a Cantidades (Col J a Q)
           const rMap = {};
-          const letras = ['A', 'B', 'C', 'D'];
-          const indicesValores = [9, 10, 11, 12]; // Columnas J, K, L, M de Zipgrade
+          const indicesLetras = [9, 11, 13, 15, 17]; // Dejamos espacio hasta E por si acaso
+          const indicesValores = [10, 12, 14, 16, 18];
 
-          letras.forEach((letra, i) => {
+          indicesLetras.forEach((idx, i) => {
+            const letra = (row[idx] || "").toString().trim().toUpperCase();
+            if (!letra) return;
+            
             const perc = parseRawNum(row[indicesValores[i]]);
 
             // Calculamos la cantidad de alumnos para esta opción
