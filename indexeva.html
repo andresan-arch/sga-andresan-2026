@@ -611,18 +611,6 @@
     }
 
     async function init() {
-      // Auto-detección: cambiar al primer periodo que tenga datos reales para evitar que los filtros nazcan vacíos
-      try {
-        const { data } = await supabaseClient.from('eval_resultados').select('periodo').limit(1);
-        if (data && data.length > 0 && data[0].periodo) {
-          const defaultP = data[0].periodo;
-          if (currentPeriodo !== defaultP) {
-            setPeriodo(defaultP); // Esto llama a init() de nuevo, pero con el periodo correcto
-            return;
-          }
-        }
-      } catch(e) {}
-
       await cargarGrados();
     }
 
@@ -654,97 +642,51 @@
       if (!grado) return;
 
       showLoading(true);
-      try {
-        // Intento 1: Buscar Asignaturas (Materias) en el Mapeo
-        const { data: mapData, error: mapErr } = await supabaseClient.from('eval_preguntas')
-          .select('asignatura')
-          .eq('grado', grado)
-          .eq('periodo', currentPeriodo);
-          
-        let options = [];
-        let label = "asignatura";
-        
-        if (mapData && mapData.length > 0) {
-          const asignaturas = [...new Set(mapData.map(i => i.asignatura))].sort();
-          options = asignaturas.map(a => `<option value="MAPPING:${a}">${a}</option>`);
-        } else {
-          // Intento 2: Fallback a Nombre del Examen si no hay mapeo
-          const { data: resData } = await supabaseClient.from('eval_resultados')
-            .select('quiz_name')
-            .eq('grado', grado)
-            .eq('periodo', currentPeriodo);
-            
-          if (resData && resData.length > 0) {
-            const examenes = [...new Set(resData.map(i => i.quiz_name))].sort();
-            options = examenes.map(e => `<option value="QUIZ:${e}">${e}</option>`);
-            label = "examen";
-          }
-        }
+      const { data } = await supabaseClient.from('eval_resultados')
+        .select('quiz_name')
+        .eq('grado', grado)
+        .eq('periodo', currentPeriodo);
 
-        $('sel-asig').innerHTML = `<option value="">Seleccione ${label}...</option>` + options.join('');
-      } catch (e) {
-        console.error("Error Asignaturas:", e);
-      } finally {
-        showLoading(false);
-      }
+      const examenes = [...new Set(data.map(i => i.quiz_name))].sort();
+
+      $('sel-asig').innerHTML = '<option value="">Seleccione examen...</option>' +
+        examenes.map(e => `<option value="${e}">${e}</option>`).join('');
+      showLoading(false);
     }
 
     async function cargarPreguntas() {
       const grado = $('sel-grado').value;
-      const asigVal = $('sel-asig').value;
-      if (!grado || !asigVal) return;
+      const quiz = $('sel-asig').value;
+      if (!grado || !quiz) return;
 
       showLoading(true);
-      try {
-        let distinctPreguntas = [];
-        
-        if (asigVal.startsWith('MAPPING:')) {
-          const asignatura = asigVal.replace('MAPPING:', '');
-          const { data } = await supabaseClient.from('eval_preguntas')
-            .select('pregunta_num')
-            .eq('grado', grado)
-            .eq('asignatura', asignatura)
-            .eq('periodo', currentPeriodo)
-            .order('pregunta_num');
-            
-          if (data) {
-            distinctPreguntas = [...new Set(data.map(i => i.pregunta_num))].sort((a, b) => a - b);
-          }
-        } else {
-          const quiz = asigVal.replace('QUIZ:', '');
-          const { data } = await supabaseClient.from('eval_resultados')
-            .select('pregunta_num')
-            .eq('grado', grado)
-            .eq('quiz_name', quiz)
-            .eq('periodo', currentPeriodo)
-            .order('pregunta_num');
-            
-          if (data) {
-            distinctPreguntas = [...new Set(data.map(i => i.pregunta_num))].sort((a, b) => a - b);
-          }
-        }
+      const { data } = await supabaseClient.from('eval_resultados')
+        .select('pregunta_num')
+        .eq('grado', grado)
+        .eq('quiz_name', quiz)
+        .eq('periodo', currentPeriodo)
+        .order('pregunta_num');
 
-        $('sel-pregunta').innerHTML = '<option value="">Seleccione pregunta...</option>' +
-          distinctPreguntas.map(p => `<option value="${p}">Pregunta ${p}</option>`).join('');
-      } catch (e) {
-        console.error("Error Preguntas:", e);
-      } finally {
-        showLoading(false);
-      }
+      const distinctPreguntas = [...new Set(data.map(i => i.pregunta_num))].sort((a, b) => a - b);
+
+      $('sel-pregunta').innerHTML = '<option value="">Seleccione pregunta...</option>' +
+        distinctPreguntas.map(p => `<option value="${p}">Pregunta ${p}</option>`).join('');
+      showLoading(false);
     }
 
     async function mostrarAnalisis() {
       const grado = $('sel-grado').value;
+      const quiz = $('sel-asig').value;
       const num = $('sel-pregunta').value;
-      if (!grado || !num) return;
+      if (!grado || !quiz || !num) return;
 
       showLoading(true);
 
       try {
-        // Buscamos resultados (que sí o sí existen) y el mapeo basándonos puramente en la Pregunta, Grado y Periodo.
+        // Buscamos resultados (que sí o sí existen) y el mapeo (que podría no existir)
         const [mapRes, dataRes] = await Promise.all([
           supabaseClient.from('eval_preguntas').select('*').eq('grado', grado).eq('pregunta_num', num).eq('periodo', currentPeriodo).maybeSingle(),
-          supabaseClient.from('eval_resultados').select('*').eq('grado', grado).eq('pregunta_num', num).eq('periodo', currentPeriodo).maybeSingle()
+          supabaseClient.from('eval_resultados').select('*').eq('grado', grado).eq('quiz_name', quiz).eq('pregunta_num', num).eq('periodo', currentPeriodo).maybeSingle()
         ]);
 
         if (dataRes.data) {
