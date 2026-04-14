@@ -954,7 +954,10 @@
       }
 
       const gradoRef = parseInt(rows[0][0]);
-      if (isNaN(gradoRef)) return alert("Error: No se pudo detectar el Grado en la COL 0.");
+      if (isNaN(gradoRef)) {
+        // Try fallback parsing if semicolon is trapped in quotes or merged
+        return alert("Error: No se pudo verificar el Grado inicial del archivo. Verifique que sea el exporte 'Item Analysis' estándar de ZipGrade.");
+      }
 
       rows.forEach((row) => {
         if (row.length < 5) return;
@@ -1032,6 +1035,10 @@
       });
 
       console.log("DATOS A SUBIR:", resultadosData);
+
+      if (resultadosData.length === 0) {
+        return alert("⛔ Error Matemático: El archivo ha sido leído exitosamente, pero CERO filas pasaron la prueba de validación. ¿Seguro que las columnas de 'Question Num' y 'Grado' están en su lugar original de ZipGrade o que no hubo un error de corrimiento de casillas en el Excel?\nPor seguridad, la base de datos de este periodo y grado NO ha sido eliminada ni alterada.");
+      }
 
       const confirmar = confirm(`¿Confirmas la subida?\n- Grado: ${gradoRef}\n- Periodo Detectado: ${periodoDetectado}\n- Filas de Resultados: ${resultadosData.length}\n- Filas de Mapeo: ${mapeoData.length}`);
       if (!confirmar) return;
