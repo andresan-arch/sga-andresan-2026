@@ -1007,10 +1007,26 @@
       textElem.innerText = "";
       mediaElem.innerHTML = "";
       if (!content) return;
-      if (content.toString().startsWith('http')) {
-        mediaElem.innerHTML = `<img src="${content}" style="max-width:100%; border-radius:10px;">`;
+
+      let textPart = "";
+      let imgPart = "";
+
+      const str = content.toString();
+      if (str.includes(" ||| ")) {
+        const parts = str.split(" ||| ");
+        textPart = parts[0];
+        imgPart = parts[1];
+      } else if (str.startsWith("http")) {
+        imgPart = str;
       } else {
-        textElem.innerText = content;
+        textPart = str;
+      }
+
+      if (textPart && textPart.trim() !== "") {
+        textElem.innerText = textPart;
+      }
+      if (imgPart && imgPart.trim().startsWith("http")) {
+        mediaElem.innerHTML = `<img src="${imgPart}" style="max-width:100%; border-radius:10px; margin-top:10px;">`;
       }
     }
 
@@ -1169,24 +1185,38 @@
       let html = '';
       fields.forEach(f => {
         const val = data[f.key] || '';
-        const isImg = val.startsWith('http');
-        
+        let textDisplay = "";
+        let imgUrl = "";
+
+        if (val.includes(" ||| ")) {
+          const parts = val.split(" ||| ");
+          textDisplay = parts[0];
+          imgUrl = parts[1];
+        } else if (val.startsWith("http")) {
+          imgUrl = val;
+        } else {
+          textDisplay = val;
+        }
+
         let previewHtml = '';
-        if (isImg) {
+        if (imgUrl) {
           previewHtml = `
             <div style="margin-top:5px; position:relative; display:inline-block;">
-              <img src="${val}" style="max-height:60px; border-radius:4px; border:1px solid #ddd;">
+              <img src="${imgUrl}" style="max-height:60px; border-radius:4px; border:1px solid #ddd;">
               <button onclick="removerImagenMapeo('${data.id}', '${f.key}')" 
                 style="position:absolute; top:-5px; right:-5px; background:#ef4444; color:white; border:none; width:20px; height:20px; border-radius:50%; font-size:12px; cursor:pointer;" title="Eliminar Imagen">×</button>
             </div>`;
         } else {
-          previewHtml = `<span style="color:#64748b; font-size:0.7rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:inline-block; max-width:180px;">📝 ${val || 'Sin texto'}</span>`;
+          previewHtml = `<span style="color:#64748b; font-size:0.65rem;">(Sin Imagen)</span>`;
         }
 
         html += `
           <div style="background:white; border:1px solid #e2e8f0; border-radius:8px; padding:8px;">
             <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:5px;">
-              <span style="font-weight:bold; color:#1e293b; font-size:0.75rem;">${f.label}</span>
+              <div style="display:flex; flex-direction:column;">
+                <span style="font-weight:bold; color:#1e293b; font-size:0.75rem;">${f.label}</span>
+                <span style="color:#64748b; font-size:0.65rem; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">📝 ${textDisplay || 'Sin texto'}</span>
+              </div>
               ${previewHtml}
             </div>
             <div style="display:flex; gap:5px; align-items:center; margin-top:5px;">
@@ -1204,17 +1234,27 @@
     }
 
     async function removerImagenMapeo(rowId, colName) {
-      if (!confirm("¿Seguro que quieres eliminar esta imagen? Se perderá el enlace permanentemente.")) return;
+      if (!confirm("¿Seguro que quieres eliminar esta imagen?")) return;
       const st = $('aimg-status');
       st.innerText = "⏳ Eliminando imagen...";
       try {
-        const { error } = await supabaseClient.from('eval_preguntas').update({ [colName]: "" }).eq('id', rowId);
+        // Obtenemos el valor actual para preservar el texto
+        const { data: curr } = await supabaseClient.from('eval_preguntas').select(colName).eq('id', rowId).single();
+        let newContent = "";
+        if (curr && curr[colName]) {
+          const str = curr[colName].toString();
+          if (str.includes(" ||| ")) newContent = str.split(" ||| ")[0];
+          else if (!str.startsWith("http")) newContent = str;
+        }
+
+        const { error } = await supabaseClient.from('eval_preguntas').update({ [colName]: newContent }).eq('id', rowId);
         if (error) throw error;
         st.innerText = "✅ Imagen eliminada.";
         verDetallePreguntaAdmin();
         if ($('resultado-container').style.display !== 'none') mostrarAnalisis();
       } catch (e) {
-        st.innerText = "❌ Error al eliminar.";
+        console.error("Error al eliminar:", e);
+        st.innerText = "❌ Error: " + (e.message || "Desconocido");
       }
     }
 
@@ -1236,7 +1276,17 @@
 
         const { data: { publicUrl } } = supabaseClient.storage.from('assets').getPublicUrl(filePath);
 
-        const { error: updError } = await supabaseClient.from('eval_preguntas').update({ [colName]: publicUrl }).eq('id', rowId);
+        const { data: curr } = await supabaseClient.from('eval_preguntas').select(colName).eq('id', rowId).single();
+        let textPart = "";
+        if (curr && curr[colName]) {
+           const str = curr[colName].toString();
+           if (str.includes(" ||| ")) textPart = str.split(" ||| ")[0];
+           else if (!str.startsWith("http")) textPart = str;
+        }
+        
+        const finalContent = textPart ? `${textPart} ||| ${publicUrl}` : publicUrl;
+
+        const { error: updError } = await supabaseClient.from('eval_preguntas').update({ [colName]: finalContent }).eq('id', rowId);
         if (updError) throw updError;
 
         st.innerText = "✅ ¡Actualizado exitosamente!";
@@ -1441,8 +1491,16 @@
             const bKey = `${asignatura}-${pNum}`;
             const backup = imgBackup[bKey] || {};
 
-            // Si el backup tiene una URL de imagen, la preservamos sobre el texto del CSV
-            const merge = (field, csvVal) => (backup[field] && backup[field].startsWith('http')) ? backup[field] : csvVal;
+            // Smart Merge: Conservamos la imagen antigua si existía, unida al texto nuevo del CSV
+            const merge = (field, csvVal) => {
+              const prev = (backup[field] || "").toString();
+              let prevImg = "";
+              if (prev.includes(" ||| ")) prevImg = prev.split(" ||| ")[1];
+              else if (prev.startsWith("http")) prevImg = prev;
+
+              if (prevImg) return `${csvVal || ""} ||| ${prevImg}`;
+              return csvVal;
+            };
 
             mapeoData.push({
               grado: parseInt(mG),
