@@ -574,7 +574,9 @@
         <button onclick="switchAdminTab('datos')" id="atab-datos"
           style="flex:1; padding:8px; border-radius:8px; border:none; background:#4f46e5; color:white; font-weight:700; cursor:pointer; font-size:0.8rem;">📊 Datos</button>
         <button onclick="switchAdminTab('usuarios')" id="atab-usuarios"
-          style="flex:1; padding:8px; border-radius:8px; border:2px solid #4f46e5; background:transparent; color:#4f46e5; font-weight:700; cursor:pointer; font-size:0.8rem;">👥 Usuarios</button>
+          style="flex:1; padding:8px; border-radius:8px; border:2px solid #4f46e5; background:transparent; color:#4f46e5; font-weight:700; cursor:pointer; font-size:0.8rem;">👥 Usuar.</button>
+        <button onclick="switchAdminTab('imagenes')" id="atab-imagenes"
+          style="flex:1; padding:8px; border-radius:8px; border:2px solid #4f46e5; background:transparent; color:#4f46e5; font-weight:700; cursor:pointer; font-size:0.8rem;">🖼️ Imgs</button>
       </div>
 
       <!-- Tab: Datos -->
@@ -632,6 +634,35 @@
         </div>
 
         <div id="users-status" class="status-msg" style="margin-top:0.5rem;"></div>
+      </div>
+
+      <!-- Tab: Imágenes -->
+      <div id="apanel-imagenes" style="display:none; max-height:450px; overflow-y:auto; padding-right:5px;">
+        <h4 style="margin-bottom:1rem;">Galería Individual</h4>
+        
+        <div style="display:flex; gap:0.5rem; margin-bottom:0.5rem;">
+          <select id="aimg-grado" style="flex:1; padding:6px; border-radius:8px; border:1px solid #e2e8f0; font-size:0.8rem;" onchange="cargarAsignaturasAdminImg()">
+            <option value="">Grado...</option>
+          </select>
+          <select id="aimg-periodo" style="flex:1; padding:6px; border-radius:8px; border:1px solid #e2e8f0; font-size:0.8rem;" onchange="cargarAsignaturasAdminImg()">
+            <option value="1">Período 1</option>
+            <option value="2">Período 2</option>
+            <option value="3">Final</option>
+          </select>
+        </div>
+        <select id="aimg-asig" style="width:100%; margin-bottom:0.5rem; padding:6px; border-radius:8px; border:1px solid #e2e8f0; font-size:0.8rem;" onchange="cargarPreguntasAdminImg()">
+          <option value="">Asignatura...</option>
+        </select>
+        <select id="aimg-preg" style="width:100%; margin-bottom:1rem; padding:6px; border-radius:8px; border:1px solid #e2e8f0; font-size:0.8rem;" onchange="verDetallePreguntaAdmin()">
+          <option value="">Pregunta...</option>
+        </select>
+
+        <div id="aimg-detalle" style="display:none; background:#f8fafc; padding:1rem; border-radius:12px; font-size:0.8rem; border:1px solid #e2e8f0;">
+            <p style="font-weight:800; color:var(--primary); margin-bottom:10px;" id="aimg-title">Pregunta #?</p>
+            <div id="aimg-fields" style="display:flex; flex-direction:column; gap:10px;"></div>
+        </div>
+
+        <div id="aimg-status" class="status-msg" style="margin-top:10px; font-weight:bold;"></div>
       </div>
 
     </div>
@@ -1037,12 +1068,147 @@
     function switchAdminTab(tab) {
       $('apanel-datos').style.display = tab === 'datos' ? 'block' : 'none';
       $('apanel-usuarios').style.display = tab === 'usuarios' ? 'block' : 'none';
+      $('apanel-imagenes').style.display = tab === 'imagenes' ? 'block' : 'none';
+
       $('atab-datos').style.background = tab === 'datos' ? '#4f46e5' : 'transparent';
       $('atab-datos').style.color = tab === 'datos' ? 'white' : '#4f46e5';
       $('atab-datos').style.border = tab === 'datos' ? 'none' : '2px solid #4f46e5';
+
       $('atab-usuarios').style.background = tab === 'usuarios' ? '#4f46e5' : 'transparent';
       $('atab-usuarios').style.color = tab === 'usuarios' ? 'white' : '#4f46e5';
       $('atab-usuarios').style.border = tab === 'usuarios' ? 'none' : '2px solid #4f46e5';
+
+      $('atab-imagenes').style.background = tab === 'imagenes' ? '#4f46e5' : 'transparent';
+      $('atab-imagenes').style.color = tab === 'imagenes' ? 'white' : '#4f46e5';
+      $('atab-imagenes').style.border = tab === 'imagenes' ? 'none' : '2px solid #4f46e5';
+
+      if (tab === 'imagenes' && $('aimg-grado').options.length === 1) {
+        cargarGradosAdminImg();
+      }
+    }
+
+    // --- LÓGICA DE SUBIDA DE IMÁGENES A PREGUNTAS ---
+    async function cargarGradosAdminImg() {
+      $('aimg-status').innerText = "Cargando grados...";
+      const { data, error } = await supabaseClient.from('eval_preguntas').select('grado');
+      if (data) {
+        const distinct = [...new Set(data.map(i => i.grado))].sort((a,b)=>a-b);
+        $('aimg-grado').innerHTML = '<option value="">Grado...</option>' + distinct.map(g => `<option value="${g}">${g}° Grado</option>`).join('');
+      }
+      $('aimg-status').innerText = "";
+    }
+
+    async function cargarAsignaturasAdminImg() {
+      const g = $('aimg-grado').value;
+      const p = $('aimg-periodo').value;
+      if (!g) return;
+      $('aimg-status').innerText = "Cargando asignaturas...";
+      const { data } = await supabaseClient.from('eval_preguntas').select('asignatura').eq('grado',g).eq('periodo',p);
+      if (data) {
+        const distinct = [...new Set(data.map(i => i.asignatura))].sort((a,b)=>a.localeCompare(b,'es'));
+        $('aimg-asig').innerHTML = '<option value="">Asignatura...</option>' + distinct.map(a => `<option value="${a}">${a}</option>`).join('');
+      }
+      $('aimg-preg').innerHTML = '<option value="">Pregunta...</option>';
+      $('aimg-detalle').style.display = 'none';
+      $('aimg-status').innerText = "";
+    }
+
+    async function cargarPreguntasAdminImg() {
+      const g = $('aimg-grado').value;
+      const p = $('aimg-periodo').value;
+      const a = $('aimg-asig').value;
+      if (!a) return;
+      $('aimg-status').innerText = "Cargando pregs...";
+      const { data } = await supabaseClient.from('eval_preguntas').select('pregunta_num').eq('grado',g).eq('periodo',p).eq('asignatura',a).order('pregunta_num');
+      if (data) {
+        const distinct = [...new Set(data.map(i => i.pregunta_num))].sort((x,y)=>x-y);
+        $('aimg-preg').innerHTML = '<option value="">Pregunta...</option>' + distinct.map(x => `<option value="${x}">#${x}</option>`).join('');
+      }
+      $('aimg-detalle').style.display = 'none';
+      $('aimg-status').innerText = "";
+    }
+
+    async function verDetallePreguntaAdmin() {
+      const g = $('aimg-grado').value, p = $('aimg-periodo').value, a = $('aimg-asig').value, num = $('aimg-preg').value;
+      if (!num) { $('aimg-detalle').style.display = 'none'; return; }
+      
+      $('aimg-status').innerText = "Cargando mapeo...";
+      const { data } = await supabaseClient.from('eval_preguntas').select('*').eq('grado',g).eq('periodo',p).eq('asignatura',a).eq('pregunta_num',num).maybeSingle();
+      
+      if (!data) {
+        $('aimg-status').innerText = "No se halló mapeo para esta pregunta.";
+        $('aimg-detalle').style.display = 'none';
+        return;
+      }
+
+      $('aimg-title').innerText = `🎨 Pregunta #${num} - ${a}`;
+      const fields = [
+        { key: 'texto_pregunta', label: 'Texto/Imagen Pregunta' },
+        { key: 'opcion_a', label: 'Opción A' },
+        { key: 'opcion_b', label: 'Opción B' },
+        { key: 'opcion_c', label: 'Opción C' },
+        { key: 'opcion_d', label: 'Opción D' }
+      ];
+
+      let html = '';
+      fields.forEach(f => {
+        const val = data[f.key] || '';
+        const isImg = val.startsWith('http');
+        const preview = isImg ? `<a href="${val}" target="_blank" style="color:#2563eb; text-decoration:underline; font-size:0.7rem;">🖼️ Ver Imagen</a>` : `<span style="color:#64748b; font-size:0.7rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:inline-block; max-width:120px;">📝 ${val || 'Vacío'}</span>`;
+
+        html += `
+          <div style="background:white; border:1px solid #e2e8f0; border-radius:8px; padding:8px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+              <span style="font-weight:bold; color:#1e293b; font-size:0.75rem;">${f.label}</span>
+              ${preview}
+            </div>
+            <div style="display:flex; gap:5px; align-items:center;">
+              <input type="file" id="file-${f.key}" accept="image/*" style="font-size:0.7rem; width:140px;">
+              <button onclick="subirImagenMapeo('${data.id}', '${f.key}')" style="background:#10b981; color:white; border:none; border-radius:6px; padding:4px 8px; font-weight:bold; font-size:0.7rem; cursor:pointer;">Subir</button>
+            </div>
+          </div>
+        `;
+      });
+
+      $('aimg-fields').innerHTML = html;
+      $('aimg-detalle').style.display = 'block';
+      $('aimg-status').innerText = "";
+    }
+
+    async function subirImagenMapeo(rowId, colName) {
+      const fileInput = $(`file-${colName}`);
+      const file = fileInput.files[0];
+      if (!file) return alert("Selecciona una imagen primero.");
+
+      const st = $('aimg-status');
+      st.innerText = "⏳ Subiendo imagen y guardando...";
+
+      try {
+        const ext = file.name.split('.').pop();
+        const fname = `evt2026_${colName}_${Date.now()}.${ext}`;
+        const filePath = fname;
+
+        const { error: uploadError } = await supabaseClient.storage.from('assets').upload(filePath, file, { cacheControl: '3600', upsert: false });
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabaseClient.storage.from('assets').getPublicUrl(filePath);
+
+        const { error: updError } = await supabaseClient.from('eval_preguntas').update({ [colName]: publicUrl }).eq('id', rowId);
+        if (updError) throw updError;
+
+        st.innerText = "✅ ¡Actualizado exitosamente!";
+        fileInput.value = "";
+        verDetallePreguntaAdmin();
+
+        const isShowingPreg = $('sel-pregunta') && $('sel-pregunta').value == $('aimg-preg').value;
+        if (isShowingPreg && $('sel-grado').value == $('aimg-grado').value) {
+           mostrarAnalisis();
+        }
+
+      } catch (e) {
+        st.innerText = "❌ Error: " + (e.message || "Desconocido");
+        console.error(e);
+      }
     }
 
     async function crearUsuario() {
