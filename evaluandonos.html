@@ -566,7 +566,7 @@
     </div> <!-- Cierra resultado-container -->
 
     <!-- Panel de Administración -->
-    <div class="admin-trigger" onclick="toggleAdmin()">⚙️ Administrar Datos</div>
+    <div class="admin-trigger" onclick="toggleAdmin()" style="display:none;">⚙️ Administrar Datos</div>
     <div class="admin-panel" id="admin-panel" style="width:380px;">
       
       <!-- Tabs del admin -->
@@ -692,8 +692,8 @@
       $('login-mask').style.display = 'none';
 
       try {
-        const { data: perfil } = await supabaseClient.from('perfiles').select('rol,nombre').eq('email', user.email).maybeSingle();
-        const nombre = (perfil && perfil.nombre) ? perfil.nombre : user.email.split('@')[0];
+        const { data: perfil } = await supabaseClient.from('perfiles').select('rol').eq('email', user.email).maybeSingle();
+        const nombre = user.user_metadata?.full_name || user.user_metadata?.nombre || user.email.split('@')[0];
 
         // Mostrar badge flotante
         const badge = $('user-badge');
