@@ -742,14 +742,16 @@
       showLoading(true);
 
       try {
-        // Buscamos resultados (que sí o sí existen) y el mapeo basándonos puramente en la Pregunta, Grado y Periodo.
+        // Buscamos resultados y mapeo de forma robusta (limit(1) previene crasheos si por accidente se subieron datos duplicados)
         const [mapRes, dataRes] = await Promise.all([
-          supabaseClient.from('eval_preguntas').select('*').eq('grado', grado).eq('pregunta_num', num).eq('periodo', currentPeriodo).maybeSingle(),
-          supabaseClient.from('eval_resultados').select('*').eq('grado', grado).eq('pregunta_num', num).eq('periodo', currentPeriodo).maybeSingle()
+          supabaseClient.from('eval_preguntas').select('*').eq('grado', grado).eq('pregunta_num', num).eq('periodo', currentPeriodo).limit(1),
+          supabaseClient.from('eval_resultados').select('*').eq('grado', grado).eq('pregunta_num', num).eq('periodo', currentPeriodo).limit(1)
         ]);
 
-        if (dataRes.data) {
-          let mapping = mapRes.data;
+        if (dataRes.data && dataRes.data.length > 0) {
+          let mapping = mapRes.data && mapRes.data.length > 0 ? mapRes.data[0] : null;
+          const stats = dataRes.data[0];
+          
           // MODO RESILIENCIA: Si no se subió cuestionario, creamos uno virtual para mostrar los datos.
           if (!mapping) {
             mapping = {
@@ -761,9 +763,9 @@
               opcion_d: "Opción D"
             };
           }
-          renderUI(mapping, dataRes.data);
+          renderUI(mapping, stats);
         } else {
-          alert("No se encontraron resultados completos para esta pregunta.");
+          alert("No se encontraron resultados completos para esta pregunta en Resultados. ¿Seguro que subiste el CSV de Zipgrade para este grado?");
         }
       } catch (e) {
         console.error("Error en mostrarAnalisis:", e);
