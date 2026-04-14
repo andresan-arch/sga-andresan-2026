@@ -42,6 +42,7 @@
       position: relative;
       overflow: hidden;
     }
+
     .header-banner {
       width: 100%;
       background: white;
@@ -53,6 +54,7 @@
       max-height: 250px;
       overflow: hidden;
     }
+
     .header-logo {
       width: 100%;
       height: auto;
@@ -60,6 +62,7 @@
       object-fit: contain;
       max-height: 200px;
     }
+
     .header-sub {
       background: var(--primary);
       color: white;
@@ -197,12 +200,17 @@
       margin-top: 4rem;
       border-top: 1px solid #e2e8f0;
     }
+
     .footer-logo {
       height: 60px;
       opacity: 0.8;
       transition: opacity 0.3s;
     }
-    .footer-logo:hover { opacity: 1; }
+
+    .footer-logo:hover {
+      opacity: 1;
+    }
+
     .footer-copy {
       font-size: 0.75rem;
       color: var(--gray);
@@ -243,9 +251,14 @@
 
     #loading {
       position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(255,255,255,0.8);
-      display: flex; justify-content: center; align-items: center;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
       z-index: 1000;
       display: none;
     }
@@ -253,14 +266,20 @@
     /* Login Overlay */
     #login-mask {
       position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: linear-gradient(135deg, rgba(79, 70, 229, 0.9) 0%, rgba(124, 58, 237, 0.9) 100%), 
-                  url('https://andresan.com/wp-content/uploads/2024/02/IMG_20240215_102553.jpg');
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.9) 0%, rgba(124, 58, 237, 0.9) 100%),
+        url('https://andresan.com/wp-content/uploads/2024/02/IMG_20240215_102553.jpg');
       background-size: cover;
       background-position: center;
-      display: flex; justify-content: center; align-items: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       z-index: 2000;
     }
+
     .login-card {
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(10px);
@@ -269,20 +288,36 @@
       width: 90%;
       max-width: 420px;
       text-align: center;
-      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-      border: 1px solid rgba(255,255,255,0.3);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.3);
     }
-    .login-card h2 { color: var(--text); margin-bottom: 2rem; font-weight: 800; }
+
+    .login-card h2 {
+      color: var(--text);
+      margin-bottom: 2rem;
+      font-weight: 800;
+    }
+
     .login-card input {
-      width: 100%; padding: 14px; margin-bottom: 1.2rem;
-      border: 1px solid #e2e8f0; border-radius: 15px;
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 1.2rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 15px;
       font-size: 1rem;
       background: white;
     }
+
     .login-card button {
-      width: 100%; padding: 14px; background: var(--primary);
-      color: white; border: none; border-radius: 15px;
-      font-weight: 700; cursor: pointer; font-size: 1rem;
+      width: 100%;
+      padding: 14px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 1rem;
       box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
     }
 
@@ -292,14 +327,16 @@
       justify-content: center;
       margin: 1.5rem 0;
     }
+
     .period-tabs {
       display: inline-flex;
       background: #e2e8f0;
       padding: 5px;
       border-radius: 100px;
       gap: 5px;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
     }
+
     .period-tab {
       padding: 10px 25px;
       border-radius: 100px;
@@ -310,6 +347,7 @@
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       user-select: none;
     }
+
     .period-tab.active {
       background: white;
       color: var(--primary);
@@ -327,9 +365,10 @@
       border-radius: 50px;
       cursor: pointer;
       font-size: 0.8rem;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
       z-index: 100;
     }
+
     .admin-panel {
       position: fixed;
       bottom: 80px;
@@ -338,12 +377,21 @@
       background: white;
       border-radius: 16px;
       padding: 1.5rem;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
       display: none;
       z-index: 100;
     }
-    .admin-panel h4 { margin-bottom: 1rem; color: var(--primary); }
-    .status-msg { font-size: 0.75rem; margin-top: 5px; color: var(--gray); }
+
+    .admin-panel h4 {
+      margin-bottom: 1rem;
+      color: var(--primary);
+    }
+
+    .status-msg {
+      font-size: 0.75rem;
+      margin-top: 5px;
+      color: var(--gray);
+    }
   </style>
 </head>
 
@@ -352,7 +400,8 @@
 
   <div id="login-mask">
     <div class="login-card">
-      <img src="https://andresan.com/wp-content/uploads/2024/02/Logo-Andresan-Vectorizado-Peque.png" style="width: 120px; margin-bottom: 1rem;">
+      <img src="https://andresan.com/wp-content/uploads/2024/02/Logo-Andresan-Vectorizado-Peque.png"
+        style="width: 120px; margin-bottom: 1rem;">
       <h2>Acceso Seguro</h2>
       <input type="text" id="li-user" placeholder="Usuario">
       <input type="password" id="li-pass" placeholder="Contraseña">
@@ -363,14 +412,17 @@
 
   <header>
     <div class="header-banner">
-      <img src="https://pmfrdrihzdhhjxokabjm.supabase.co/storage/v1/object/public/assets/E%202026.png" class="header-logo" alt="Evaluándonos 2026" style="height: 120px;">
+      <img src="https://pmfrdrihzdhhjxokabjm.supabase.co/storage/v1/object/public/assets/E%202026.png"
+        class="header-logo" alt="Evaluándonos 2026" style="height: 120px;">
     </div>
     <div class="header-sub">
       <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
         <span>Evaluándonos: Análisis Estadístico</span>
         <div id="user-info" style="font-size: 0.8rem; display: none;">
           <span id="user-email" style="margin-right: 15px;"></span>
-          <button onclick="logout()" style="background: white; color: var(--primary); border: none; padding: 4px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.7rem;">Cerrar Sesión</button>
+          <button onclick="logout()"
+            style="background: white; color: var(--primary); border: none; padding: 4px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.7rem;">Cerrar
+            Sesión</button>
         </div>
       </div>
     </div>
@@ -459,24 +511,33 @@
     <div class="admin-trigger" onclick="toggleAdmin()">⚙️ Administrar Datos</div>
     <div class="admin-panel" id="admin-panel">
       <h4>Importar CSV / TSV Inteligente</h4>
-      <p style="font-size: 0.8rem; margin-bottom: 10px; color: #64748b;">Estructura: A=Grado, B=Nombre, D=Clave, E=Pregunta... (S:Z=Mapeo)</p>
-      <input type="file" id="csv-file" accept=".csv,.tsv" style="font-size: 0.75rem; padding: 5px; border: 1px dashed #cbd5e1;">
-      
+      <p style="font-size: 0.8rem; margin-bottom: 10px; color: #64748b;">Estructura: A=Grado, B=Nombre, D=Clave,
+        E=Pregunta... (S:Z=Mapeo)</p>
+      <input type="file" id="csv-file" accept=".csv,.tsv"
+        style="font-size: 0.75rem; padding: 5px; border: 1px dashed #cbd5e1;">
+
       <!-- Visor de Diagnóstico -->
       <div id="admin-debug" style="margin-top: 15px; overflow-x: auto; max-width: 100%; display: none;">
-        <p style="font-size: 0.7rem; color: var(--primary); font-weight: bold; margin-bottom: 5px;">👀 Previsualización de los primeros datos:</p>
-        <table id="debug-table" style="font-size: 0.65rem; border-collapse: collapse; width: 100%; background: #f8fafc; border: 1px solid #e2e8f0;"></table>
-        <button id="btn-confirm-upload" onclick="finalizarSubida()" style="margin-top: 10px; background: #10b981; width: 100%;">Los datos se ven bien, ¡SUBIR!</button>
+        <p style="font-size: 0.7rem; color: var(--primary); font-weight: bold; margin-bottom: 5px;">👀 Previsualización
+          de los primeros datos:</p>
+        <table id="debug-table"
+          style="font-size: 0.65rem; border-collapse: collapse; width: 100%; background: #f8fafc; border: 1px solid #e2e8f0;">
+        </table>
+        <button id="btn-confirm-upload" onclick="finalizarSubida()"
+          style="margin-top: 10px; background: #10b981; width: 100%;">Los datos se ven bien, ¡SUBIR!</button>
       </div>
 
-      <button id="btn-parse-debug" onclick="previsualizarDatos()" style="margin-top: 10px; background: #2563eb; color: white; font-weight: bold; padding: 10px;">🔍 ANALIZAR ARCHIVO AHORA</button>
+      <button id="btn-parse-debug" onclick="previsualizarDatos()"
+        style="margin-top: 10px; background: #2563eb; color: white; font-weight: bold; padding: 10px;">🔍 ANALIZAR
+        ARCHIVO AHORA</button>
       <div id="admin-status" class="status-msg"></div>
     </div>
   </main>
 
   <footer>
     <div class="container">
-      <img src="https://pmfrdrihzdhhjxokabjm.supabase.co/storage/v1/object/public/assets/andresanbordessinfondo.png" class="footer-logo" alt="AndréSán Footer">
+      <img src="https://pmfrdrihzdhhjxokabjm.supabase.co/storage/v1/object/public/assets/andresanbordessinfondo.png"
+        class="footer-logo" alt="AndréSán Footer">
       <p class="footer-copy">© 2026 SGA AndréSán - Sistema Integrado de Gestión Académica</p>
     </div>
   </footer>
@@ -505,15 +566,15 @@
       const pass = $('li-pass').value;
       const btn = $('btn-login');
       const err = $('login-err');
-      
+
       if (!userVal || !pass) return alert("Completa los datos");
-      
+
       const email = userVal.includes('@') ? userVal : `${userVal}@andresan.com`;
       err.style.display = 'none';
       btn.disabled = true; btn.innerText = "Verificando...";
 
       const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
-      
+
       if (error) {
         err.innerText = "Usuario o contraseña incorrectos";
         err.style.display = 'block';
@@ -532,7 +593,7 @@
       // MODO DIAGNÓSTICO: Bypass Total de Permisos
       currentRole = 'admin';
       document.querySelector('.admin-trigger').style.display = 'block';
-      
+
       init();
     }
 
@@ -541,6 +602,11 @@
       location.reload();
     }
 
+    function setPeriodo(p, btn) {
+      currentPeriodo = p;
+      document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      cargarGrados();
     function setPeriodo(p) {
       currentPeriodo = p;
       document.querySelectorAll('.period-tab').forEach((t, i) => {
@@ -556,20 +622,21 @@
     async function cargarGrados() {
       showLoading(true);
       try {
-        const { data, error } = await supabaseClient.from('eval_preguntas')
+        // CAMBIO AL NÚCLEO: Buscamos los grados primero en RESULTADOS, porque nunca falla
+        const { data, error } = await supabaseClient.from('eval_resultados')
           .select('grado')
           .eq('periodo', currentPeriodo);
-        
+
         if (error) throw error;
-        const distinct = [...new Set(data.map(i => i.grado))].sort((a,b) => a - b);
-        
-        $('sel-grado').innerHTML = '<option value="">Seleccione grado...</option>' + 
+        const distinct = [...new Set(data.map(i => i.grado))].sort((a, b) => a - b);
+
+        $('sel-grado').innerHTML = '<option value="">Seleccione grado...</option>' +
           distinct.map(g => `<option value="${g}">${g}° Grado</option>`).join('');
       } catch (e) {
         console.error("Error grados:", e);
       }
-      
-      $('sel-asig').innerHTML = '<option value="">Seleccione asignatura...</option>';
+
+      $('sel-asig').innerHTML = '<option value="">Seleccione examen...</option>';
       $('sel-pregunta').innerHTML = '<option value="">Seleccione pregunta...</option>';
       $('resultado-container').style.display = 'none';
       showLoading(false);
@@ -578,64 +645,81 @@
     async function cargarAsignaturas() {
       const grado = $('sel-grado').value;
       if (!grado) return;
-      
+
       showLoading(true);
-      const { data } = await supabaseClient.from('eval_preguntas')
-        .select('asignatura')
+      const { data } = await supabaseClient.from('eval_resultados')
+        .select('quiz_name')
         .eq('grado', grado)
         .eq('periodo', currentPeriodo);
-      
-      const asigs = [...new Set(data.map(i => i.asignatura))].sort();
-      
-      $('sel-asig').innerHTML = '<option value="">Seleccione asignatura...</option>' + 
-        asigs.map(a => `<option value="${a}">${a}</option>`).join('');
+
+      const examenes = [...new Set(data.map(i => i.quiz_name))].sort();
+
+      $('sel-asig').innerHTML = '<option value="">Seleccione examen...</option>' +
+        examenes.map(e => `<option value="${e}">${e}</option>`).join('');
       showLoading(false);
     }
 
     async function cargarPreguntas() {
       const grado = $('sel-grado').value;
-      const asig = $('sel-asig').value;
-      if (!grado || !asig) return;
+      const quiz = $('sel-asig').value;
+      if (!grado || !quiz) return;
 
       showLoading(true);
-      const { data } = await supabaseClient.from('eval_preguntas')
+      const { data } = await supabaseClient.from('eval_resultados')
         .select('pregunta_num')
         .eq('grado', grado)
-        .eq('asignatura', asig)
+        .eq('quiz_name', quiz)
         .eq('periodo', currentPeriodo)
         .order('pregunta_num');
-      
-      $('sel-pregunta').innerHTML = '<option value="">Seleccione pregunta...</option>' + 
-        data.map(p => `<option value="${p.pregunta_num}">Pregunta ${p.pregunta_num}</option>`).join('');
+
+      const distinctPreguntas = [...new Set(data.map(i => i.pregunta_num))].sort((a, b) => a - b);
+
+      $('sel-pregunta').innerHTML = '<option value="">Seleccione pregunta...</option>' +
+        distinctPreguntas.map(p => `<option value="${p}">Pregunta ${p}</option>`).join('');
       showLoading(false);
     }
 
     async function mostrarAnalisis() {
       const grado = $('sel-grado').value;
-      const asig = $('sel-asig').value;
+      const quiz = $('sel-asig').value;
       const num = $('sel-pregunta').value;
-      if (!grado || !asig || !num) return;
+      if (!grado || !quiz || !num) return;
 
       showLoading(true);
-      
+
+      // Buscamos resultados (que sí o sí existen) y el mapeo (que podría no existir)
       const [mapRes, dataRes] = await Promise.all([
-        supabaseClient.from('eval_preguntas').select('*').eq('grado', grado).eq('asignatura', asig).eq('pregunta_num', num).eq('periodo', currentPeriodo).maybeSingle(),
-        supabaseClient.from('eval_resultados').select('*').eq('grado', grado).eq('pregunta_num', num).eq('periodo', currentPeriodo).maybeSingle()
+        supabaseClient.from('eval_preguntas').select('*').eq('grado', grado).eq('pregunta_num', num).eq('periodo', currentPeriodo).maybeSingle(),
+        supabaseClient.from('eval_resultados').select('*').eq('grado', grado).eq('quiz_name', quiz).eq('pregunta_num', num).eq('periodo', currentPeriodo).maybeSingle()
       ]);
 
-      if (mapRes.data && dataRes.data) {
-        renderUI(mapRes.data, dataRes.data);
+      if (dataRes.data) {
+        let mapping = mapRes.data;
+        // MODO RESILIENCIA: Si no se subió cuestionario, creamos uno virtual para mostrar los datos.
+        if (!mapping) {
+          mapping = {
+            pregunta_num: num,
+            texto_pregunta: `Pregunta #${num} (Evaluación sin archivo de mapeo detallado)`,
+            opcion_a: "Opción A",
+            opcion_b: "Opción B",
+            opcion_c: "Opción C",
+            opcion_d: "Opción D"
+          };
+        }
+        renderUI(mapping, dataRes.data);
       } else {
         alert("No se encontraron resultados completos para esta pregunta.");
       }
-      
+
       showLoading(false);
     }
 
     function renderUI(mapping, stats) {
       $('resultado-container').style.display = 'block';
-      renderMedia('card-pregunta', 'media-pregunta', mapping.texto_pregunta);
-      
+      $('pregunta-display-num').innerText = `Pregunta #${mapping.pregunta_num}`;
+
+      renderMedia('pregunta-texto', 'pregunta-media', mapping.texto_pregunta);
+
       const key = (stats.key || "").trim().toUpperCase();
       const counts = [stats.resp_a_count, stats.resp_b_count, stats.resp_c_count, stats.resp_d_count];
       const opts = ["A", "B", "C", "D"];
@@ -651,13 +735,13 @@
           </div>
         `;
       }).join('');
-      
+
       $('options-list').innerHTML = optionsHtml;
-      
+
       // Render media individualmente
       opts.forEach(o => renderMedia(`opt-text-${o}`, `opt-media-${o}`, mapping[`opcion_${o.toLowerCase()}`]));
 
-      $('stat-completado').innerText = stats.cant_correctas;
+      $('stat-correctas').innerText = stats.cant_correctas;
       $('stat-porcentaje').innerText = stats.porc_correctas + "%";
 
       updateChart(counts, key);
@@ -666,8 +750,8 @@
     function renderMedia(textId, mediaId, content) {
       const textElem = $(textId);
       const mediaElem = $(mediaId);
-      if(!textElem || !mediaElem) return;
-      
+      if (!textElem || !mediaElem) return;
+
       textElem.innerText = "";
       mediaElem.innerHTML = "";
       if (!content) return;
@@ -729,18 +813,18 @@
 
     function previsualizarDatos() {
       const file = $('csv-file').files[0];
-      if(!file) return alert("Seleccion primero un archivo");
-      
+      if (!file) return alert("Seleccion primero un archivo");
+
       updateStatus("Analizando archivo...");
       Papa.parse(file, {
         header: false,
         skipEmptyLines: true,
         encoding: "UTF-8",
-        complete: function(results) {
+        complete: function (results) {
           cachedRows = results.data;
           const table = $('debug-table');
           table.innerHTML = "";
-          
+
           // Crear Cabecera con Indices
           let headerHtml = "<tr>" + cachedRows[0].map((_, i) => `<th style='border:1px solid #ddd; background:#eee;'>COL ${i}</th>`).join('') + "</tr>";
           table.innerHTML += headerHtml;
@@ -759,10 +843,10 @@
     }
 
     async function finalizarSubida() {
-      if(!cachedRows) return;
-      
+      if (!cachedRows) return;
+
       const rows = [...cachedRows];
-      if(rows[0][0].toString().toLowerCase().includes("grado")) rows.shift();
+      if (rows[0][0].toString().toLowerCase().includes("grado")) rows.shift();
 
       const resultadosData = [];
       const mapeoData = [];
@@ -772,7 +856,7 @@
       // Helper para limpiar números sin redondear
       const parseRawNum = (val) => {
         if (val === undefined || val === null || val === '') return 0;
-        let s = val.toString().trim().replace('%','').replace(' ','');
+        let s = val.toString().trim().replace('%', '').replace(' ', '');
         s = s.replace(',', '.');
         const n = parseFloat(s);
         return isNaN(n) ? 0 : n;
@@ -791,13 +875,13 @@
       if (isNaN(gradoRef)) return alert("Error: No se pudo detectar el Grado en la COL 0.");
 
       rows.forEach((row) => {
-        if(row.length < 5) return; 
-        
-        if(row[0] && row[4]) {
+        if (row.length < 5) return;
+
+        if (row[0] && row[4]) {
           // 1. Datos básicos de aciertos (Col G y H)
           const nCorrect = parseRawNum(row[6]); // # Correct (ej: 55)
           const pCorrect = parseRawNum(row[7]); // % Correct (ej: 77.46)
-          
+
           // 2. REGLA DE TRES: Calcular Total de Alumnos
           let totalEst = 0;
           if (pCorrect > 0) {
@@ -813,11 +897,11 @@
           const rMap = {};
           const indicesLetras = [9, 11, 13, 15];
           const indicesValores = [10, 12, 14, 16];
-          
+
           indicesLetras.forEach((idx, i) => {
             const letra = (row[idx] || "").toString().trim().toUpperCase();
             const perc = parseRawNum(row[indicesValores[i]]);
-            
+
             // Calculamos la cantidad de alumnos para esta opción
             let count = 0;
             if (letra === actualKey) {
@@ -834,7 +918,7 @@
             key: actualKey,
             pregunta_num: parseInt(row[4]),
             cant_correctas: Math.round(nCorrect),
-            porc_correctas: Math.round(pCorrect), 
+            porc_correctas: Math.round(pCorrect),
             resp_a_count: rMap["A"] || 0,
             resp_b_count: rMap["B"] || 0,
             resp_c_count: rMap["C"] || 0,
@@ -844,9 +928,9 @@
         }
 
         const mG = row[18], mN = row[19];
-        if(mG && mN) {
+        if (mG && mN) {
           const mk = `${mG}-${mN}`;
-          if(!mapeoVisto.has(mk)) {
+          if (!mapeoVisto.has(mk)) {
             mapeoVisto.add(mk);
             mapeoData.push({
               grado: parseInt(mG),
@@ -866,7 +950,7 @@
       console.log("DATOS A SUBIR:", resultadosData);
 
       const confirmar = confirm(`¿Confirmas la subida?\n- Grado: ${gradoRef}\n- Periodo Detectado: ${periodoDetectado}\n- Filas de Resultados: ${resultadosData.length}\n- Filas de Mapeo: ${mapeoData.length}`);
-      if(!confirmar) return;
+      if (!confirmar) return;
 
       const btn = $('btn-confirm-upload');
       btn.disabled = true; btn.innerText = "Subiendo...";
@@ -877,13 +961,13 @@
         await supabaseClient.from('eval_preguntas').delete().eq('periodo', periodoDetectado).eq('grado', gradoRef);
 
         updateStatus(`Paso 2: Insertando resultados...`);
-        if(resultadosData.length) {
+        if (resultadosData.length) {
           const { error: err1 } = await supabaseClient.from('eval_resultados').insert(resultadosData);
           if (err1) throw err1;
         }
 
         updateStatus(`Paso 3: Insertando mapeo de preguntas...`);
-        if(mapeoData.length) {
+        if (mapeoData.length) {
           const { error: err2 } = await supabaseClient.from('eval_preguntas').insert(mapeoData);
           if (err2) throw err2;
         }
@@ -902,4 +986,5 @@
     checkSession();
   </script>
 </body>
+
 </html>
