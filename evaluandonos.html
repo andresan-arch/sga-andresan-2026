@@ -452,12 +452,14 @@
     </div>
     <div class="header-sub">
       <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
-        <span>Evaluándonos: Análisis Estadístico</span>
-        <div id="user-info" style="font-size: 0.8rem; display: none;">
-          <span id="user-email" style="margin-right: 15px;"></span>
+        <span style="font-weight:600;">Evaluándonos — Análisis Estadístico</span>
+        <div id="user-info" style="font-size: 0.85rem; display: none; align-items:center; gap:12px;">
+          <div style="text-align:right; line-height:1.3;">
+            <div id="user-nombre" style="font-weight:700; color:white;"></div>
+            <div id="user-email" style="opacity:0.75; font-size:0.75rem;"></div>
+          </div>
           <button onclick="logout()"
-            style="background: white; color: var(--primary); border: none; padding: 4px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.7rem;">Cerrar
-            Sesión</button>
+            style="background:rgba(255,255,255,0.2); color:white; border:1px solid rgba(255,255,255,0.4); padding:5px 14px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.75rem; white-space:nowrap;">Cerrar sesión</button>
         </div>
       </div>
     </div>
@@ -682,26 +684,26 @@
     async function loguearExitoso(user) {
       currentUser = user;
       $('login-mask').style.display = 'none';
-      $('user-info').style.display = 'block';
+      $('user-info').style.display = 'flex';
       $('user-email').innerText = user.email;
-
-      // Determinar Rol desde la tabla 'perfiles'
+      // Mostrar nombre si existe en perfiles
       try {
-        const { data: perfil } = await supabaseClient
-          .from('perfiles')
-          .select('rol')
-          .eq('email', user.email)
-          .maybeSingle();
-
-        if (perfil && perfil.rol === 'admin') {
-          currentRole = 'admin';
-          document.querySelector('.admin-trigger').style.display = 'block';
+        const { data: perfil } = await supabaseClient.from('perfiles').select('rol,nombre').eq('email', user.email).maybeSingle();
+        if (perfil) {
+          if ($('user-nombre')) $('user-nombre').innerText = perfil.nombre || user.email.split('@')[0];
+          if (perfil.rol === 'admin') {
+            currentRole = 'admin';
+            document.querySelector('.admin-trigger').style.display = 'block';
+          } else {
+            currentRole = 'lector';
+            document.querySelector('.admin-trigger').style.display = 'none';
+          }
         } else {
+          if ($('user-nombre')) $('user-nombre').innerText = user.email.split('@')[0];
           currentRole = 'lector';
           document.querySelector('.admin-trigger').style.display = 'none';
         }
       } catch (e) {
-        // Si hay error en perfiles, default a lector
         currentRole = 'lector';
         document.querySelector('.admin-trigger').style.display = 'none';
       }
@@ -723,18 +725,7 @@
     }
 
     async function init() {
-      // Auto-detección: cambiar al primer periodo que tenga datos reales para evitar que los filtros nazcan vacíos
-      try {
-        const { data } = await supabaseClient.from('eval_resultados').select('periodo').limit(1);
-        if (data && data.length > 0 && data[0].periodo) {
-          const defaultP = data[0].periodo;
-          if (currentPeriodo !== defaultP) {
-            setPeriodo(defaultP); // Esto llama a init() de nuevo, pero con el periodo correcto
-            return;
-          }
-        }
-      } catch (e) { }
-
+      // Sin auto-detección: el usuario elige el periodo libremente con los botones
       await cargarGrados();
     }
 
