@@ -465,7 +465,7 @@
     <div style="width:34px; height:34px; background:linear-gradient(135deg,#4f46e5,#7c3aed); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-weight:800; font-size:0.9rem;" id="user-avatar">?</div>
     <div style="line-height:1.2;">
       <div id="user-nombre" style="font-weight:700; color:#1e293b; font-size:0.85rem;"></div>
-      <div id="user-email" style="color:#94a3b8; font-size:0.72rem;"></div>
+      <div id="user-email" style="color:#94a3b8; font-size:0.72rem; display:none;"></div>
     </div>
     <button onclick="logout()" title="Cerrar sesión"
       style="background:#f1f5f9; color:#ef4444; border:none; padding:6px 10px; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.8rem;">⏻</button>
@@ -723,8 +723,10 @@
       $('login-mask').style.display = 'none';
 
       try {
-        const { data: perfil } = await supabaseClient.from('perfiles').select('rol').eq('email', user.email).maybeSingle();
-        const nombre = user.user_metadata?.full_name || user.user_metadata?.nombre || user.email.split('@')[0];
+        // Consultamos el perfil (buscamos rol y nombre/Nombre para ser resilientes)
+        const { data: perfil } = await supabaseClient.from('perfiles').select('*').eq('email', user.email).maybeSingle();
+        const nombrePerfil = perfil ? (perfil.nombre || perfil.Nombre) : null;
+        const nombre = nombrePerfil || user.user_metadata?.full_name || user.user_metadata?.nombre || user.email.split('@')[0];
 
         // Mostrar badge flotante
         const badge = $('user-badge');
