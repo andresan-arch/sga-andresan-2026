@@ -429,16 +429,15 @@
   </header>
 
   <main class="container">
-    <div class="period-container">
-      <div class="period-tabs">
-        <div id="tab-1" class="period-tab active" onclick="setPeriodo(1)">1° Periodo (1P)</div>
-        <div id="tab-2" class="period-tab" onclick="setPeriodo(2)">2° Periodo (2P)</div>
-        <div id="tab-3" class="period-tab" onclick="setPeriodo(3)">Examen Final</div>
-      </div>
-    </div>
-
-    <!-- Selectores -->
+    <!-- Selectores y Periodo -->
     <div class="controls">
+      <div class="period-container" style="grid-column: 1 / -1; margin: 0 0 1rem 0;">
+        <div class="period-tabs">
+          <div id="tab-1" class="period-tab active" onclick="setPeriodo(1)">1° Periodo (1P)</div>
+          <div id="tab-2" class="period-tab" onclick="setPeriodo(2)">2° Periodo (2P)</div>
+          <div id="tab-3" class="period-tab" onclick="setPeriodo(3)">Examen Final</div>
+        </div>
+      </div>
       <div class="control-group">
         <label>Grado</label>
         <select id="sel-grado" onchange="cargarAsignaturas()">
