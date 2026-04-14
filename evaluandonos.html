@@ -1154,17 +1154,29 @@
       fields.forEach(f => {
         const val = data[f.key] || '';
         const isImg = val.startsWith('http');
-        const preview = isImg ? `<a href="${val}" target="_blank" style="color:#2563eb; text-decoration:underline; font-size:0.7rem;">🖼️ Ver Imagen</a>` : `<span style="color:#64748b; font-size:0.7rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:inline-block; max-width:120px;">📝 ${val || 'Vacío'}</span>`;
+        
+        let previewHtml = '';
+        if (isImg) {
+          previewHtml = `
+            <div style="margin-top:5px; position:relative; display:inline-block;">
+              <img src="${val}" style="max-height:60px; border-radius:4px; border:1px solid #ddd;">
+              <button onclick="removerImagenMapeo('${data.id}', '${f.key}')" 
+                style="position:absolute; top:-5px; right:-5px; background:#ef4444; color:white; border:none; width:20px; height:20px; border-radius:50%; font-size:12px; cursor:pointer;" title="Eliminar Imagen">×</button>
+            </div>`;
+        } else {
+          previewHtml = `<span style="color:#64748b; font-size:0.7rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:inline-block; max-width:180px;">📝 ${val || 'Sin texto'}</span>`;
+        }
 
         html += `
           <div style="background:white; border:1px solid #e2e8f0; border-radius:8px; padding:8px;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:5px;">
               <span style="font-weight:bold; color:#1e293b; font-size:0.75rem;">${f.label}</span>
-              ${preview}
+              ${previewHtml}
             </div>
-            <div style="display:flex; gap:5px; align-items:center;">
+            <div style="display:flex; gap:5px; align-items:center; margin-top:5px;">
               <input type="file" id="file-${f.key}" accept="image/*" style="font-size:0.7rem; width:140px;">
-              <button onclick="subirImagenMapeo('${data.id}', '${f.key}')" style="background:#10b981; color:white; border:none; border-radius:6px; padding:4px 8px; font-weight:bold; font-size:0.7rem; cursor:pointer;">Subir</button>
+              <button onclick="subirImagenMapeo('${data.id}', '${f.key}')" 
+                style="background:#10b981; color:white; border:none; border-radius:6px; padding:4px 8px; font-weight:bold; font-size:0.7rem; cursor:pointer;">Subir</button>
             </div>
           </div>
         `;
@@ -1173,6 +1185,21 @@
       $('aimg-fields').innerHTML = html;
       $('aimg-detalle').style.display = 'block';
       $('aimg-status').innerText = "";
+    }
+
+    async function removerImagenMapeo(rowId, colName) {
+      if (!confirm("¿Seguro que quieres eliminar esta imagen? Se perderá el enlace permanentemente.")) return;
+      const st = $('aimg-status');
+      st.innerText = "⏳ Eliminando imagen...";
+      try {
+        const { error } = await supabaseClient.from('eval_preguntas').update({ [colName]: "" }).eq('id', rowId);
+        if (error) throw error;
+        st.innerText = "✅ Imagen eliminada.";
+        verDetallePreguntaAdmin();
+        if ($('resultado-container').style.display !== 'none') mostrarAnalisis();
+      } catch (e) {
+        st.innerText = "❌ Error al eliminar.";
+      }
     }
 
     async function subirImagenMapeo(rowId, colName) {
@@ -1332,16 +1359,13 @@
       const mapeoVisto = new Set();
       let periodoDetectado = 1;
 
-      // Helper para limpiar números sin redondear
       const parseRawNum = (val) => {
         if (val === undefined || val === null || val === '') return 0;
-        let s = val.toString().trim().replace('%', '').replace(' ', '');
-        s = s.replace(',', '.');
+        let s = val.toString().trim().replace('%', '').replace(' ', '').replace(',', '.');
         const n = parseFloat(s);
         return isNaN(n) ? 0 : n;
       };
 
-      // Detección de periodo
       const testRow = rows.find(r => r[1] && r[1].length > 5);
       if (testRow) {
         const name = testRow[1].toLowerCase();
@@ -1351,62 +1375,42 @@
       }
 
       const gradoRef = parseInt(rows[0][0]);
-      if (isNaN(gradoRef)) {
-        // Try fallback parsing if semicolon is trapped in quotes or merged
-        return alert("Error: No se pudo verificar el Grado inicial del archivo. Verifique que sea el exporte 'Item Analysis' estándar de ZipGrade.");
+      if (isNaN(gradoRef)) return alert("Error: No se pudo verificar el Grado inicial del archivo.");
+
+      // --- RESGUARDO DE IMÁGENES EXISTENTES ---
+      updateStatus("⏳ Resguardando imágenes existentes...");
+      const { data: existingPregs } = await supabaseClient.from('eval_preguntas')
+        .select('*').eq('periodo', periodoDetectado).eq('grado', gradoRef);
+      const imgBackup = {}; 
+      if (existingPregs) {
+        existingPregs.forEach(p => {
+          const key = `${p.asignatura}-${p.pregunta_num}`;
+          imgBackup[key] = p;
+        });
       }
 
       rows.forEach((row) => {
         if (row.length < 5) return;
-
         if (row[0] && row[4]) {
-          // 1. Datos básicos de aciertos (Col G y H)
-          const nCorrect = parseRawNum(row[6]); // # Correct (ej: 55)
-          const pCorrect = parseRawNum(row[7]); // % Correct (ej: 77.46)
-
-          // 2. REGLA DE TRES: Calcular Total de Alumnos
-          let totalEst = 0;
-          if (pCorrect > 0) {
-            totalEst = (nCorrect * 100) / pCorrect;
-          }
-
+          const nCorrect = parseRawNum(row[6]);
+          const pCorrect = parseRawNum(row[7]);
+          let totalEst = pCorrect > 0 ? (nCorrect * 100) / pCorrect : 0;
           let actualKey = (row[3] || "").toString().trim().toUpperCase();
-          if (actualKey === "PRIMARY KEY") {
-            actualKey = (row[5] || "").toString().trim().toUpperCase();
-          }
+          if (actualKey === "PRIMARY KEY") actualKey = (row[5] || "").toString().trim().toUpperCase();
 
-          // 3. Conversión de Porcentajes a Cantidades (Col J a Q)
           const rMap = {};
-          const indicesLetras = [9, 11, 13, 15, 17]; // Dejamos espacio hasta E por si acaso
-          const indicesValores = [10, 12, 14, 16, 18];
-
+          const indicesLetras = [9, 11, 13, 15, 17], indicesValores = [10, 12, 14, 16, 18];
           indicesLetras.forEach((idx, i) => {
             const letra = (row[idx] || "").toString().trim().toUpperCase();
             if (!letra) return;
-
             const perc = parseRawNum(row[indicesValores[i]]);
-
-            // Calculamos la cantidad de alumnos para esta opción
-            let count = 0;
-            if (letra === actualKey) {
-              count = nCorrect;
-            } else {
-              count = Math.round((perc * totalEst) / 100);
-            }
-            rMap[letra] = count;
+            rMap[letra] = (letra === actualKey) ? nCorrect : Math.round((perc * totalEst) / 100);
           });
 
           resultadosData.push({
-            grado: parseInt(row[0]),
-            quiz_name: row[1],
-            key: actualKey,
-            pregunta_num: parseInt(row[4]),
-            cant_correctas: Math.round(nCorrect),
-            porc_correctas: Math.round(pCorrect),
-            resp_a_count: rMap["A"] || 0,
-            resp_b_count: rMap["B"] || 0,
-            resp_c_count: rMap["C"] || 0,
-            resp_d_count: rMap["D"] || 0,
+            grado: parseInt(row[0]), quiz_name: row[1], key: actualKey, pregunta_num: parseInt(row[4]),
+            cant_correctas: Math.round(nCorrect), porc_correctas: Math.round(pCorrect),
+            resp_a_count: rMap["A"] || 0, resp_b_count: rMap["B"] || 0, resp_c_count: rMap["C"] || 0, resp_d_count: rMap["D"] || 0,
             periodo: periodoDetectado
           });
         }
@@ -1416,28 +1420,32 @@
           const mk = `${mG}-${mN}`;
           if (!mapeoVisto.has(mk)) {
             mapeoVisto.add(mk);
+            const asignatura = row[20];
+            const pNum = parseInt(mN);
+            const bKey = `${asignatura}-${pNum}`;
+            const backup = imgBackup[bKey] || {};
+
+            // Si el backup tiene una URL de imagen, la preservamos sobre el texto del CSV
+            const merge = (field, csvVal) => (backup[field] && backup[field].startsWith('http')) ? backup[field] : csvVal;
+
             mapeoData.push({
               grado: parseInt(mG),
-              pregunta_num: parseInt(mN),
-              asignatura: row[20],
-              texto_pregunta: row[21],
-              opcion_a: row[22],
-              opcion_b: row[23],
-              opcion_c: row[24],
-              opcion_d: row[25],
+              pregunta_num: pNum,
+              asignatura: asignatura,
+              texto_pregunta: merge('texto_pregunta', row[21]),
+              opcion_a: merge('opcion_a', row[22]),
+              opcion_b: merge('opcion_b', row[23]),
+              opcion_c: merge('opcion_c', row[24]),
+              opcion_d: merge('opcion_d', row[25]),
               periodo: periodoDetectado
             });
           }
         }
       });
 
-      console.log("DATOS A SUBIR:", resultadosData);
+      if (resultadosData.length === 0) return alert("⛔ Error: No se hallaron datos válidos en el archivo.");
 
-      if (resultadosData.length === 0) {
-        return alert("⛔ Error Matemático: El archivo ha sido leído exitosamente, pero CERO filas pasaron la prueba de validación. ¿Seguro que las columnas de 'Question Num' y 'Grado' están en su lugar original de ZipGrade o que no hubo un error de corrimiento de casillas en el Excel?\nPor seguridad, la base de datos de este periodo y grado NO ha sido eliminada ni alterada.");
-      }
-
-      const confirmar = confirm(`¿Confirmas la subida?\n- Grado: ${gradoRef}\n- Periodo Detectado: ${periodoDetectado}\n- Filas de Resultados: ${resultadosData.length}\n- Filas de Mapeo: ${mapeoData.length}`);
+      const confirmar = confirm(`¿Confirmas la subida?\n- Grado: ${gradoRef}\n- Periodo: ${periodoDetectado}\n- Resultados: ${resultadosData.length}\n- Mapeo: ${mapeoData.length}`);
       if (!confirmar) return;
 
       const btn = $('btn-confirm-upload');
@@ -1454,19 +1462,18 @@
           if (err1) throw err1;
         }
 
-        updateStatus(`Paso 3: Insertando mapeo de preguntas...`);
+        updateStatus(`Paso 3: Insertando mapeo (con imágenes resguardadas)...`);
         if (mapeoData.length) {
           const { error: err2 } = await supabaseClient.from('eval_preguntas').insert(mapeoData);
           if (err2) throw err2;
         }
 
         updateStatus("✅ ¡Importación EXITOSA!");
-        alert(`¡Carga completada con éxito para el Periodo ${periodoDetectado}!`);
+        alert(`¡Carga completada con éxito!`);
         location.reload();
       } catch (e) {
-        console.error("ERROR SUPABASE:", e);
-        alert("Hubo un error al subir: " + (e.message || "Error desconocido"));
-        updateStatus("❌ Error al guardar datos.");
+        console.error(e);
+        alert("Error al subir: " + (e.message || "Desconocido"));
         btn.disabled = false; btn.innerText = "Reintentar Subida";
       }
     }
