@@ -73,7 +73,7 @@
     }
 
     .container {
-      max-width: 1200px;
+      max-width: 96%;
       margin: 0 auto;
       padding: 0 1rem;
     }
@@ -117,7 +117,7 @@
     /* Grid Principal */
     .dashboard-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1.6fr 1fr;
       gap: 2rem;
       margin-top: 2rem;
     }
@@ -354,6 +354,16 @@
       color: var(--primary);
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
+
+    /* Colores Específicos por Periodo */
+    #tab-1 { color: #3b82f6; }
+    #tab-1.active { background: #3b82f6; color: white; }
+    
+    #tab-2 { color: #10b981; }
+    #tab-2.active { background: #10b981; color: white; }
+    
+    #tab-3 { color: #8b5cf6; }
+    #tab-3.active { background: #8b5cf6; color: white; }
 
     /* Admin Panel */
     .admin-trigger {
@@ -670,7 +680,7 @@
         let label = "asignatura";
         
         if (mapData && mapData.length > 0) {
-          const asignaturas = [...new Set(mapData.map(i => i.asignatura))].sort();
+          const asignaturas = [...new Set(mapData.map(i => i.asignatura))].sort((a,b) => a.localeCompare(b, "es"));
           options = asignaturas.map(a => `<option value="MAPPING:${a}">${a}</option>`);
         } else {
           // Intento 2: Fallback a Nombre del Examen si no hay mapeo
@@ -680,7 +690,7 @@
             .eq('periodo', currentPeriodo);
             
           if (resData && resData.length > 0) {
-            const examenes = [...new Set(resData.map(i => i.quiz_name))].sort();
+            const examenes = [...new Set(resData.map(i => i.quiz_name))].sort((a,b) => a.localeCompare(b, "es"));
             options = examenes.map(e => `<option value="QUIZ:${e}">${e}</option>`);
             label = "examen";
           }
