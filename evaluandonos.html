@@ -559,28 +559,71 @@
 
     <!-- Panel de Administración -->
     <div class="admin-trigger" onclick="toggleAdmin()">⚙️ Administrar Datos</div>
-    <div class="admin-panel" id="admin-panel">
-      <h4>Importar CSV / TSV Inteligente</h4>
-      <p style="font-size: 0.8rem; margin-bottom: 10px; color: #64748b;">Estructura: A=Grado, B=Nombre, D=Clave,
-        E=Pregunta... (S:Z=Mapeo)</p>
-      <input type="file" id="csv-file" accept=".csv,.tsv"
-        style="font-size: 0.75rem; padding: 5px; border: 1px dashed #cbd5e1;">
-
-      <!-- Visor de Diagnóstico -->
-      <div id="admin-debug" style="margin-top: 15px; overflow-x: auto; max-width: 100%; display: none;">
-        <p style="font-size: 0.7rem; color: var(--primary); font-weight: bold; margin-bottom: 5px;">👀 Previsualización
-          de los primeros datos:</p>
-        <table id="debug-table"
-          style="font-size: 0.65rem; border-collapse: collapse; width: 100%; background: #f8fafc; border: 1px solid #e2e8f0;">
-        </table>
-        <button id="btn-confirm-upload" onclick="finalizarSubida()"
-          style="margin-top: 10px; background: #10b981; width: 100%;">Los datos se ven bien, ¡SUBIR!</button>
+    <div class="admin-panel" id="admin-panel" style="width:380px;">
+      
+      <!-- Tabs del admin -->
+      <div style="display:flex; gap:0.5rem; margin-bottom:1rem;">
+        <button onclick="switchAdminTab('datos')" id="atab-datos"
+          style="flex:1; padding:8px; border-radius:8px; border:none; background:#4f46e5; color:white; font-weight:700; cursor:pointer; font-size:0.8rem;">📊 Datos</button>
+        <button onclick="switchAdminTab('usuarios')" id="atab-usuarios"
+          style="flex:1; padding:8px; border-radius:8px; border:2px solid #4f46e5; background:transparent; color:#4f46e5; font-weight:700; cursor:pointer; font-size:0.8rem;">👥 Usuarios</button>
       </div>
 
-      <button id="btn-parse-debug" onclick="previsualizarDatos()"
-        style="margin-top: 10px; background: #2563eb; color: white; font-weight: bold; padding: 10px;">🔍 ANALIZAR
-        ARCHIVO AHORA</button>
-      <div id="admin-status" class="status-msg"></div>
+      <!-- Tab: Datos -->
+      <div id="apanel-datos">
+        <h4 style="margin-bottom:0.5rem;">Importar CSV ZipGrade</h4>
+        <p style="font-size: 0.8rem; margin-bottom: 10px; color: #64748b;">Estructura: A=Grado, B=Nombre, D=Clave,
+          E=Pregunta... (S:Z=Mapeo)</p>
+        <input type="file" id="csv-file" accept=".csv,.tsv"
+          style="font-size: 0.75rem; padding: 5px; border: 1px dashed #cbd5e1; width:100%;">
+
+        <div id="admin-debug" style="margin-top: 15px; overflow-x: auto; max-width: 100%; display: none;">
+          <p style="font-size: 0.7rem; color: var(--primary); font-weight: bold; margin-bottom: 5px;">👀 Previsualización:</p>
+          <table id="debug-table"
+            style="font-size: 0.65rem; border-collapse: collapse; width: 100%; background: #f8fafc; border: 1px solid #e2e8f0;">
+          </table>
+          <button id="btn-confirm-upload" onclick="finalizarSubida()"
+            style="margin-top: 10px; background: #10b981; width: 100%;">Los datos se ven bien, ¡SUBIR!</button>
+        </div>
+
+        <button id="btn-parse-debug" onclick="previsualizarDatos()"
+          style="margin-top: 10px; background: #2563eb; color: white; font-weight: bold; padding: 10px; width:100%; border:none; border-radius:8px; cursor:pointer;">🔍 ANALIZAR ARCHIVO</button>
+        <div id="admin-status" class="status-msg"></div>
+      </div>
+
+      <!-- Tab: Usuarios -->
+      <div id="apanel-usuarios" style="display:none;">
+        <h4 style="margin-bottom:1rem;">Gestión de Usuarios</h4>
+
+        <!-- Agregar usuario individual -->
+        <div style="background:#f8fafc; border-radius:12px; padding:1rem; margin-bottom:1rem;">
+          <p style="font-size:0.8rem; font-weight:700; margin-bottom:0.75rem; color:#4f46e5;">➕ Agregar usuario</p>
+          <input type="email" id="nu-email" placeholder="email@andresan.com"
+            style="width:100%; padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.85rem; margin-bottom:0.5rem;">
+          <input type="password" id="nu-pass" placeholder="Contraseña"
+            style="width:100%; padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.85rem; margin-bottom:0.5rem;">
+          <select id="nu-rol"
+            style="width:100%; padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.85rem; margin-bottom:0.75rem;">
+            <option value="lector">Lector (solo filtros)</option>
+            <option value="admin">Admin (acceso total)</option>
+          </select>
+          <button onclick="crearUsuario()" 
+            style="width:100%; padding:10px; background:#4f46e5; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer;">Crear Usuario</button>
+        </div>
+
+        <!-- Importación masiva CSV -->
+        <div style="background:#f8fafc; border-radius:12px; padding:1rem;">
+          <p style="font-size:0.8rem; font-weight:700; margin-bottom:0.5rem; color:#4f46e5;">📋 Importar desde CSV</p>
+          <p style="font-size:0.72rem; color:#64748b; margin-bottom:0.75rem;">Columnas requeridas: <code>email</code>, <code>password</code>, <code>rol</code></p>
+          <input type="file" id="users-csv" accept=".csv"
+            style="font-size:0.75rem; padding:5px; border:1px dashed #cbd5e1; width:100%; margin-bottom:0.5rem;">
+          <button onclick="importarUsuariosCSV()"
+            style="width:100%; padding:10px; background:#10b981; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer;">📥 Importar Usuarios</button>
+        </div>
+
+        <div id="users-status" class="status-msg" style="margin-top:0.5rem;"></div>
+      </div>
+
     </div>
   </main>
 
@@ -985,6 +1028,80 @@
       } else {
         p.style.display = 'block';
       }
+    }
+
+    function switchAdminTab(tab) {
+      $('apanel-datos').style.display = tab === 'datos' ? 'block' : 'none';
+      $('apanel-usuarios').style.display = tab === 'usuarios' ? 'block' : 'none';
+      $('atab-datos').style.background = tab === 'datos' ? '#4f46e5' : 'transparent';
+      $('atab-datos').style.color = tab === 'datos' ? 'white' : '#4f46e5';
+      $('atab-datos').style.border = tab === 'datos' ? 'none' : '2px solid #4f46e5';
+      $('atab-usuarios').style.background = tab === 'usuarios' ? '#4f46e5' : 'transparent';
+      $('atab-usuarios').style.color = tab === 'usuarios' ? 'white' : '#4f46e5';
+      $('atab-usuarios').style.border = tab === 'usuarios' ? 'none' : '2px solid #4f46e5';
+    }
+
+    async function crearUsuario() {
+      const email = $('nu-email').value.trim();
+      const pass = $('nu-pass').value;
+      const rol = $('nu-rol').value;
+      const status = $('users-status');
+
+      if (!email || !pass) return alert('Completa el email y la contraseña.');
+
+      status.innerText = '⏳ Creando usuario...';
+      try {
+        // 1. Crear cuenta en Supabase Auth
+        const { data, error } = await supabaseClient.auth.signUp({ email, password: pass });
+        if (error) throw error;
+
+        // 2. Insertar / actualizar en perfiles
+        const { error: pErr } = await supabaseClient.from('perfiles')
+          .upsert({ email, rol }, { onConflict: 'email' });
+        if (pErr) throw pErr;
+
+        status.innerText = `✅ Usuario creado: ${email} (${rol})`;
+        $('nu-email').value = '';
+        $('nu-pass').value = '';
+      } catch (e) {
+        status.innerText = `❌ Error: ${e.message}`;
+      }
+    }
+
+    async function importarUsuariosCSV() {
+      const file = $('users-csv').files[0];
+      if (!file) return alert('Selecciona primero un archivo CSV.');
+      const status = $('users-status');
+      status.innerText = '⏳ Procesando archivo...';
+
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        encoding: 'UTF-8',
+        complete: async function(results) {
+          const rows = results.data;
+          if (!rows.length) return status.innerText = '❌ El archivo está vacío o mal formateado.';
+
+          let ok = 0, fail = 0;
+          for (const row of rows) {
+            const email = (row.email || '').trim();
+            const pass  = (row.password || row.contraseña || '').trim();
+            const rol   = (row.rol || 'lector').trim().toLowerCase();
+
+            if (!email || !pass) { fail++; continue; }
+
+            try {
+              const { error: sErr } = await supabaseClient.auth.signUp({ email, password: pass });
+              // Ignoramos "User already registered" — igual actualizamos perfiles
+              await supabaseClient.from('perfiles').upsert({ email, rol }, { onConflict: 'email' });
+              ok++;
+            } catch (e) { fail++; }
+
+            status.innerText = `⏳ Procesando... ${ok + fail}/${rows.length}`;
+          }
+          status.innerText = `✅ Listo: ${ok} creados, ${fail} fallidos de ${rows.length} filas.`;
+        }
+      });
     }
 
     function updateStatus(msg) {
