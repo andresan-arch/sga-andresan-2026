@@ -1055,9 +1055,12 @@
         const { data, error } = await supabaseClient.auth.signUp({ email, password: pass });
         if (error) throw error;
 
-        // 2. Insertar / actualizar en perfiles
+        const userId = data.user?.id;
+        if (!userId) throw new Error('No se pudo obtener el ID del usuario.');
+
+        // 2. Insertar en perfiles con el UUID del usuario
         const { error: pErr } = await supabaseClient.from('perfiles')
-          .upsert({ email, rol }, { onConflict: 'email' });
+          .upsert({ id: userId, email, rol }, { onConflict: 'email' });
         if (pErr) throw pErr;
 
         status.innerText = `✅ Usuario creado: ${email} (${rol})`;
@@ -1091,15 +1094,22 @@
             if (!email || !pass) { fail++; continue; }
 
             try {
-              const { error: sErr } = await supabaseClient.auth.signUp({ email, password: pass });
-              // Ignoramos "User already registered" — igual actualizamos perfiles
-              await supabaseClient.from('perfiles').upsert({ email, rol }, { onConflict: 'email' });
+              const { data: signData, error: sErr } = await supabaseClient.auth.signUp({ email, password: pass });
+              if (sErr && !sErr.message.includes('already registered')) throw sErr;
+              
+              const userId = signData?.user?.id;
+              if (userId) {
+                await supabaseClient.from('perfiles').upsert({ id: userId, email, rol }, { onConflict: 'email' });
+              } else {
+                // Usuario ya existente: actualizar solo el rol
+                await supabaseClient.from('perfiles').update({ rol }).eq('email', email);
+              }
               ok++;
             } catch (e) { fail++; }
 
             status.innerText = `⏳ Procesando... ${ok + fail}/${rows.length}`;
           }
-          status.innerText = `✅ Listo: ${ok} creados, ${fail} fallidos de ${rows.length} filas.`;
+          status.innerText = `✅ Listo: ${ok} creados/actualizados, ${fail} fallidos de ${rows.length} filas.`;
         }
       });
     }
