@@ -573,13 +573,6 @@
       err.style.display = 'none';
       btn.disabled = true; btn.innerText = "Verificando...";
 
-      // BYPASS DE ACCESO (ADMINISTRADOR)
-      if (userVal.toLowerCase().startsWith('andresan')) {
-        loguearExitoso({ email: 'andresan@andresan.com' });
-        btn.disabled = false; btn.innerText = "Ingresar";
-        return;
-      }
-
       const email = userVal.includes('@') ? userVal : `${userVal}@andresan.com`;
       const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
 
