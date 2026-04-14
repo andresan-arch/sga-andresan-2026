@@ -465,32 +465,41 @@
 
   <main class="container">
     <!-- Selectores y Periodo -->
-    <div class="controls">
-      <div class="period-container" style="grid-column: 1 / -1; margin: 0 0 1rem 0; flex-direction: column; gap: 1rem;">
-        <img src="https://pmfrdrihzdhhjxokabjm.supabase.co/storage/v1/object/public/assets/logo%20solo%20copia.png"
-          style="height: 80px; width: auto; object-fit: contain;" alt="Logo AndréSán">
-        <div class="period-tabs">
-          <div id="tab-1" class="period-tab active" onclick="setPeriodo(1)">Evaluándonos 1</div>
-          <div id="tab-2" class="period-tab" onclick="setPeriodo(2)">Evaluándonos 2</div>
-          <div id="tab-3" class="period-tab" onclick="setPeriodo(3)">Evaluándonos Final</div>
+    <div class="controls" style="display:flex; gap:2rem; align-items:stretch;">
+      <!-- Columna izquierda: botones + filtros -->
+      <div style="flex:1; display:flex; flex-direction:column; gap:1.2rem;">
+        <div style="display:flex; justify-content:center;">
+          <div class="period-tabs">
+            <div id="tab-1" class="period-tab active" onclick="setPeriodo(1)">Evaluándonos 1</div>
+            <div id="tab-2" class="period-tab" onclick="setPeriodo(2)">Evaluándonos 2</div>
+            <div id="tab-3" class="period-tab" onclick="setPeriodo(3)">Evaluándonos Final</div>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:1rem;">
+          <div class="control-group">
+            <label>Grado</label>
+            <select id="sel-grado" onchange="cargarAsignaturas()">
+              <option value="">Seleccione grado...</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label>Asignatura</label>
+            <select id="sel-asig" onchange="onAsigChange(this)" style="border-left:5px solid #e2e8f0; transition:border-color 0.3s, background 0.3s;">
+              <option value="">Seleccione asignatura...</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label>Pregunta</label>
+            <select id="sel-pregunta" onchange="mostrarAnalisis()">
+              <option value="">Seleccione pregunta...</option>
+            </select>
+          </div>
         </div>
       </div>
-      <div class="control-group">
-        <label>Grado</label>
-        <select id="sel-grado" onchange="cargarAsignaturas()">
-          <option value="">Seleccione grado...</option>
-        </select>
-      </div>
-      <div class="control-group" style="flex: 0 0 auto;">
-        <label>Asignatura</label>
-        <div id="sel-asig-btns" class="asig-btns"></div>
-        <input type="hidden" id="sel-asig" value="">
-      </div>
-      <div class="control-group">
-        <label>Pregunta</label>
-        <select id="sel-pregunta" onchange="mostrarAnalisis()">
-          <option value="">Seleccione pregunta...</option>
-        </select>
+      <!-- Columna derecha: logo -->
+      <div style="display:flex; align-items:center; justify-content:center; border-left:2px solid #f1f5f9; padding-left:2rem; flex-shrink:0;">
+        <img src="https://pmfrdrihzdhhjxokabjm.supabase.co/storage/v1/object/public/assets/logo%20solo%20copia.png"
+          style="height:120px; width:auto; object-fit:contain;" alt="Logo Evaluándonos">
       </div>
     </div>
 
@@ -631,9 +640,26 @@
       $('user-info').style.display = 'block';
       $('user-email').innerText = user.email;
 
-      // MODO DIAGNÓSTICO: Bypass Total de Permisos
-      currentRole = 'admin';
-      document.querySelector('.admin-trigger').style.display = 'block';
+      // Determinar Rol desde la tabla 'perfiles'
+      try {
+        const { data: perfil } = await supabaseClient
+          .from('perfiles')
+          .select('rol')
+          .eq('email', user.email)
+          .maybeSingle();
+
+        if (perfil && perfil.rol === 'admin') {
+          currentRole = 'admin';
+          document.querySelector('.admin-trigger').style.display = 'block';
+        } else {
+          currentRole = 'lector';
+          document.querySelector('.admin-trigger').style.display = 'none';
+        }
+      } catch (e) {
+        // Si hay error en perfiles, default a lector
+        currentRole = 'lector';
+        document.querySelector('.admin-trigger').style.display = 'none';
+      }
 
       init();
     }
@@ -685,78 +711,77 @@
       }
 
       const asigBtns = $('sel-asig-btns');
-      if (asigBtns) asigBtns.innerHTML = '<span style="color:#94a3b8; font-size:0.8rem;">Seleccione grado primero...</span>';
-      const asigHidden = $('sel-asig');
-      if(asigHidden) asigHidden.value = '';
+      const asigSel = $('sel-asig');
+      if (asigSel) { asigSel.innerHTML = '<option value="">Seleccione asignatura...</option>'; asigSel.style.cssText += ';border-left:5px solid #e2e8f0; background:white; color:var(--text)'; }
+      if (asigBtns) asigBtns.innerHTML = '';
       $('sel-pregunta').innerHTML = '<option value="">Seleccione pregunta...</option>';
       $('resultado-container').style.display = 'none';
       showLoading(false);
+    }
+
+    // Paleta de colores por asignatura (se asigna por índice)
+    const ASIG_COLORES = ['#6366f1','#10b981','#f59e0b','#ef4444','#3b82f6','#8b5cf6','#ec4899','#14b8a6','#f97316','#06b6d4'];
+    // Mapa de valor -> color para colorear el select al cambiar
+    const asigColorMap = {};
+
+    function onAsigChange(sel) {
+      const color = asigColorMap[sel.value] || '#e2e8f0';
+      if (sel.value) {
+        sel.style.borderLeft = '5px solid ' + color;
+        sel.style.background = color + '18'; // 18 = ~10% opacity hex
+        sel.style.color = '#1e293b';
+        sel.style.fontWeight = '700';
+      } else {
+        sel.style.borderLeft = '5px solid #e2e8f0';
+        sel.style.background = 'white';
+        sel.style.fontWeight = '';
+      }
+      cargarPreguntas();
     }
 
     async function cargarAsignaturas() {
       const grado = $('sel-grado').value;
       if (!grado) return;
 
-      const COLORES = ['#6366f1','#10b981','#f59e0b','#ef4444','#3b82f6','#8b5cf6','#ec4899','#14b8a6','#f97316','#06b6d4'];
-
       showLoading(true);
       try {
         const { data: mapData } = await supabaseClient.from('eval_preguntas')
-          .select('asignatura')
-          .eq('grado', grado)
-          .eq('periodo', currentPeriodo);
+          .select('asignatura').eq('grado', grado).eq('periodo', currentPeriodo);
 
-        const container = $('sel-asig-btns');
-        const hidden = $('sel-asig');
-        hidden.value = '';
+        const sel = $('sel-asig');
+        sel.style.borderLeft = '5px solid #e2e8f0';
+        sel.style.background = 'white';
+        sel.style.fontWeight = '';
         $('sel-pregunta').innerHTML = '<option value="">Seleccione pregunta...</option>';
 
-        let items = [];
-        let prefix = 'MAPPING';
+        let items = [], prefix = 'MAPPING';
 
         if (mapData && mapData.length > 0) {
-          items = [...new Set(mapData.map(i => i.asignatura))].sort((a, b) => a.localeCompare(b, 'es'));
+          items = [...new Set(mapData.map(i => i.asignatura))].sort((a,b) => a.localeCompare(b,'es'));
         } else {
           const { data: resData } = await supabaseClient.from('eval_resultados')
             .select('quiz_name').eq('grado', grado).eq('periodo', currentPeriodo);
           if (resData && resData.length > 0) {
-            items = [...new Set(resData.map(i => i.quiz_name))].sort((a, b) => a.localeCompare(b, 'es'));
+            items = [...new Set(resData.map(i => i.quiz_name))].sort((a,b) => a.localeCompare(b,'es'));
             prefix = 'QUIZ';
           }
         }
 
-        if (items.length === 0) {
-          container.innerHTML = '<span style="color:#ef4444; font-size:0.8rem;">Sin asignaturas para este grado/periodo</span>';
-          return;
-        }
-
-        container.innerHTML = items.map((item, i) => {
-          const color = COLORES[i % COLORES.length];
-          return `<button class="asig-btn" 
-            data-value="${prefix}:${item}" 
-            style="color:${color}; border-color:${color};" 
-            onclick="seleccionarAsignatura(this, '${color}')">${item}</button>`;
-        }).join('');
+        // Construir opciones y mapa de colores
+        let html = '<option value="">Seleccione asignatura...</option>';
+        items.forEach((item, i) => {
+          const color = ASIG_COLORES[i % ASIG_COLORES.length];
+          const val = `${prefix}:${item}`;
+          asigColorMap[val] = color;
+          html += `<option value="${val}">${item}</option>`;
+        });
+        sel.innerHTML = html;
 
       } catch (e) {
         console.error('Error Asignaturas:', e);
       } finally {
         showLoading(false);
       }
-    }
-
-    function seleccionarAsignatura(btn, color) {
-      // Deselect all
-      document.querySelectorAll('.asig-btn').forEach(b => {
-        b.classList.remove('selected');
-        b.style.background = 'transparent';
-      });
-      // Select clicked
-      btn.classList.add('selected');
-      btn.style.background = color;
-      // Set hidden value and trigger questions
-      $('sel-asig').value = btn.dataset.value;
-      cargarPreguntas();
     }
 
     async function cargarPreguntas() {
