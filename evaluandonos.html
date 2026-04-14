@@ -467,7 +467,7 @@
           <div id="pregunta-media" class="media-container"></div>
           <p id="pregunta-texto" style="margin-bottom: 2rem;"></p>
 
-          <div class="options-list">
+          <div id="options-list" class="options-list">
             <div id="opt-a" class="option">
               <span class="option-letter">A</span>
               <div id="txt-a" class="option-content"></div>
@@ -682,31 +682,35 @@
 
       showLoading(true);
 
-      // Buscamos resultados (que sí o sí existen) y el mapeo (que podría no existir)
-      const [mapRes, dataRes] = await Promise.all([
-        supabaseClient.from('eval_preguntas').select('*').eq('grado', grado).eq('pregunta_num', num).eq('periodo', currentPeriodo).maybeSingle(),
-        supabaseClient.from('eval_resultados').select('*').eq('grado', grado).eq('quiz_name', quiz).eq('pregunta_num', num).eq('periodo', currentPeriodo).maybeSingle()
-      ]);
+      try {
+        // Buscamos resultados (que sí o sí existen) y el mapeo (que podría no existir)
+        const [mapRes, dataRes] = await Promise.all([
+          supabaseClient.from('eval_preguntas').select('*').eq('grado', grado).eq('pregunta_num', num).eq('periodo', currentPeriodo).maybeSingle(),
+          supabaseClient.from('eval_resultados').select('*').eq('grado', grado).eq('quiz_name', quiz).eq('pregunta_num', num).eq('periodo', currentPeriodo).maybeSingle()
+        ]);
 
-      if (dataRes.data) {
-        let mapping = mapRes.data;
-        // MODO RESILIENCIA: Si no se subió cuestionario, creamos uno virtual para mostrar los datos.
-        if (!mapping) {
-          mapping = {
-            pregunta_num: num,
-            texto_pregunta: `Pregunta #${num} (Evaluación sin archivo de mapeo detallado)`,
-            opcion_a: "Opción A",
-            opcion_b: "Opción B",
-            opcion_c: "Opción C",
-            opcion_d: "Opción D"
-          };
+        if (dataRes.data) {
+          let mapping = mapRes.data;
+          // MODO RESILIENCIA: Si no se subió cuestionario, creamos uno virtual para mostrar los datos.
+          if (!mapping) {
+            mapping = {
+              pregunta_num: num,
+              texto_pregunta: `Pregunta #${num} (Evaluación sin archivo de mapeo detallado)`,
+              opcion_a: "Opción A",
+              opcion_b: "Opción B",
+              opcion_c: "Opción C",
+              opcion_d: "Opción D"
+            };
+          }
+          renderUI(mapping, dataRes.data);
+        } else {
+          alert("No se encontraron resultados completos para esta pregunta.");
         }
-        renderUI(mapping, dataRes.data);
-      } else {
-        alert("No se encontraron resultados completos para esta pregunta.");
+      } catch (e) {
+        console.error("Error en mostrarAnalisis:", e);
+      } finally {
+        showLoading(false);
       }
-
-      showLoading(false);
     }
 
     function renderUI(mapping, stats) {
@@ -723,9 +727,9 @@
       const optionsHtml = opts.map((o, i) => {
         const isCorrect = (o === key);
         return `
-          <div class="option-item ${isCorrect ? 'correct' : ''}">
+          <div class="option ${isCorrect ? 'correct' : ''}">
             <div class="option-letter">${o}</div>
-            <div class="option-text" id="opt-text-${o}">${mapping[labels[i]] || 'N/A'}</div>
+            <div class="option-content" id="opt-text-${o}">${mapping[labels[i]] || 'N/A'}</div>
             <div id="opt-media-${o}"></div>
           </div>
         `;
