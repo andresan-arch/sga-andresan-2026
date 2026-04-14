@@ -776,26 +776,40 @@
     async function cargarGrados() {
       showLoading(true);
       try {
-        // CAMBIO AL NÚCLEO: Buscamos los grados primero en RESULTADOS, porque nunca falla
         const { data, error } = await supabaseClient.from('eval_resultados')
           .select('grado')
           .eq('periodo', currentPeriodo);
 
         if (error) throw error;
-        const distinct = [...new Set(data.map(i => i.grado))].sort((a, b) => a - b);
+        
+        if (!data || data.length === 0) {
+          console.warn("No hay datos para el periodo:", currentPeriodo);
+          $('sel-grado').innerHTML = '<option value="">Sin datos en Periodo ' + currentPeriodo + '</option>';
+        } else {
+          const distinct = [...new Set(data.map(i => i.grado))].sort((a, b) => a - b);
+          $('sel-grado').innerHTML = '<option value="">Seleccione grado...</option>' +
+            distinct.map(g => `<option value="${g}">${g}° Grado</option>`).join('');
+        }
 
-        $('sel-grado').innerHTML = '<option value="">Seleccione grado...</option>' +
-          distinct.map(g => `<option value="${g}">${g}° Grado</option>`).join('');
       } catch (e) {
         console.error("Error grados:", e);
+        alert("Error al cargar grados: Verifica los permisos (RLS) en Supabase.");
       }
 
-      const asigBtns = $('sel-asig-btns');
       const asigSel = $('sel-asig');
-      if (asigSel) { asigSel.innerHTML = '<option value="">Seleccione asignatura...</option>'; asigSel.style.cssText += ';border-left:5px solid #e2e8f0; background:white; color:var(--text)'; }
-      if (asigBtns) asigBtns.innerHTML = '';
-      $('sel-pregunta').innerHTML = '<option value="">Seleccione pregunta...</option>';
-      $('resultado-container').style.display = 'none';
+      if (asigSel) { 
+        asigSel.innerHTML = '<option value="">Seleccione asignatura...</option>'; 
+        asigSel.style.borderLeft = '5px solid #e2e8f0'; 
+        asigSel.style.background = 'white'; 
+        asigSel.style.fontWeight = '';
+      }
+      
+      const pSel = $('sel-pregunta');
+      if (pSel) pSel.innerHTML = '<option value="">Seleccione pregunta...</option>';
+      
+      const resCont = $('resultado-container');
+      if (resCont) resCont.style.display = 'none';
+      
       showLoading(false);
     }
 
