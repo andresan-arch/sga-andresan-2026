@@ -451,19 +451,25 @@
         style="width: 100%; height: 100%; object-fit: cover; display: block;" alt="Evaluándonos Banner">
     </div>
     <div class="header-sub">
-      <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+      <div class="container">
         <span style="font-weight:600;">Evaluándonos — Análisis Estadístico</span>
-        <div id="user-info" style="font-size: 0.85rem; display: none; align-items:center; gap:12px;">
-          <div style="text-align:right; line-height:1.3;">
-            <div id="user-nombre" style="font-weight:700; color:white;"></div>
-            <div id="user-email" style="opacity:0.75; font-size:0.75rem;"></div>
-          </div>
-          <button onclick="logout()"
-            style="background:rgba(255,255,255,0.2); color:white; border:1px solid rgba(255,255,255,0.4); padding:5px 14px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.75rem; white-space:nowrap;">Cerrar sesión</button>
-        </div>
       </div>
     </div>
   </header>
+
+  <!-- Badge flotante de usuario (siempre visible) -->
+  <div id="user-badge" style="display:none; position:fixed; top:16px; right:16px; z-index:3000;
+    background:white; border-radius:50px; padding:8px 16px 8px 12px;
+    box-shadow:0 4px 20px rgba(79,70,229,0.25); border:1px solid #e2e8f0;
+    align-items:center; gap:10px; font-family:'Outfit',sans-serif;">
+    <div style="width:34px; height:34px; background:linear-gradient(135deg,#4f46e5,#7c3aed); border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-weight:800; font-size:0.9rem;" id="user-avatar">?</div>
+    <div style="line-height:1.2;">
+      <div id="user-nombre" style="font-weight:700; color:#1e293b; font-size:0.85rem;"></div>
+      <div id="user-email" style="color:#94a3b8; font-size:0.72rem;"></div>
+    </div>
+    <button onclick="logout()" title="Cerrar sesión"
+      style="background:#f1f5f9; color:#ef4444; border:none; padding:6px 10px; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.8rem;">⏻</button>
+  </div>
 
   <main class="container">
     <!-- Selectores y Periodo -->
@@ -684,28 +690,33 @@
     async function loguearExitoso(user) {
       currentUser = user;
       $('login-mask').style.display = 'none';
-      $('user-info').style.display = 'flex';
-      $('user-email').innerText = user.email;
-      // Mostrar nombre si existe en perfiles
+
       try {
         const { data: perfil } = await supabaseClient.from('perfiles').select('rol,nombre').eq('email', user.email).maybeSingle();
-        if (perfil) {
-          if ($('user-nombre')) $('user-nombre').innerText = perfil.nombre || user.email.split('@')[0];
-          if (perfil.rol === 'admin') {
-            currentRole = 'admin';
-            document.querySelector('.admin-trigger').style.display = 'block';
-          } else {
-            currentRole = 'lector';
-            document.querySelector('.admin-trigger').style.display = 'none';
-          }
+        const nombre = (perfil && perfil.nombre) ? perfil.nombre : user.email.split('@')[0];
+
+        // Mostrar badge flotante
+        const badge = $('user-badge');
+        badge.style.display = 'flex';
+        if ($('user-nombre')) $('user-nombre').innerText = nombre;
+        if ($('user-email')) $('user-email').innerText = user.email;
+        if ($('user-avatar')) $('user-avatar').innerText = nombre.charAt(0).toUpperCase();
+
+        if (perfil && perfil.rol === 'admin') {
+          currentRole = 'admin';
+          document.querySelector('.admin-trigger').style.display = 'block';
         } else {
-          if ($('user-nombre')) $('user-nombre').innerText = user.email.split('@')[0];
           currentRole = 'lector';
           document.querySelector('.admin-trigger').style.display = 'none';
         }
       } catch (e) {
         currentRole = 'lector';
         document.querySelector('.admin-trigger').style.display = 'none';
+        // Mostrar badge mínimo aun si falla perfiles
+        const badge = $('user-badge');
+        if (badge) { badge.style.display = 'flex'; }
+        if ($('user-email')) $('user-email').innerText = user.email;
+        if ($('user-avatar')) $('user-avatar').innerText = user.email.charAt(0).toUpperCase();
       }
 
       init();
