@@ -7,6 +7,7 @@
   <title>Evaluándonos - Análisis Estadístico</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
@@ -825,8 +826,12 @@
       const labels = ['A', 'B', 'C', 'D'];
       const colors = labels.map(o => o === key ? '#10b981' : '#6366f1');
 
+      // Add a slight top padding so labels don't get clipped
+      Chart.register(ChartDataLabels);
+
       myChart = new Chart(ctx, {
         type: 'bar',
+        plugins: [ChartDataLabels],
         data: {
           labels: labels,
           datasets: [{
@@ -839,9 +844,27 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
+          plugins: { 
+            legend: { display: false },
+            datalabels: {
+              color: '#1e293b',
+              font: { weight: 'bold', size: 16 },
+              anchor: 'end',
+              align: 'top',
+              formatter: function(value) {
+                return value > 0 ? value : '';
+              }
+            }
+          },
+          layout: {
+            padding: { top: 25 }
+          },
           scales: {
-            y: { beginAtZero: true, ticks: { precision: 0 }, grid: { display: false } },
+            y: { 
+              beginAtZero: true, 
+              ticks: { precision: 0 }, 
+              grid: { display: false } 
+            },
             x: { grid: { display: false } }
           }
         }
