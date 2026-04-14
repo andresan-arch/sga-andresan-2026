@@ -495,6 +495,10 @@
             <canvas id="barChart"></canvas>
           </div>
           <div class="stats-summary">
+            <div class="stat-box" style="background: rgba(99, 102, 241, 0.1); color: var(--primary); border: 2px solid rgba(99, 102, 241, 0.2);">
+              <span id="stat-total" class="stat-val" style="color: var(--primary);">0</span>
+              <span class="stat-label" style="color: var(--primary);">Personas Evaluadas</span>
+            </div>
             <div class="stat-box">
               <span id="stat-correctas" class="stat-val">0</span>
               <span class="stat-label">Aciertos</span>
@@ -803,6 +807,10 @@
 
       $('stat-correctas').innerText = stats.cant_correctas;
       $('stat-porcentaje').innerText = stats.porc_correctas + "%";
+
+      const totalPersonas = stats.porc_correctas > 0 ? Math.round((stats.cant_correctas * 100) / stats.porc_correctas) : (counts.reduce((a,b)=>a+b,0));
+      const elTotal = document.getElementById('stat-total');
+      if(elTotal) elTotal.innerText = totalPersonas;
 
       updateChart(counts, key);
     }
