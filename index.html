@@ -844,7 +844,7 @@
     <div class="tabs no-print">
       <button class="tab tab-notas active" onclick="tab('notas',this)">📝 Notas</button>
       <button class="tab tab-asist" onclick="tab('asistencia',this);abrirAsistencia()">✅ Asistencia</button>
-      <button class="tab tab-res" onclick="tab('resumen',this)">📊 Resumen</button>
+      <button class="tab tab-res" onclick="tab('resumen',this); if(gRes) selRes(gRes)">📊 Resumen</button>
       <button class="tab tab-ing" onclick="tab('ingreso',this)">✏️ Ingreso</button>
       <button class="tab tab-act" onclick="tab('actividades',this)">📋 Actividades</button>
       <button class="tab tab-inf" onclick="tab('informe',this)">📄 Informe</button>
@@ -1937,6 +1937,12 @@
         msg.textContent = existente ? '✅ Nota actualizada' : '✅ Nota guardada';
         document.getElementById('ing-nota').value = '';
         badge('ok', 'Guardado ✓');
+
+        // Refuerzo: Actualizar otras vistas de inmediato
+        if (gRes) selRes(gRes);
+        const currentAsigId = parseInt(document.getElementById('asig-notas-sel')?.value);
+        if (currentAsigId && currentAsigId === act?.asignatura_id) cargarTablaNotas();
+
         setTimeout(() => { msg.textContent = ''; }, 3000);
       }
     }
