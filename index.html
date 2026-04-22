@@ -1089,45 +1089,52 @@
     function setupRealtime() {
       if (realtimeChannel) sb.removeChannel(realtimeChannel);
 
+      console.log('[Realtime] Iniciando suscripción...');
       realtimeChannel = sb.channel('db-changes')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, payload => {
+          console.log('[Realtime] Cambio en notas:', payload);
           handleDataChange('notas', payload);
         })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'asistencia' }, payload => {
+          console.log('[Realtime] Cambio en asistencia:', payload);
           handleDataChange('asistencia', payload);
         })
-        .subscribe();
+        .subscribe((status) => {
+          console.log('[Realtime] Estado:', status);
+        });
     }
 
     async function handleDataChange(table, payload) {
       const data = payload.new || payload.old;
       if (!data) return;
 
-      // 1. Refrescar Resumen si el grupo coincide
+      // 1. Refrescar Resumen si hay uno seleccionado
       if (gRes) {
-        // Recargamos el resumen si hay uno seleccionado
         await selRes(gRes);
       }
 
-      // 2. Refrescar Tabla de Notas si la asignatura coincide (o si es un DELETE y no tenemos el ID)
-      if (table === 'notas') {
-        const currentAsigId = parseInt(document.getElementById('asig-notas-sel')?.value);
-        if (currentAsigId && (!data.asignatura_id || currentAsigId === data.asignatura_id)) {
+      // 2. Refrescar Tabla de Notas
+      const asigSel = document.getElementById('asig-notas-sel');
+      if (asigSel && asigSel.value) {
+        // Refrescamos si coincide la asignatura o si es un borrado (donde data.asignatura_id puede faltar)
+        if (!data.asignatura_id || parseInt(asigSel.value) === data.asignatura_id) {
           await cargarTablaNotas();
         }
       }
 
-      // 3. Refrescar Asistencia si la fecha coincide
-      if (table === 'asistencia') {
-        if (data.fecha === fechaAsist) {
+      // 3. Refrescar Asistencia
+      if (table === 'asistencia' && fechaAsist) {
+        if (!data.fecha || data.fecha === fechaAsist) {
           await renderHorarioDia(fechaAsist);
         }
       }
 
-      // 4. Refrescar Informe Individual si el estudiante coincide
-      const currentEstId = parseInt(document.getElementById('inf-est')?.value);
-      if (currentEstId && (!data.estudiante_id || currentEstId === data.estudiante_id)) {
-        await generarInforme();
+      // 4. Refrescar Informe Individual
+      const estSel = document.getElementById('inf-est');
+      if (estSel && estSel.value) {
+        if (!data.estudiante_id || parseInt(estSel.value) === data.estudiante_id) {
+          await generarInforme();
+        }
       }
     }
 
@@ -1939,9 +1946,9 @@
         badge('ok', 'Guardado ✓');
 
         // Refuerzo: Actualizar otras vistas de inmediato
-        if (gRes) selRes(gRes);
+        if (gRes) await selRes(gRes);
         const currentAsigId = parseInt(document.getElementById('asig-notas-sel')?.value);
-        if (currentAsigId && currentAsigId === act?.asignatura_id) cargarTablaNotas();
+        if (currentAsigId) await cargarTablaNotas();
 
         setTimeout(() => { msg.textContent = ''; }, 3000);
       }
@@ -2029,9 +2036,10 @@
         badge('no', 'Error');
       } else {
         badge('ok', 'Nota borrada ✓');
-        // Refuerzo: Actualizar la tabla de inmediato para el usuario actual
+        // Refuerzo: Actualizar vistas de inmediato para el usuario actual
+        if (gRes) await selRes(gRes);
         const currentAsigId = parseInt(document.getElementById('asig-notas-sel')?.value);
-        if (currentAsigId) cargarTablaNotas();
+        if (currentAsigId) await cargarTablaNotas();
       }
     }
 
