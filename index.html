@@ -1295,10 +1295,15 @@
             texto = dsLabel(valor);
           }
 
-          html += `<td style="text-align:center">
+          html += `<td style="text-align:center; position:relative">
         <span class="${clase}" style="padding:6px 12px; font-size:13px;">
           ${texto}
         </span>
+        ${valor !== undefined && valor !== null ? `
+          <button onclick="borrarNota(${est.id}, ${act.id})" 
+                  style="position:absolute; top:2px; right:2px; background:none; border:none; color:#ef4444; cursor:pointer; font-size:10px; padding:2px"
+                  title="Borrar nota">✕</button>
+        ` : ''}
       </td>`;
         });
 
@@ -2002,6 +2007,24 @@
       msg.textContent = `✅ Actividad "${nombre}" creada en ${rows.length} asignatura(s)`;
       badge('ok', 'Listo ✓');
       setTimeout(() => { msg.textContent = ''; }, 4000);
+    }
+
+    async function borrarNota(estId, actId) {
+      if (!confirm('¿Estás seguro de que quieres borrar esta nota?')) return;
+
+      badge('wait', 'Borrando nota...');
+      const { error } = await sb.from('notas')
+        .delete()
+        .eq('estudiante_id', estId)
+        .eq('actividad_id', actId);
+
+      if (error) {
+        alert('Error al borrar nota: ' + error.message);
+        badge('no', 'Error');
+      } else {
+        badge('ok', 'Nota borrada ✓');
+        // El refresco se hará vía Realtime automáticamente
+      }
     }
 
     // ════════════════════════════════════════════════════════
