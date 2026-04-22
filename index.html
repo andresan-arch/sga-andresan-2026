@@ -997,6 +997,7 @@
     let anio = 2026;
     let periodo = 1;
     let gNotas = null, gAsist = null, gRes = null;
+    let realtimeChannel = null;
 
     // ════════════════════════════════════════════════════════
     // AUTH
@@ -1079,7 +1080,55 @@
       // Detectar clase actual por horario
       detectarClase();
 
+      // Configurar Realtime
+      setupRealtime();
+
       badge('ok', 'Listo ✓');
+    }
+
+    function setupRealtime() {
+      if (realtimeChannel) sb.removeChannel(realtimeChannel);
+
+      realtimeChannel = sb.channel('db-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, payload => {
+          handleDataChange('notas', payload);
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'asistencia' }, payload => {
+          handleDataChange('asistencia', payload);
+        })
+        .subscribe();
+    }
+
+    async function handleDataChange(table, payload) {
+      const data = payload.new || payload.old;
+      if (!data) return;
+
+      // 1. Refrescar Resumen si el grupo coincide
+      if (gRes) {
+        // Recargamos el resumen si hay uno seleccionado
+        await selRes(gRes);
+      }
+
+      // 2. Refrescar Tabla de Notas si la asignatura coincide
+      if (table === 'notas') {
+        const currentAsigId = parseInt(document.getElementById('asig-notas-sel')?.value);
+        if (currentAsigId === data.asignatura_id) {
+          await cargarTablaNotas();
+        }
+      }
+
+      // 3. Refrescar Asistencia si la fecha coincide
+      if (table === 'asistencia') {
+        if (data.fecha === fechaAsist) {
+          await renderHorarioDia(fechaAsist);
+        }
+      }
+
+      // 4. Refrescar Informe Individual si el estudiante coincide
+      const currentEstId = parseInt(document.getElementById('inf-est')?.value);
+      if (currentEstId === data.estudiante_id) {
+        await generarInforme();
+      }
     }
 
     function detectarClase() {
