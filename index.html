@@ -1109,10 +1109,10 @@
         await selRes(gRes);
       }
 
-      // 2. Refrescar Tabla de Notas si la asignatura coincide
+      // 2. Refrescar Tabla de Notas si la asignatura coincide (o si es un DELETE y no tenemos el ID)
       if (table === 'notas') {
         const currentAsigId = parseInt(document.getElementById('asig-notas-sel')?.value);
-        if (currentAsigId === data.asignatura_id) {
+        if (currentAsigId && (!data.asignatura_id || currentAsigId === data.asignatura_id)) {
           await cargarTablaNotas();
         }
       }
@@ -1126,7 +1126,7 @@
 
       // 4. Refrescar Informe Individual si el estudiante coincide
       const currentEstId = parseInt(document.getElementById('inf-est')?.value);
-      if (currentEstId === data.estudiante_id) {
+      if (currentEstId && (!data.estudiante_id || currentEstId === data.estudiante_id)) {
         await generarInforme();
       }
     }
@@ -2023,7 +2023,9 @@
         badge('no', 'Error');
       } else {
         badge('ok', 'Nota borrada ✓');
-        // El refresco se hará vía Realtime automáticamente
+        // Refuerzo: Actualizar la tabla de inmediato para el usuario actual
+        const currentAsigId = parseInt(document.getElementById('asig-notas-sel')?.value);
+        if (currentAsigId) cargarTablaNotas();
       }
     }
 
