@@ -101,6 +101,23 @@
             opacity: 0;
             transform: translateY(10px);
         }
+        }
+        @media print {
+            header, nav, .grado-pill, #asig-selector, .no-print {
+                display: none !important;
+            }
+            #main-content {
+                padding-top: 0 !important;
+            }
+            .glass-card {
+                border: 1px solid #ddd !important;
+                background: white !important;
+                box-shadow: none !important;
+            }
+            .tab-section {
+                display: block !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-background text-on-surface min-h-screen font-sans">
@@ -638,8 +655,11 @@
 
             container.innerHTML = `
                 <section class="glass-card rounded-3xl p-card-padding shadow-xl shadow-indigo-500/5 relative overflow-hidden">
-                    <div class="absolute top-0 right-0 p-4">
-                        <span class="bg-success/10 text-success px-3 py-1 rounded-full text-[10px] font-bold">ACTIVO</span>
+                    <div class="absolute top-0 right-0 p-4 flex gap-2 no-print">
+                        <button onclick="window.print()" class="bg-primary/10 text-primary p-2 rounded-full active:scale-90 transition-transform">
+                            <span class="material-symbols-outlined">download</span>
+                        </button>
+                        <span class="bg-success/10 text-success px-3 py-1 rounded-full text-[10px] font-bold h-fit">ACTIVO</span>
                     </div>
                     <div class="flex items-center gap-stack-md">
                         <div class="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center border-2 border-white shadow-md">
