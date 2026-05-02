@@ -1919,21 +1919,47 @@
         return;
       }
       badge('wait', 'Guardando…');
+      
       const act = DB.acts.find(a => a.id === actId);
+      const isEvaluandonos = act?.nombre.toLowerCase().includes('evaluándonos');
 
-      const { data: existente } = await sb.from('notas').select('id')
-        .eq('estudiante_id', estId).eq('actividad_id', actId).maybeSingle();
+      let notasToSave = [{
+        estudiante_id: estId, 
+        actividad_id: actId,
+        asignatura_id: act?.asignatura_id,
+        valor, 
+        periodo, 
+        año: anio
+      }];
 
-      let error;
-      if (existente) {
-        ({ error } = await sb.from('notas').update({ valor }).eq('id', existente.id));
-      } else {
-        ({ error } = await sb.from('notas').insert({
-          estudiante_id: estId, actividad_id: actId,
-          asignatura_id: act?.asignatura_id,
-          valor, periodo, año: anio
-        }));
+      if (isEvaluandonos) {
+        const asig = DB.asigs.find(a => a.id === act.asignatura_id);
+        const grado = asig?.grado;
+        const asigIds = DB.asigs.filter(a => a.grado === grado).map(a => a.id);
+        
+        // Buscar otras actividades "Evaluándonos" en el mismo grado
+        const otherActs = DB.acts.filter(a => 
+          asigIds.includes(a.asignatura_id) && 
+          a.id !== actId && 
+          a.nombre.toLowerCase().includes('evaluándonos')
+        );
+
+        otherActs.forEach(oa => {
+          notasToSave.push({
+            estudiante_id: estId, 
+            actividad_id: oa.id,
+            asignatura_id: oa.asignatura_id,
+            valor, 
+            periodo, 
+            año: anio
+          });
+        });
       }
+
+      // Usar upsert con onConflict para asegurar que se actualicen si ya existen
+      const { error } = await sb.from('notas').upsert(notasToSave, { 
+        onConflict: 'estudiante_id,actividad_id' 
+      });
 
       if (error) {
         msg.style.color = '#dc2626';
@@ -1941,7 +1967,7 @@
         badge('no', 'Error');
       } else {
         msg.style.color = '#059669';
-        msg.textContent = existente ? '✅ Nota actualizada' : '✅ Nota guardada';
+        msg.textContent = isEvaluandonos ? '✅ Sincronización Evaluándonos (' + notasToSave.length + ' mat.)' : '✅ Nota guardada';
         document.getElementById('ing-nota').value = '';
         badge('ok', 'Guardado ✓');
 
