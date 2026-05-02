@@ -1884,10 +1884,12 @@
     // ════════════════════════════════════════════════════════
     function ingCargarEst() {
       const g = document.getElementById('ing-grado').value;
+      const sortedEsts = DB.ests.filter(e => e.grado === g)
+        .sort((a, b) => a.nombre_completo.localeCompare(b.nombre_completo));
+        
       document.getElementById('ing-est').innerHTML =
         '<option value="">Selecciona estudiante…</option>' +
-        DB.ests.filter(e => e.grado === g)
-          .map(e => `<option value="${e.id}">${e.nombre_completo}</option>`).join('');
+        sortedEsts.map(e => `<option value="${e.id}">${e.nombre_completo}</option>`).join('');
       document.getElementById('ing-act').innerHTML = '<option value="">Selecciona estudiante primero…</option>';
     }
 
@@ -2094,10 +2096,12 @@
     // ════════════════════════════════════════════════════════
     function infCargarEst() {
       const g = document.getElementById('inf-grado').value;
+      const sortedEsts = DB.ests.filter(e => e.grado === g)
+        .sort((a, b) => a.nombre_completo.localeCompare(b.nombre_completo));
+
       document.getElementById('inf-est').innerHTML =
         '<option value="">Selecciona estudiante…</option>' +
-        DB.ests.filter(e => e.grado === g)
-          .map(e => `<option value="${e.id}">${e.nombre_completo}</option>`).join('');
+        sortedEsts.map(e => `<option value="${e.id}">${e.nombre_completo}</option>`).join('');
     }
 
     // ════════════════════════════════════════════════════════

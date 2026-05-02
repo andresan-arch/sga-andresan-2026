@@ -423,7 +423,8 @@
         function ingCargarEstudiantes() {
             const grado = document.getElementById('ing-grado').value;
             const estSel = document.getElementById('ing-est');
-            const filtrados = DB.ests.filter(e => e.grado === grado);
+            const filtrados = DB.ests.filter(e => e.grado === grado)
+                .sort((a, b) => a.nombre_completo.localeCompare(b.nombre_completo));
             estSel.innerHTML = '<option value="">Seleccione estudiante...</option>' + 
                 filtrados.map(e => `<option value="${e.id}">${e.nombre_completo}</option>`).join('');
         }
@@ -598,7 +599,8 @@
             const nMap = {};
             (notas || []).forEach(n => nMap[n.estudiante_id] = n.valor);
 
-            const ests = DB.ests.filter(e => e.grado === selectedGrado);
+            const ests = DB.ests.filter(e => e.grado === selectedGrado)
+                .sort((a, b) => a.nombre_completo.localeCompare(b.nombre_completo));
             
             container.innerHTML = ests.map(est => {
                 const nota = nMap[est.id] || null;
@@ -746,7 +748,8 @@
             container.innerHTML = '<div class="text-center py-10 text-outline text-xs">Cargando lista...</div>';
 
             const asig = DB.asigs.find(a => a.id === bloque.asignatura_id);
-            const ests = DB.ests.filter(e => e.grado === asig?.grado);
+            const ests = DB.ests.filter(e => e.grado === asig?.grado)
+                .sort((a, b) => a.nombre_completo.localeCompare(b.nombre_completo));
 
             // Fetch existing attendance
             const { data: asistData } = await sb.from('asistencia')
