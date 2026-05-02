@@ -1921,7 +1921,11 @@
       badge('wait', 'Guardando…');
       
       const act = DB.acts.find(a => a.id === actId);
-      const isEvaluandonos = act?.nombre.toLowerCase().includes('evaluándonos');
+      
+      // Función para normalizar texto (quitar acentos y pasar a minúsculas)
+      const normalize = (str) => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      
+      const isEvaluandonos = act && normalize(act.nombre).includes('evaluandonos');
 
       let notasToSave = [{
         estudiante_id: estId, 
@@ -1933,16 +1937,19 @@
       }];
 
       if (isEvaluandonos) {
+        console.log('Detectada actividad Evaluándonos. Iniciando sincronización...');
         const asig = DB.asigs.find(a => a.id === act.asignatura_id);
         const grado = asig?.grado;
         const asigIds = DB.asigs.filter(a => a.grado === grado).map(a => a.id);
         
-        // Buscar otras actividades "Evaluándonos" en el mismo grado
+        // Buscar otras actividades "Evaluándonos" en el mismo grado (mismo periodo)
         const otherActs = DB.acts.filter(a => 
           asigIds.includes(a.asignatura_id) && 
           a.id !== actId && 
-          a.nombre.toLowerCase().includes('evaluándonos')
+          normalize(a.nombre).includes('evaluandonos')
         );
+
+        console.log('Materias encontradas para sincronizar:', otherActs.map(oa => oa.nombre));
 
         otherActs.forEach(oa => {
           notasToSave.push({
