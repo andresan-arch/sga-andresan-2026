@@ -446,20 +446,49 @@
 
             if (!estId || !actId || !valor) return alert('Complete todos los campos');
 
-            const act = await sb.from('actividades').select('asignatura_id').eq('id', actId).single();
-
-            const { error } = await sb.from('notas').upsert({
+            const act = DB.acts.find(a => a.id == actId);
+            const isEvaluandonos = act?.nombre.toLowerCase().includes('evaluándonos');
+            
+            let notesToSave = [{
                 estudiante_id: estId,
                 actividad_id: actId,
-                asignatura_id: act.data.asignatura_id,
+                asignatura_id: act.asignatura_id,
                 valor: parseFloat(valor),
                 periodo: 1
+            }];
+
+            if (isEvaluandonos) {
+                const asig = DB.asigs.find(a => a.id === act.asignatura_id);
+                const grado = asig?.grado;
+                const asigIds = DB.asigs.filter(a => a.grado === grado).map(a => a.id);
+                
+                const otherActs = DB.acts.filter(a => 
+                    asigIds.includes(a.asignatura_id) && 
+                    a.id != actId && 
+                    a.nombre.toLowerCase().includes('evaluándonos')
+                );
+
+                otherActs.forEach(oa => {
+                    notesToSave.push({
+                        estudiante_id: estId,
+                        actividad_id: oa.id,
+                        asignatura_id: oa.asignatura_id,
+                        valor: parseFloat(valor),
+                        periodo: 1
+                    });
+                });
+            }
+
+            const { error } = await sb.from('notas').upsert(notesToSave, { 
+                onConflict: 'estudiante_id,actividad_id' 
             });
 
             if (error) alert('Error al guardar: ' + error.message);
             else {
-                alert('Nota guardada con éxito');
+                alert(isEvaluandonos ? `Sincronización Evaluándonos (${notesToSave.length} mat.)` : 'Nota guardada con éxito');
                 document.getElementById('ing-nota').value = '';
+                // Reload local data to reflect changes in other tabs
+                initData();
             }
         }
 
@@ -499,14 +528,16 @@
 
         // --- DATA ---
         async function initData() {
-            const [ra, re, rh] = await Promise.all([
+            const [ra, re, rh, rac] = await Promise.all([
                 sb.from('asignaturas').select('*').order('grado'),
                 sb.from('estudiantes').select('*').order('nombre_completo'),
-                sb.from('horarios').select('*')
+                sb.from('horarios').select('*'),
+                sb.from('actividades').select('*').eq('periodo', 1) // periodo hardcoded for now
             ]);
             DB.asigs = ra.data || [];
             DB.ests = re.data || [];
             DB.hor = rh.data || [];
+            DB.acts = rac.data || [];
 
             renderGrados();
             switchTab('notas');
