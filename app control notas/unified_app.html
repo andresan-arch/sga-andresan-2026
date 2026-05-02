@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="es" class="light">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Control AndréSán 2026 - Móvil</title>
+    
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3525cd">
+    <link rel="apple-touch-icon" href="https://pmfrdrihzdhhjxokabjm.supabase.co/storage/v1/object/public/assets/andresanbordessinfondo.png">
+
+    <!-- Dependencies -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registrado'))
+                    .catch(err => console.log('Error al registrar SW', err));
+            });
+        }
+    </script>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3525cd",
+                        "primary-container": "#4f46e5",
+                        "on-primary-container": "#dad7ff",
+                        "secondary": "#735c00",
+                        "secondary-container": "#fed01b",
+                        "on-secondary-container": "#6f5900",
+                        "background": "#fcf8ff",
+                        "surface": "#fcf8ff",
+                        "on-surface": "#1b1b24",
+                        "on-surface-variant": "#464555",
+                        "outline": "#777587",
+                        "outline-variant": "#c7c4d8",
+                        "surface-container": "#f0ecf9",
+                        "error": "#ba1a1a",
+                        "success": "#22c55e"
+                    },
+                    spacing: {
+                        "stack-sm": "8px",
+                        "stack-md": "16px",
+                        "stack-lg": "32px",
+                        "gutter": "16px",
+                        "margin-safe": "24px",
+                        "card-padding": "20px"
+                    },
+                    fontFamily: {
+                        "sans": ["Plus Jakarta Sans", "system-ui", "sans-serif"],
+                        "headline": ["Plus Jakarta Sans", "sans-serif"],
+                        "label-caps": ["Plus Jakarta Sans", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .bg-education-texture {
+            background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuDPgrhBwDnqSpo1WKyKDnF1uqQPqASWbtAG_mkIsDpgMHLsGIVrrIIkYrc3WMcdeQzcZHpQyYso6_kS5lx8jXuw3Wcuh8_84Br0Hc6jD890EHI3cpNxn01-dyYWa7jtS3YRMnSFYI2z9PHfx1fDR7CKkaXE4MrF4_PJDdQfc1SY_ZOeNgw0DrXePiHypPkUbSN-sPi2CN7XA6ByESneqfTebPLUwThBoeWRX2nzKBu0rmVyLVAvmdha3p6dwGvrRVYd1XioQh2Vhelf);
+            background-size: cover;
+            background-position: center;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+            vertical-align: middle;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Transitions */
+        .screen-fade {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        .hidden-screen {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen font-sans">
+
+    <!-- ═══════════════════════ LOGIN SCREEN ═══════════════════════ -->
+    <div id="login-screen" class="fixed inset-0 z-[1000] flex items-center justify-center p-gutter overflow-hidden">
+        <div class="absolute inset-0 bg-education-texture z-0"></div>
+        <div class="absolute inset-0 bg-primary/10 backdrop-blur-[2px] z-10"></div>
+        
+        <main class="relative z-20 w-full max-w-[440px]">
+            <div class="glass-panel rounded-[32px] p-stack-lg shadow-2xl shadow-primary/10 flex flex-col items-center">
+                <div class="mb-stack-lg text-center">
+                    <div class="w-20 h-20 bg-primary-container rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-primary/20 mx-auto">
+                        <span class="material-symbols-outlined text-white text-4xl">school</span>
+                    </div>
+                    <h1 class="text-2xl font-bold text-on-surface mb-2">Control AndréSán 2026</h1>
+                    <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-[0.15em]">Gestión Académica Unificada</p>
+                </div>
+
+                <div id="login-error" class="hidden w-full mb-4 p-3 bg-error/10 border border-error/20 rounded-xl text-error text-xs text-center"></div>
+
+                <form id="login-form" class="w-full space-y-stack-md" onsubmit="handleLogin(event)">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-outline ml-1 uppercase" for="username">Usuario</label>
+                        <div class="relative flex items-center">
+                            <span class="material-symbols-outlined absolute left-4 text-outline">person</span>
+                            <input class="w-full bg-white/50 border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary rounded-xl py-4 pl-12 pr-4 transition-all outline-none text-sm" id="username" placeholder="Usuario o email" type="text" required/>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-outline ml-1 uppercase" for="password">Contraseña</label>
+                        <div class="relative flex items-center">
+                            <span class="material-symbols-outlined absolute left-4 text-outline">lock</span>
+                            <input class="w-full bg-white/50 border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary rounded-xl py-4 pl-12 pr-4 transition-all outline-none text-sm" id="password" placeholder="••••••••" type="password" required/>
+                        </div>
+                    </div>
+                    <button id="login-btn" class="w-full bg-primary-container text-white font-bold py-4 rounded-2xl shadow-xl shadow-primary/30 hover:shadow-primary/40 active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-4" type="submit">
+                        <span>Iniciar Sesión</span>
+                        <span class="material-symbols-outlined">arrow_forward</span>
+                    </button>
+                </form>
+                
+                <div class="mt-stack-lg pt-stack-lg border-t border-white/30 w-full text-center">
+                    <p class="text-[11px] text-on-surface-variant">Acceso seguro con cifrado institucional.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ═══════════════════════ APP SCREEN ═══════════════════════ -->
+    <div id="app-screen" class="hidden min-h-screen flex flex-col pb-32">
+        <!-- TopAppBar -->
+        <header class="bg-white/80 backdrop-blur-xl border-b border-white/20 shadow-lg shadow-indigo-500/5 fixed top-0 z-50 flex items-center justify-between px-6 py-4 w-full">
+            <div class="flex items-center gap-4">
+                <img id="app-logo" alt="Logo" class="h-8 w-auto object-contain" src="https://pmfrdrihzdhhjxokabjm.supabase.co/storage/v1/object/public/assets/andresanbordessinfondo.png"/>
+                <h1 class="font-bold text-slate-900 text-lg tracking-tight">AndréSán 2026</h1>
+            </div>
+            <div class="flex items-center gap-3">
+                <div id="user-avatar" class="w-9 h-9 rounded-full overflow-hidden border-2 border-primary-container shadow-sm bg-indigo-100 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary text-sm">person</span>
+                </div>
+                <button onclick="handleLogout()" class="text-error active:scale-90 transition-transform">
+                    <span class="material-symbols-outlined">logout</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Dynamic Content Area -->
+        <main id="main-content" class="pt-24 px-6 space-y-stack-lg max-w-4xl mx-auto w-full flex-1">
+            
+            <!-- SECCIÓN NOTAS -->
+            <section id="section-notas" class="tab-section hidden space-y-gutter">
+                <div class="flex flex-col gap-1">
+                    <span class="text-[10px] font-bold text-primary uppercase tracking-wider">Dashboard</span>
+                    <h2 class="text-2xl font-bold text-on-surface">Calificaciones</h2>
+                </div>
+                
+                <!-- Grado Selector (Pills) -->
+                <div id="grados-container" class="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
+                    <!-- Dynamic Grados -->
+                </div>
+
+                <!-- Asignatura Selector -->
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                        <span class="material-symbols-outlined text-primary">book_2</span>
+                    </div>
+                    <select id="asig-selector" class="w-full bg-white border border-outline-variant rounded-xl pl-12 pr-4 py-4 text-sm font-semibold appearance-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all shadow-sm">
+                        <option value="">Seleccione Asignatura...</option>
+                    </select>
+                </div>
+
+                <!-- Listado Estudiantes -->
+                <div id="notas-list" class="space-y-3">
+                    <!-- Dynamic Students -->
+                </div>
+            </section>
+
+            <!-- SECCIÓN ASISTENCIA -->
+            <section id="section-asistencia" class="tab-section hidden space-y-gutter">
+                <div class="flex items-center justify-between">
+                    <div class="flex flex-col gap-1">
+                        <span class="text-[10px] font-bold text-success uppercase tracking-wider">Control Diario</span>
+                        <h2 class="text-2xl font-bold text-on-surface">Asistencia</h2>
+                    </div>
+                    <input type="date" id="asist-date" class="bg-white border-outline-variant rounded-xl text-xs font-bold px-3 py-2 shadow-sm focus:ring-success" onchange="loadAsistencia()"/>
+                </div>
+
+                <!-- Bloques Horarios -->
+                <div id="bloques-container" class="flex overflow-x-auto pb-2 gap-3 no-scrollbar">
+                    <!-- Dynamic Bloques -->
+                </div>
+
+                <!-- Listado Estudiantes Asistencia -->
+                <div id="asist-list" class="space-y-3">
+                    <!-- Dynamic Students for Attendance -->
+                </div>
+            </section>
+
+            <!-- SECCIÓN INFORMES (Detalle Estudiante) -->
+            <section id="section-informes" class="tab-section hidden space-y-gutter">
+                <div id="student-detail-content">
+                    <div class="text-center py-20 text-outline">
+                        <span class="material-symbols-outlined text-6xl opacity-20">person_search</span>
+                        <p class="mt-4 font-bold">Seleccione un estudiante en la pestaña de Notas para ver su informe detallado.</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- BottomNavBar -->
+        <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-8 pt-3 bg-white/70 backdrop-blur-lg rounded-t-[32px] border-t border-white/20 shadow-[0_-10px_25px_-5px_rgba(79,70,229,0.1)]">
+            <button onclick="switchTab('notas')" data-tab="notas" class="nav-item flex flex-col items-center justify-center text-primary bg-primary/10 rounded-2xl px-4 py-2 transition-all duration-300">
+                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">school</span>
+                <span class="text-[10px] font-bold mt-1">Notas</span>
+            </button>
+            <button onclick="switchTab('asistencia')" data-tab="asistencia" class="nav-item flex flex-col items-center justify-center text-slate-400 hover:text-primary transition-all px-4 py-2">
+                <span class="material-symbols-outlined">fact_check</span>
+                <span class="text-[10px] font-bold mt-1">Asistencia</span>
+            </button>
+            <button onclick="switchTab('resumen')" data-tab="resumen" class="nav-item flex flex-col items-center justify-center text-slate-400 hover:text-primary transition-all px-4 py-2">
+                <span class="material-symbols-outlined">analytics</span>
+                <span class="text-[10px] font-bold mt-1">Resumen</span>
+            </button>
+            <button onclick="switchTab('informes')" data-tab="informes" class="nav-item flex flex-col items-center justify-center text-slate-400 hover:text-primary transition-all px-4 py-2">
+                <span class="material-symbols-outlined">description</span>
+                <span class="text-[10px] font-bold mt-1">Informes</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Scripts Logic -->
+    <script>
+        // ⚙️ CONFIGURACIÓN SUPABASE
+        const SB_URL = "https://pmfrdrihzdhhjxokabjm.supabase.co";
+        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtZnJkcmloemRoaGp4b2thYmptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NTA5OTIsImV4cCI6MjA5MTQyNjk5Mn0.FnQWmxg0p4oUgAQBVhoy6wqIMOk3qk4pifI2voeQvV0";
+        const sb = supabase.createClient(SB_URL, SB_KEY);
+
+        // State
+        let DB = { asigs: [], ests: [], acts: [], hor: [] };
+        let currentUser = null;
+        let selectedGrado = null;
+        let selectedAsigId = null;
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            checkSession();
+            document.getElementById('asist-date').value = new Date().toISOString().split('T')[0];
+        });
+
+        async function checkSession() {
+            const { data } = await sb.auth.getSession();
+            if (data.session) {
+                currentUser = data.session.user;
+                showApp();
+            }
+        }
+
+        // --- AUTH ---
+        async function handleLogin(e) {
+            e.preventDefault();
+            const emailInput = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('login-btn');
+            const errDiv = document.getElementById('login-error');
+
+            const email = emailInput.includes('@') ? emailInput : `${emailInput}@andresan.com`;
+            
+            btn.disabled = true;
+            btn.innerHTML = 'Verificando...';
+            errDiv.classList.add('hidden');
+
+            const { data, error } = await sb.auth.signInWithPassword({ email, password });
+            
+            if (error) {
+                errDiv.textContent = "Credenciales incorrectas";
+                errDiv.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerHTML = '<span>Iniciar Sesión</span><span class="material-symbols-outlined">arrow_forward</span>';
+            } else {
+                currentUser = data.user;
+                showApp();
+            }
+        }
+
+        async function handleLogout() {
+            if (!confirm('¿Cerrar sesión?')) return;
+            await sb.auth.signOut();
+            location.reload();
+        }
+
+        // --- UI NAVIGATION ---
+        function showApp() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.remove('hidden');
+            initData();
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(`section-${tabName}`).classList.remove('hidden');
+
+            // Update Nav Items
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                const isActive = btn.dataset.tab === tabName;
+                btn.classList.toggle('text-primary', isActive);
+                btn.classList.toggle('bg-primary/10', isActive);
+                btn.classList.toggle('rounded-2xl', isActive);
+                btn.classList.toggle('text-slate-400', !isActive);
+                
+                const icon = btn.querySelector('.material-symbols-outlined');
+                icon.style.fontVariationSettings = isActive ? "'FILL' 1" : "'FILL' 0";
+            });
+
+            if (tabName === 'asistencia') loadAsistencia();
+        }
+
+        function getDS(n) {
+            if (!n) return { label: 'Pendiente', bg: 'bg-slate-50', border: 'border-slate-100', text: 'text-slate-400', badgeBg: 'bg-slate-100', badgeText: 'text-slate-600' };
+            if (n >= 8.4) return { label: 'Superior', bg: 'bg-indigo-50', border: 'border-indigo-100', text: 'text-primary', badgeBg: 'bg-primary', badgeText: 'text-white' };
+            if (n >= 7.2) return { label: 'Alto', bg: 'bg-green-50', border: 'border-green-100', text: 'text-green-600', badgeBg: 'bg-green-500', badgeText: 'text-white' };
+            if (n >= 6.0) return { label: 'Básico', bg: 'bg-amber-50', border: 'border-amber-100', text: 'text-amber-600', badgeBg: 'bg-amber-500', badgeText: 'text-white' };
+            return { label: 'Bajo', bg: 'bg-red-50', border: 'border-red-100', text: 'text-red-600', badgeBg: 'bg-red-500', badgeText: 'text-white' };
+        }
+
+        // --- DATA ---
+        async function initData() {
+            const [ra, re, rh] = await Promise.all([
+                sb.from('asignaturas').select('*').order('grado'),
+                sb.from('estudiantes').select('*').order('nombre_completo'),
+                sb.from('horarios').select('*')
+            ]);
+            DB.asigs = ra.data || [];
+            DB.ests = re.data || [];
+            DB.hor = rh.data || [];
+
+            renderGrados();
+            switchTab('notas');
+        }
+
+        function renderGrados() {
+            const container = document.getElementById('grados-container');
+            const grados = [...new Set(DB.asigs.map(a => a.grado))].sort();
+            
+            container.innerHTML = grados.map(g => `
+                <button onclick="selectGrado('${g}')" class="grado-pill whitespace-nowrap px-6 py-2 rounded-full text-xs font-bold transition-all ${selectedGrado === g ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white border border-outline-variant text-on-surface-variant'}" data-grado="${g}">
+                    Grado ${g}
+                </button>
+            `).join('');
+        }
+
+        function selectGrado(grado) {
+            selectedGrado = grado;
+            renderGrados(); // Update UI
+            
+            const asigSelect = document.getElementById('asig-selector');
+            const filtradas = DB.asigs.filter(a => a.grado === grado);
+            
+            asigSelect.innerHTML = '<option value="">Seleccione Asignatura...</option>' + 
+                filtradas.map(a => `<option value="${a.id}">${a.nombre}</option>`).join('');
+            
+            asigSelect.onchange = (e) => {
+                selectedAsigId = e.target.value;
+                loadNotas();
+            };
+        }
+
+        async function loadNotas() {
+            if (!selectedAsigId) return;
+            const container = document.getElementById('notas-list');
+            container.innerHTML = '<div class="text-center py-10 text-outline text-xs">Cargando...</div>';
+
+            const { data: notas } = await sb.from('notas').select('*').eq('asignatura_id', selectedAsigId);
+            const nMap = {};
+            (notas || []).forEach(n => nMap[n.estudiante_id] = n.valor);
+
+            const ests = DB.ests.filter(e => e.grado === selectedGrado);
+            
+            container.innerHTML = ests.map(est => {
+                const nota = nMap[est.id] || null;
+                const ds = getDS(nota);
+                return `
+                    <div onclick="viewStudentDetail(${est.id})" class="glass-card p-4 rounded-2xl flex items-center justify-between hover:shadow-md transition-all cursor-pointer active:scale-95">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-xl ${ds.bg} flex items-center justify-center border ${ds.border}">
+                                <span class="material-symbols-outlined ${ds.text}" style="font-variation-settings: 'FILL' 1;">person</span>
+                            </div>
+                            <div>
+                                <p class="font-bold text-sm text-on-surface">${est.nombre_completo}</p>
+                                <p class="text-[10px] text-outline font-bold">ID: ${est.id}</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end gap-1">
+                            <span class="font-bold text-lg ${ds.text}">${nota || '---'}</span>
+                            <span class="${ds.badgeBg} ${ds.badgeText} px-3 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider">${ds.label}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function viewStudentDetail(estId) {
+            switchTab('informes');
+            const container = document.getElementById('student-detail-content');
+            container.innerHTML = '<div class="text-center py-20 text-outline text-xs">Cargando informe...</div>';
+
+            const est = DB.ests.find(e => e.id === estId);
+            const { data: notas } = await sb.from('notas').select('*, asignaturas(nombre)').eq('estudiante_id', estId);
+            
+            const promedio = notas.length ? (notas.reduce((acc, n) => acc + Number(n.valor), 0) / notas.length).toFixed(1) : '---';
+            const ds = getDS(promedio === '---' ? null : promedio);
+
+            container.innerHTML = `
+                <section class="glass-card rounded-3xl p-card-padding shadow-xl shadow-indigo-500/5 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4">
+                        <span class="bg-success/10 text-success px-3 py-1 rounded-full text-[10px] font-bold">ACTIVO</span>
+                    </div>
+                    <div class="flex items-center gap-stack-md">
+                        <div class="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center border-2 border-white shadow-md">
+                            <span class="material-symbols-outlined text-primary text-4xl">person</span>
+                        </div>
+                        <div class="flex-1">
+                            <h2 class="text-xl font-bold text-on-surface">${est.nombre_completo}</h2>
+                            <p class="text-sm text-on-surface-variant">Grado ${est.grado} • Periodo 2026</p>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="glass-card p-4 rounded-2xl flex flex-col justify-between h-32">
+                        <span class="material-symbols-outlined text-primary text-xl">stars</span>
+                        <div>
+                            <span class="text-3xl font-bold text-primary">${promedio}</span>
+                            <p class="text-[10px] font-bold text-on-surface-variant uppercase">Promedio</p>
+                        </div>
+                    </div>
+                    <div class="glass-card p-4 rounded-2xl flex flex-col justify-between h-32">
+                        <span class="material-symbols-outlined text-secondary text-xl">trending_up</span>
+                        <div>
+                            <span class="text-3xl font-bold text-on-surface">92%</span>
+                            <p class="text-[10px] font-bold text-on-surface-variant uppercase">Asistencia</p>
+                        </div>
+                    </div>
+                </div>
+
+                <section class="space-y-4">
+                    <h3 class="text-lg font-bold px-2">Desempeño por Materia</h3>
+                    ${notas.map(n => {
+                        const mDS = getDS(n.valor);
+                        return `
+                            <div class="glass-card rounded-2xl p-4 flex items-center justify-between border-l-4 ${mDS.text.replace('text', 'border')}">
+                                <div class="flex items-center gap-4">
+                                    <div class="p-3 ${mDS.bg} rounded-xl">
+                                        <span class="material-symbols-outlined ${mDS.text}">book</span>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-sm">${n.asignaturas?.nombre || 'Materia'}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-bold text-lg ${mDS.text}">${n.valor}</p>
+                                    <span class="${mDS.badgeBg} ${mDS.badgeText} text-[8px] font-bold px-2 py-0.5 rounded-full uppercase">${mDS.label}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </section>
+            `;
+        }
+
+        // --- ASISTENCIA LOGIC ---
+        async function loadAsistencia() {
+            const date = document.getElementById('asist-date').value;
+            const dayJS = new Date(date + 'T12:00:00').getDay();
+            
+            const bloques = DB.hor.filter(h => parseInt(h.dia_semana) === dayJS)
+                .sort((a, b) => a.hora_inicio.localeCompare(b.hora_inicio));
+
+            renderBloques(bloques);
+            
+            // Clear list if no blocks
+            if (bloques.length === 0) {
+                document.getElementById('asist-list').innerHTML = '<div class="text-center py-20 text-outline text-xs">No hay clases programadas para este día.</div>';
+            }
+        }
+
+        function renderBloques(bloques) {
+            const container = document.getElementById('bloques-container');
+            const horaActual = new Date().toTimeString().slice(0, 8);
+            const isToday = document.getElementById('asist-date').value === new Date().toISOString().split('T')[0];
+
+            container.innerHTML = bloques.map((b, idx) => {
+                const asig = DB.asigs.find(a => a.id === b.asignatura_id);
+                const isActive = isToday && horaActual >= b.hora_inicio && horaActual <= b.hora_fin;
+                
+                return `
+                    <button onclick="selectBloque(${JSON.stringify(b).replace(/"/g, '&quot;')}, this)" class="bloque-btn flex-shrink-0 w-36 glass-card p-4 rounded-2xl border-2 transition-all ${isActive ? 'border-primary ring-4 ring-primary/10' : 'border-transparent'}">
+                        <span class="block text-[10px] font-extrabold text-primary mb-1 uppercase tracking-wider">${asig?.codigo || '---'}</span>
+                        <span class="block text-sm font-bold text-on-surface">${b.hora_inicio.slice(0, 5)} - ${b.hora_fin.slice(0, 5)}</span>
+                        <span class="block text-[10px] text-outline mt-2 font-semibold italic">${asig?.nombre || 'Materia'}</span>
+                    </button>
+                `;
+            }).join('');
+
+            // Auto-select active block if exists
+            if (isToday) {
+                const activeIdx = bloques.findIndex(b => horaActual >= b.hora_inicio && horaActual <= b.hora_fin);
+                if (activeIdx >= 0) {
+                    const btn = container.children[activeIdx];
+                    selectBloque(bloques[activeIdx], btn);
+                }
+            }
+        }
+
+        async function selectBloque(bloque, btn) {
+            // Highlight button
+            document.querySelectorAll('.bloque-btn').forEach(b => b.classList.remove('border-primary', 'ring-4', 'ring-primary/10'));
+            btn.classList.add('border-primary', 'ring-4', 'ring-primary/10');
+
+            const date = document.getElementById('asist-date').value;
+            const container = document.getElementById('asist-list');
+            container.innerHTML = '<div class="text-center py-10 text-outline text-xs">Cargando lista...</div>';
+
+            const asig = DB.asigs.find(a => a.id === bloque.asignatura_id);
+            const ests = DB.ests.filter(e => e.grado === asig?.grado);
+
+            // Fetch existing attendance
+            const { data: asistData } = await sb.from('asistencia')
+                .eq('fecha', date)
+                .eq('asignatura_id', bloque.asignatura_id)
+                .eq('bloque_nombre', bloque.bloque_nombre);
+
+            const aMap = {};
+            (asistData || []).forEach(a => aMap[a.estudiante_id] = a.estado);
+
+            container.innerHTML = ests.map(est => {
+                const status = aMap[est.id] || null;
+                return `
+                    <div class="glass-card p-4 rounded-2xl shadow-sm border border-white/40">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-primary-container/10 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-primary">person</span>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-bold text-on-surface text-sm">${est.nombre_completo}</h4>
+                                <p class="text-[10px] text-outline font-bold">ID: ${est.id}</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-5 gap-2">
+                            ${renderAsistBtn(est.id, bloque, 'Asistió', 'check', 'bg-green-500', status)}
+                            ${renderAsistBtn(est.id, bloque, 'No asistió', 'close', 'bg-error', status)}
+                            ${renderAsistBtn(est.id, bloque, 'Retraso', 'schedule', 'bg-secondary-container', status)}
+                            ${renderAsistBtn(est.id, bloque, 'Permiso', 'description', 'bg-primary-container', status)}
+                            ${renderAsistBtn(est.id, bloque, 'Enfermo', 'medical_services', 'bg-purple-500', status)}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderAsistBtn(estId, bloque, label, icon, activeColor, currentStatus) {
+            const isActive = currentStatus === label;
+            return `
+                <button onclick="markAsistencia(${estId}, ${bloque.asignatura_id}, '${bloque.bloque_nombre}', '${label}', this)" 
+                    class="asist-toggle flex flex-col items-center justify-center p-2 rounded-xl border transition-all ${isActive ? activeColor + ' text-white border-transparent shadow-lg' : 'bg-white text-outline border-outline-variant'}">
+                    <span class="material-symbols-outlined text-lg">${icon}</span>
+                    <span class="text-[7px] font-extrabold mt-1 uppercase">${label.split(' ')[0]}</span>
+                </button>
+            `;
+        }
+
+        async function markAsistencia(estId, asigId, bloqueNombre, estado, btn) {
+            const date = document.getElementById('asist-date').value;
+            
+            // UI Feedback
+            const row = btn.parentElement;
+            row.querySelectorAll('button').forEach(b => {
+                b.className = 'asist-toggle flex flex-col items-center justify-center p-2 rounded-xl border transition-all bg-white text-outline border-outline-variant';
+            });
+            
+            // Get active color from class list (brute force but simple for this demo)
+            const colors = {'Asistió': 'bg-green-500', 'No asistió': 'bg-error', 'Retraso': 'bg-secondary-container', 'Permiso': 'bg-primary-container', 'Enfermo': 'bg-purple-500'};
+            btn.className = `asist-toggle flex flex-col items-center justify-center p-2 rounded-xl border transition-all ${colors[estado]} text-white border-transparent shadow-lg scale-105`;
+
+            const { error } = await sb.from('asistencia').upsert({
+                estudiante_id: estId,
+                asignatura_id: asigId,
+                fecha: date,
+                bloque_nombre: bloqueNombre,
+                estado: estado,
+                periodo: 1 // TODO: Dynamic periodo
+            }, { onConflict: 'estudiante_id,asignatura_id,fecha,bloque_nombre' });
+
+            if (error) {
+                console.error('Error saving attendance:', error);
+                alert('Error al guardar asistencia');
+            }
+        }
+    </script>
+</body>
+</html>

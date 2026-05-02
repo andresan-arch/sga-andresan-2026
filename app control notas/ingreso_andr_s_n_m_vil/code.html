@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "secondary-fixed": "#ffe083",
+                "inverse-surface": "#302f39",
+                "surface-dim": "#dcd8e5",
+                "inverse-primary": "#c3c0ff",
+                "tertiary-container": "#a44100",
+                "on-background": "#1b1b24",
+                "outline-variant": "#c7c4d8",
+                "outline": "#777587",
+                "on-primary-container": "#dad7ff",
+                "on-primary-fixed": "#0f0069",
+                "background": "#fcf8ff",
+                "on-secondary-fixed": "#231b00",
+                "surface-container-low": "#f5f2ff",
+                "surface": "#fcf8ff",
+                "secondary-fixed-dim": "#eec200",
+                "surface-container-highest": "#e4e1ee",
+                "on-surface-variant": "#464555",
+                "on-secondary-fixed-variant": "#574500",
+                "secondary-container": "#fed01b",
+                "on-tertiary-container": "#ffd2be",
+                "surface-tint": "#4d44e3",
+                "surface-container-high": "#eae6f4",
+                "primary": "#3525cd",
+                "on-primary": "#ffffff",
+                "error": "#ba1a1a",
+                "tertiary-fixed": "#ffdbcc",
+                "primary-container": "#4f46e5",
+                "on-error": "#ffffff",
+                "on-error-container": "#93000a",
+                "on-tertiary": "#ffffff",
+                "on-secondary": "#ffffff",
+                "secondary": "#735c00",
+                "on-surface": "#1b1b24",
+                "tertiary-fixed-dim": "#ffb695",
+                "primary-fixed-dim": "#c3c0ff",
+                "inverse-on-surface": "#f3effc",
+                "on-secondary-container": "#6f5900",
+                "surface-variant": "#e4e1ee",
+                "on-tertiary-fixed-variant": "#7b2f00",
+                "surface-container": "#f0ecf9",
+                "surface-container-lowest": "#ffffff",
+                "on-tertiary-fixed": "#351000",
+                "primary-fixed": "#e2dfff",
+                "tertiary": "#7e3000",
+                "surface-bright": "#fcf8ff",
+                "on-primary-fixed-variant": "#3323cc",
+                "error-container": "#ffdad6"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+            },
+            "spacing": {
+                "stack-md": "16px",
+                "stack-lg": "32px",
+                "margin-safe": "24px",
+                "stack-sm": "8px",
+                "gutter": "16px",
+                "card-padding": "20px"
+            },
+            "fontFamily": {
+                "label-caps": ["Plus Jakarta Sans"],
+                "display-stat": ["Plus Jakarta Sans"],
+                "body-base": ["Plus Jakarta Sans"],
+                "headline-md": ["Plus Jakarta Sans"],
+                "headline-lg": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                "display-stat": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                "body-base": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                "headline-lg": ["24px", {"lineHeight": "32px", "fontWeight": "700"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>.glass-panel {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3)
+    }
+.bg-education-texture {
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuDPgrhBwDnqSpo1WKyKDnF1uqQPqASWbtAG_mkIsDpgMHLsGIVrrIIkYrc3WMcdeQzcZHpQyYso6_kS5lx8jXuw3Wcuh8_84Br0Hc6jD890EHI3cpNxn01-dyYWa7jtS3YRMnSFYI2z9PHfx1fDR7CKkaXE4MrF4_PJDdQfc1SY_ZOeNgw0DrXePiHypPkUbSN-sPi2CN7XA6ByESneqfTebPLUwThBoeWRX2nzKBu0rmVyLVAvmdha3p6dwGvrRVYd1XioQh2Vhelf);
+    background-size: cover;
+    background-position: center
+    }
+.material-symbols-outlined {
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24
+    }</style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background font-body-base text-on-background min-h-screen flex items-center justify-center p-gutter relative overflow-hidden">
+<!-- Background Texture with Overlay -->
+<div class="absolute inset-0 bg-education-texture z-0" data-alt="A sophisticated wide shot of a modern, bright university library interior with large windows and clean wooden surfaces. The lighting is soft and airy, creating a professional and calm academic atmosphere. The color palette features warm woods and soft whites, with a high-key light mode aesthetic that feels secure and premium."></div>
+<div class="absolute inset-0 bg-primary/10 backdrop-blur-[2px] z-10"></div>
+<main class="relative z-20 w-full max-w-[440px]">
+<div class="glass-panel rounded-[32px] p-stack-lg shadow-2xl shadow-primary/10 flex flex-col items-center">
+<!-- Brand Identity -->
+<div class="mb-stack-lg text-center">
+<div class="w-20 h-20 bg-primary-container rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-primary/20 mx-auto">
+<span class="material-symbols-outlined text-white text-4xl" data-icon="school">school</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-2">Control AndréSán 2026</h1>
+<p class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-[0.15em]">Plataforma de Gestión Académica</p>
+</div>
+<!-- Login Form -->
+<form class="w-full space-y-stack-md">
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-outline ml-1" for="username">USUARIO</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-4 text-outline" data-icon="person">person</span>
+<input class="w-full bg-white/50 border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary rounded-xl py-4 pl-12 pr-4 transition-all duration-200 outline-none font-body-base text-on-surface" id="username" placeholder="Ingrese su usuario" type="text"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-outline ml-1" for="password">CONTRASEÑA</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-4 text-outline" data-icon="lock">lock</span>
+<input class="w-full bg-white/50 border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary rounded-xl py-4 pl-12 pr-4 transition-all duration-200 outline-none font-body-base text-on-surface" id="password" placeholder="••••••••" type="password"/>
+<button class="absolute right-4 text-outline hover:text-primary transition-colors" type="button">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+</button>
+</div>
+</div>
+<div class="flex items-center justify-between py-2">
+<label class="flex items-center space-x-2 cursor-pointer">
+<input class="rounded border-outline-variant text-primary focus:ring-primary bg-white/50" type="checkbox"/>
+<span class="font-label-caps text-[11px] text-on-surface-variant">RECORDAR SESIÓN</span>
+</label>
+<a class="font-label-caps text-[11px] text-primary hover:underline" href="#">¿OLVIDÓ SU CLAVE?</a>
+</div>
+<!-- Primary Action -->
+<button class="w-full bg-primary-container text-on-primary-container font-headline-md text-headline-md py-4 rounded-2xl shadow-xl shadow-primary/30 hover:shadow-primary/40 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2" type="submit">
+<span>Iniciar Sesión</span>
+<span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</form>
+<!-- Footer Meta -->
+<div class="mt-stack-lg pt-stack-lg border-t border-white/30 w-full text-center">
+<p class="font-body-base text-[13px] text-on-surface-variant">
+                    Protegido por encriptación de grado institucional.
+                </p>
+<div class="flex items-center justify-center gap-4 mt-4">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-outline" data-icon="verified_user">verified_user</span>
+<span class="font-label-caps text-[10px] text-outline">SECURE PORTAL</span>
+</div>
+<div class="w-1 h-1 bg-outline-variant rounded-full"></div>
+<span class="font-label-caps text-[10px] text-outline">VERSIÓN 2026.1.0</span>
+</div>
+</div>
+</div>
+<!-- Decorative Elements -->
+<div class="absolute -top-12 -right-12 w-32 h-32 bg-secondary-container/20 rounded-full blur-3xl z-[-1]"></div>
+<div class="absolute -bottom-12 -left-12 w-48 h-48 bg-primary/20 rounded-full blur-3xl z-[-1]"></div>
+</main>
+<!-- Support Message -->
+<div class="fixed bottom-margin-safe left-0 right-0 text-center z-20">
+<p class="font-body-base text-[12px] text-on-surface/60">
+            ¿Necesita ayuda? Contacte a <span class="text-primary font-semibold">Soporte Técnico Institucional</span>
+</p>
+</div>
+</body></html>

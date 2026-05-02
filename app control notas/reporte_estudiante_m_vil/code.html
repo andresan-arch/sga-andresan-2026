@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed": "#ffe083",
+                    "inverse-surface": "#302f39",
+                    "surface-dim": "#dcd8e5",
+                    "inverse-primary": "#c3c0ff",
+                    "tertiary-container": "#a44100",
+                    "on-background": "#1b1b24",
+                    "outline-variant": "#c7c4d8",
+                    "outline": "#777587",
+                    "on-primary-container": "#dad7ff",
+                    "on-primary-fixed": "#0f0069",
+                    "background": "#fcf8ff",
+                    "on-secondary-fixed": "#231b00",
+                    "surface-container-low": "#f5f2ff",
+                    "surface": "#fcf8ff",
+                    "secondary-fixed-dim": "#eec200",
+                    "surface-container-highest": "#e4e1ee",
+                    "on-surface-variant": "#464555",
+                    "on-secondary-fixed-variant": "#574500",
+                    "secondary-container": "#fed01b",
+                    "on-secondary-container": "#6f5900",
+                    "surface-tint": "#4d44e3",
+                    "surface-container-high": "#eae6f4",
+                    "primary": "#3525cd",
+                    "on-primary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "tertiary-fixed": "#ffdbcc",
+                    "primary-container": "#4f46e5",
+                    "on-error": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "secondary": "#735c00",
+                    "on-surface": "#1b1b24",
+                    "tertiary-fixed-dim": "#ffb695",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "inverse-on-surface": "#f3effc",
+                    "on-tertiary-container": "#ffd2be",
+                    "surface-variant": "#e4e1ee",
+                    "on-tertiary-fixed-variant": "#7b2f00",
+                    "surface-container": "#f0ecf9",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-fixed": "#351000",
+                    "primary-fixed": "#e2dfff",
+                    "tertiary": "#7e3000",
+                    "surface-bright": "#fcf8ff",
+                    "on-primary-fixed-variant": "#3323cc",
+                    "error-container": "#ffdad6"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-md": "16px",
+                    "stack-lg": "32px",
+                    "margin-safe": "24px",
+                    "stack-sm": "8px",
+                    "gutter": "16px",
+                    "card-padding": "20px"
+            },
+            "fontFamily": {
+                    "label-caps": ["Plus Jakarta Sans"],
+                    "display-stat": ["Plus Jakarta Sans"],
+                    "body-base": ["Plus Jakarta Sans"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "display-stat": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "body-base": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-lg": ["24px", {"lineHeight": "32px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .chart-gradient {
+            background: linear-gradient(180deg, rgba(79, 70, 229, 0.1) 0%, rgba(79, 70, 229, 0) 100%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background font-body-base text-on-background min-h-screen pb-32">
+<!-- Top App Bar -->
+<header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-white/20 dark:border-slate-800/50 shadow-lg shadow-indigo-500/5 flex items-center justify-between px-6 py-4 w-full docked full-width top-0 z-50 fixed">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-indigo-600 dark:text-indigo-400 cursor-pointer" data-icon="menu">menu</span>
+<h1 class="font-['Plus_Jakarta_Sans'] font-bold text-slate-900 dark:text-white text-lg">Control AndréSán 2026</h1>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-500" data-icon="search">search</span>
+<div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center border border-indigo-200">
+<span class="material-symbols-outlined text-indigo-600 text-sm" data-icon="person">person</span>
+</div>
+</div>
+</header>
+<main class="max-w-md mx-auto pt-24 px-margin-safe space-y-stack-lg">
+<!-- Profile Header Section -->
+<section class="glass-card rounded-3xl p-card-padding shadow-xl shadow-indigo-500/5 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4">
+<span class="bg-primary-container/10 text-primary px-3 py-1 rounded-full font-label-caps text-label-caps">ACTIVO</span>
+</div>
+<div class="flex items-center gap-stack-md">
+<div class="relative">
+<img alt="Student Portrait" class="w-20 h-20 rounded-2xl object-cover border-2 border-white shadow-md" data-alt="A professional close-up portrait of a young male student with a friendly expression, wearing a navy blue school blazer. The lighting is soft and natural, emphasizing a bright academic setting. The background is slightly blurred with light-mode pastel tones and soft indigo accents, maintaining a high-end educational aesthetic with pristine clarity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqskNdVyQGmT-JkyVSHIO9mG6MOXFULxeHsMMLgNlPtEPiHOrK9wNYnIWr5AJQJsxP6baI6nRiibWj_Eb3MqzweNdjKrNFALtOdcTJh8keDn0z2i_dXp6FHT7mTQ3yLjAkB_QwEO47jHxbZA8hxhiggwfNM0-3fMW0UjEwMRBz-gMQThDicLROKv8nf7rcYoHKHeBnCC3CY8-qbOOMXWQ9MsSQTjRBdAsDqAR-JS7tQ0WhA3_MQhIso0ArpiVFyoKal30u28kmbpro"/>
+<div class="absolute -bottom-1 -right-1 bg-white p-1 rounded-lg shadow-sm">
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="verified" data-weight="fill" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div class="flex-1">
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Mateo Jiménez</h2>
+<p class="font-body-base text-on-surface-variant">Grado 11 • Periodo 2026</p>
+<div class="flex gap-2 mt-2">
+<button class="flex items-center gap-1 text-primary font-label-caps text-label-caps px-3 py-1.5 rounded-lg bg-primary-fixed border border-indigo-200 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[16px]" data-icon="share">share</span>
+                            COMPARTIR
+                        </button>
+<button class="flex items-center gap-1 text-on-surface-variant font-label-caps text-label-caps px-3 py-1.5 rounded-lg bg-surface-container active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[16px]" data-icon="print">print</span>
+                            IMPRIMIR
+                        </button>
+</div>
+</div>
+</div>
+</section>
+<!-- KPI Bento Grid -->
+<div class="grid grid-cols-2 gap-4">
+<div class="glass-card p-4 rounded-2xl flex flex-col justify-between h-32">
+<span class="material-symbols-outlined text-primary text-xl" data-icon="stars">stars</span>
+<div>
+<span class="font-display-stat text-[32px] text-primary">4.8</span>
+<p class="font-label-caps text-label-caps text-on-surface-variant">PROMEDIO</p>
+</div>
+</div>
+<div class="glass-card p-4 rounded-2xl flex flex-col justify-between h-32">
+<span class="material-symbols-outlined text-secondary text-xl" data-icon="trending_up">trending_up</span>
+<div>
+<span class="font-display-stat text-[32px] text-on-surface">+12%</span>
+<p class="font-label-caps text-label-caps text-on-surface-variant">EVOLUCIÓN</p>
+</div>
+</div>
+</div>
+<!-- Historical Evolution Chart -->
+<section class="glass-card rounded-3xl p-card-padding shadow-xl shadow-indigo-500/5">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline-md text-headline-md">Evolución Histórica</h3>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="info">info</span>
+</div>
+<div class="h-48 w-full relative flex items-end justify-between px-2 gap-2">
+<!-- Simple bar representation for chart context -->
+<div class="flex flex-col items-center gap-2 flex-1 group">
+<div class="w-full bg-surface-container-highest rounded-t-lg relative h-24 overflow-hidden">
+<div class="absolute bottom-0 left-0 right-0 bg-primary/20 h-[60%] transition-all group-hover:bg-primary/40"></div>
+</div>
+<span class="font-label-caps text-[10px] text-on-surface-variant">P1</span>
+</div>
+<div class="flex flex-col items-center gap-2 flex-1 group">
+<div class="w-full bg-surface-container-highest rounded-t-lg relative h-32 overflow-hidden">
+<div class="absolute bottom-0 left-0 right-0 bg-primary/40 h-[75%] transition-all group-hover:bg-primary/60"></div>
+</div>
+<span class="font-label-caps text-[10px] text-on-surface-variant">P2</span>
+</div>
+<div class="flex flex-col items-center gap-2 flex-1 group">
+<div class="w-full bg-surface-container-highest rounded-t-lg relative h-40 overflow-hidden">
+<div class="absolute bottom-0 left-0 right-0 bg-primary h-[90%] transition-all group-hover:scale-y-105 origin-bottom"></div>
+</div>
+<span class="font-label-caps text-[10px] text-primary">P3</span>
+</div>
+<div class="flex flex-col items-center gap-2 flex-1 group opacity-40">
+<div class="w-full bg-surface-container-highest rounded-t-lg h-28 border-2 border-dashed border-outline"></div>
+<span class="font-label-caps text-[10px] text-on-surface-variant">P4</span>
+</div>
+</div>
+</section>
+<!-- Subjects Breakdown -->
+<section class="space-y-4">
+<h3 class="font-headline-md text-headline-md px-2">Desempeño por Materia</h3>
+<!-- Subject Card: Math -->
+<div class="glass-card rounded-2xl p-4 flex items-center justify-between group hover:shadow-lg transition-all border-l-4 border-l-primary">
+<div class="flex items-center gap-4">
+<div class="p-3 bg-primary-container/10 rounded-xl">
+<span class="material-symbols-outlined text-primary" data-icon="functions">functions</span>
+</div>
+<div>
+<p class="font-headline-md text-sm">Matemáticas Avanzadas</p>
+<p class="text-[12px] text-on-surface-variant">Prof. Roberto Cano</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-headline-lg text-primary">4.9</p>
+<span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full">EXCELENTE</span>
+</div>
+</div>
+<!-- Subject Card: Science -->
+<div class="glass-card rounded-2xl p-4 flex items-center justify-between group hover:shadow-lg transition-all border-l-4 border-l-secondary">
+<div class="flex items-center gap-4">
+<div class="p-3 bg-secondary-container/10 rounded-xl">
+<span class="material-symbols-outlined text-secondary" data-icon="biotech">biotech</span>
+</div>
+<div>
+<p class="font-headline-md text-sm">Física Cuántica</p>
+<p class="text-[12px] text-on-surface-variant">Dra. Elena Soler</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-headline-lg text-on-surface">4.5</p>
+<span class="bg-secondary-fixed text-on-secondary-fixed text-[10px] font-bold px-2 py-0.5 rounded-full">SOBRESALIENTE</span>
+</div>
+</div>
+<!-- Subject Card: Literature -->
+<div class="glass-card rounded-2xl p-4 flex items-center justify-between group hover:shadow-lg transition-all border-l-4 border-l-tertiary">
+<div class="flex items-center gap-4">
+<div class="p-3 bg-tertiary-fixed/30 rounded-xl">
+<span class="material-symbols-outlined text-tertiary" data-icon="menu_book">menu_book</span>
+</div>
+<div>
+<p class="font-headline-md text-sm">Literatura Universal</p>
+<p class="text-[12px] text-on-surface-variant">Prof. Marco Aurelio</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-headline-lg text-on-surface">3.8</p>
+<span class="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">REGULAR</span>
+</div>
+</div>
+</section>
+<!-- Reports Footer -->
+<div class="flex justify-center py-6">
+<button class="bg-primary text-on-primary px-8 py-4 rounded-2xl font-headline-md shadow-xl shadow-indigo-500/20 active:scale-95 transition-all w-full">
+                Generar Reporte PDF
+            </button>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg rounded-t-2xl border-t border-white/20 shadow-[0_-10px_25px_-5px_rgba(79,70,229,0.1)]">
+<div class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 font-['Plus_Jakarta_Sans'] text-[11px] font-semibold">
+<span class="material-symbols-outlined" data-icon="school">school</span>
+<span>Notas</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 font-['Plus_Jakarta_Sans'] text-[11px] font-semibold">
+<span class="material-symbols-outlined" data-icon="fact_check">fact_check</span>
+<span>Asistencia</span>
+</div>
+<div class="flex flex-col items-center justify-center text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/30 rounded-xl px-3 py-1 font-['Plus_Jakarta_Sans'] text-[11px] font-semibold">
+<span class="material-symbols-outlined" data-icon="analytics" data-weight="fill" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span>Resumen</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 font-['Plus_Jakarta_Sans'] text-[11px] font-semibold">
+<span class="material-symbols-outlined" data-icon="event_available">event_available</span>
+<span>Actividades</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 font-['Plus_Jakarta_Sans'] text-[11px] font-semibold">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span>Informes</span>
+</div>
+</nav>
+</body></html>

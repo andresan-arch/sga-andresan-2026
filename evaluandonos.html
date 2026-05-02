@@ -696,9 +696,18 @@
     const $ = id => document.getElementById(id);
 
     async function checkSession() {
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (session) {
-        loguearExitoso(session.user);
+      console.log("[Session] Verificando sesión...");
+      try {
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        if (error) throw error;
+        if (session) {
+          console.log("[Session] Sesión activa para:", session.user.email);
+          loguearExitoso(session.user);
+        } else {
+          console.log("[Session] No hay sesión activa.");
+        }
+      } catch (e) {
+        console.error("[Session] Error al verificar sesión:", e);
       }
     }
 
@@ -799,8 +808,16 @@
         }
 
       } catch (e) {
-        console.error("Error grados:", e);
-        alert("Error al cargar grados: Verifica los permisos (RLS) en Supabase.");
+        console.error("Error grados completo:", e);
+        let msg = "Error al cargar grados.";
+        if (e.message && e.message.includes("policy")) {
+          msg += "\n\nDetalle: Parece un problema de permisos (RLS) en Supabase.";
+        } else if (e.message) {
+          msg += "\n\nDetalle: " + e.message;
+        } else {
+          msg += "\n\nVerifica los permisos (RLS) en Supabase o la conexión a internet.";
+        }
+        alert(msg);
       }
 
       const asigSel = $('sel-asig');
