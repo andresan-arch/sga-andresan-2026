@@ -777,18 +777,42 @@
       }
     }
 
-    @media(max-width:600px) {
-      .tab {
-        font-size: 12px;
-        padding: 9px 5px;
-        min-width: 80px;
+      @media(max-width:600px) {
+        .tab {
+          font-size: 12px;
+          padding: 9px 5px;
+          min-width: 80px;
+        }
+
+        .form-row {
+          grid-template-columns: 1fr;
+        }
       }
 
-      .form-row {
-        grid-template-columns: 1fr;
+      /* ── PWA Install Button ── */
+      #pwa-install-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        display: none;
+        background: #0891b2;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 50px;
+        font-weight: 700;
+        box-shadow: 0 10px 25px rgba(8, 145, 178, 0.3);
+        cursor: pointer;
+        align-items: center;
+        gap: 8px;
+        animation: slideUp 0.5s ease-out;
       }
-    }
-  </style>
+      @keyframes slideUp {
+        from { transform: translateY(100px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+    </style>
 </head>
 
 <body>
@@ -2264,9 +2288,47 @@
       }
     })();
   </script>
+  <button id="pwa-install-btn">
+    <span>📲</span> Descargar App
+  </button>
+
   <script>
+    // --- PWA LOGIC ---
+    let deferredPrompt;
+    const installBtn = document.getElementById('pwa-install-btn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // Prevenir que Chrome muestre el banner automático
+      e.preventDefault();
+      // Guardar el evento para dispararlo luego
+      deferredPrompt = e;
+      // Mostrar nuestro propio botón
+      installBtn.style.display = 'flex';
+      console.log('PWA: Ready to install');
+    });
+
+    installBtn.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        // Mostrar el prompt de instalación
+        deferredPrompt.prompt();
+        // Esperar la respuesta del usuario
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`PWA: User choice: ${outcome}`);
+        // Limpiar el prompt guardado
+        if (outcome === 'accepted') {
+          installBtn.style.display = 'none';
+        }
+        deferredPrompt = null;
+      }
+    });
+
+    // Registrar Service Worker
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js');
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('SW registrado con éxito'))
+          .catch(err => console.error('Error al registrar SW:', err));
+      });
     }
   </script>
 </body>

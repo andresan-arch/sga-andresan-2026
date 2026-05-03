@@ -1,8 +1,10 @@
 {
   "name": "Evaluándonos 2026",
   "short_name": "Evaluándonos",
+  "id": "andresan-evaluandonos-2026",
   "description": "Análisis Estadístico de Evaluaciones AndréSán",
-  "start_url": "/evaluandonos.html",
+  "start_url": "./evaluandonos.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#f8fafc",
   "theme_color": "#4f46e5",
@@ -11,7 +13,8 @@
     {
       "src": "https://pmfrdrihzdhhjxokabjm.supabase.co/storage/v1/object/public/assets/logo%20solo%20copia.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "https://pmfrdrihzdhhjxokabjm.supabase.co/storage/v1/object/public/assets/logo%20solo%20copia.png",

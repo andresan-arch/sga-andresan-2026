@@ -1,14 +1,27 @@
 const CACHE = 'andresan-v2';
-const ARCHIVOS = ['index.html', 'manifest.json', 'evaluandonos.html', 'manifest-eval.json'];
+const ARCHIVOS = [
+  './',
+  './index.html',
+  './manifest.json',
+  './evaluandonos.html',
+  './manifest-eval.json'
+];
 
 self.addEventListener('install', e => {
+  console.log('SW: Instalando...');
   self.skipWaiting();
   e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(ARCHIVOS))
+    caches.open(CACHE).then(c => {
+      console.log('SW: Cacheando archivos...');
+      return c.addAll(ARCHIVOS).catch(err => {
+        console.error('SW: Error al cachear archivos:', err);
+      });
+    })
   );
 });
 
 self.addEventListener('activate', e => {
+  console.log('SW: Activado');
   e.waitUntil(
     caches.keys().then(keys =>
       Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
