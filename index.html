@@ -1318,18 +1318,23 @@
         acts.forEach(act => {
           const valor = nMap[`${est.id}_${act.id}`];
 
-          let clase = 'nc ds-sin';
-          let texto = '–';
+          let valStr = (valor !== undefined && valor !== null) ? valor : '';
+          let clase = 'ds-sin';
+          let texto = '';
 
           if (valor !== undefined && valor !== null) {
-            clase = `nc ${dsClass(valor)}`;
+            clase = dsClass(valor);
             texto = dsLabel(valor);
           }
 
-          html += `<td style="text-align:center; position:relative">
-        <span class="${clase}" style="padding:6px 12px; font-size:13px;">
-          ${texto}
-        </span>
+          html += `<td style="text-align:center; position:relative; vertical-align:middle;">
+        <input type="number" min="0" max="10" step="0.1" value="${valStr}"
+          style="width:55px; padding:4px; text-align:center; border:2px solid #e5e7eb; border-radius:6px; font-size:13px; font-weight:600; color:#1f2937; outline:none; transition:all 0.2s;"
+          onfocus="this.style.borderColor='#6366f1'"
+          onblur="this.style.borderColor='#e5e7eb'"
+          onchange="guardarNotaDesdeTabla(${est.id}, ${act.id}, ${asigId}, this)"
+          onkeydown="if(event.key==='Enter') this.blur()">
+        <div style="font-size:10px; margin-top:4px;" class="ds ${clase}">${texto}</div>
         ${valor !== undefined && valor !== null ? `
           <button onclick="borrarNota(${est.id}, ${act.id})" 
                   style="position:absolute; top:2px; right:2px; background:none; border:none; color:#ef4444; cursor:pointer; font-size:10px; padding:2px"
@@ -2023,6 +2028,63 @@
         if (currentAsigId) await cargarTablaNotas();
 
         setTimeout(() => { msg.textContent = ''; }, 3000);
+      }
+    }
+
+    async function guardarNotaDesdeTabla(estId, actId, asigId, inputElem) {
+      let valText = inputElem.value.trim();
+      let lbl = inputElem.nextElementSibling;
+      
+      if (valText === '') {
+        badge('wait', 'Borrando…');
+        const { data: existente } = await sb.from('notas').select('id')
+          .eq('estudiante_id', estId).eq('actividad_id', actId).maybeSingle();
+        if (existente) {
+          const { error } = await sb.from('notas').delete().eq('id', existente.id);
+          if (error) { badge('no', 'Error al borrar'); return; }
+        }
+        badge('ok', 'Borrado ✓');
+        if (lbl) {
+          lbl.className = 'ds ds-sin';
+          lbl.textContent = '';
+        }
+        return;
+      }
+
+      let valor = parseFloat(valText);
+      if (isNaN(valor) || valor < 0 || valor > 10) {
+        inputElem.style.borderColor = '#dc2626';
+        badge('no', 'Nota inválida');
+        return;
+      }
+      
+      badge('wait', 'Guardando…');
+      
+      const { data: existente } = await sb.from('notas').select('id')
+        .eq('estudiante_id', estId).eq('actividad_id', actId).maybeSingle();
+
+      let error;
+      if (existente) {
+        ({ error } = await sb.from('notas').update({ valor }).eq('id', existente.id));
+      } else {
+        ({ error } = await sb.from('notas').insert({
+          estudiante_id: estId, actividad_id: actId,
+          asignatura_id: asigId,
+          valor, periodo, año: anio
+        }));
+      }
+
+      if (error) {
+        inputElem.style.borderColor = '#dc2626';
+        badge('no', 'Error al guardar');
+      } else {
+        inputElem.style.borderColor = '#10b981';
+        badge('ok', 'Guardado ✓');
+        if (lbl) {
+          lbl.className = 'ds ' + dsClass(valor);
+          lbl.textContent = dsLabel(valor);
+        }
+        setTimeout(() => { inputElem.style.borderColor = '#e5e7eb'; }, 2000);
       }
     }
 
