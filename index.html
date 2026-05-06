@@ -2383,8 +2383,11 @@
           installBtn.style.display = 'none';
         }
         deferredPrompt = null;
+      } else {
+        alert('Para instalar:\n1. Toca los tres puntos (⋮) o el icono de compartir.\n2. Busca "Instalar aplicación" o "Agregar a pantalla de inicio".\n\nNota: En modo incógnito, el navegador bloquea esta función por seguridad.');
       }
     });
+
 
     // Registrar Service Worker
     if ('serviceWorker' in navigator) {
