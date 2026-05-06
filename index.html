@@ -814,6 +814,28 @@
         from { transform: translateY(100px); opacity: 0; }
         to { transform: translateY(0); opacity: 1; }
       }
+      /* ── Footer ── */
+      footer {
+        background: white;
+        padding: 30px 0;
+        text-align: center;
+        margin-top: 40px;
+        border-top: 1px solid #e5e7eb;
+        position: relative;
+        z-index: 1;
+      }
+      .footer-logo {
+        height: 50px;
+        opacity: 0.8;
+        transition: opacity 0.3s;
+        margin-bottom: 10px;
+      }
+      .footer-logo:hover { opacity: 1; }
+      .footer-copy {
+        font-size: 11px;
+        color: #94a3b8;
+        font-weight: 500;
+      }
     </style>
 </head>
 
@@ -2398,6 +2420,13 @@
       });
     }
   </script>
+  <footer>
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+      <img src="https://pmfrdrihzdhhjxokabjm.supabase.co/storage/v1/object/public/assets/andresanbordessinfondo.png"
+        class="footer-logo" alt="AndréSán Footer">
+      <p class="footer-copy">© 2026 SGA AndréSán - Sistema Integrado de Gestión Académica</p>
+    </div>
+  </footer>
 </body>
 
 </html>
