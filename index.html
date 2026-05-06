@@ -2377,36 +2377,7 @@
 
 
   <script>
-    // --- PWA LOGIC ---
-    let deferredPrompt;
-    const installBtn = document.getElementById('pwa-install-btn');
 
-    window.addEventListener('beforeinstallprompt', (e) => {
-      // Prevenir que Chrome muestre el banner automático
-      e.preventDefault();
-      // Guardar el evento para dispararlo luego
-      deferredPrompt = e;
-      // Mostrar nuestro propio botón
-      installBtn.style.display = 'flex';
-      console.log('PWA: Ready to install');
-    });
-
-    installBtn.addEventListener('click', async () => {
-      if (deferredPrompt) {
-        // Mostrar el prompt de instalación
-        deferredPrompt.prompt();
-        // Esperar la respuesta del usuario
-        const { outcome } = await deferredPrompt.userChoice;
-        console.log(`PWA: User choice: ${outcome}`);
-        // Limpiar el prompt guardado
-        if (outcome === 'accepted') {
-          installBtn.style.display = 'none';
-        }
-        deferredPrompt = null;
-      } else {
-        alert('Para instalar:\n1. Toca los tres puntos (⋮) o el icono de compartir.\n2. Busca "Instalar aplicación" o "Agregar a pantalla de inicio".\n\nNota: En modo incógnito, el navegador bloquea esta función por seguridad.');
-      }
-    });
 
 
     // Registrar Service Worker
