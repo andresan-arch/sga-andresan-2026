@@ -1,10 +1,9 @@
-const CACHE = 'andresan-v3';
+const CACHE = 'andresan-v4';
 const ARCHIVOS = [
   './',
   './index.html',
-  './manifest.json',
-  './evaluandonos.html',
-  './manifest-eval.json'
+  './app-manifest.json',
+  './icon.png'
 ];
 
 self.addEventListener('install', e => {
