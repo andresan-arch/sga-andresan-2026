@@ -1,4 +1,4 @@
-const CACHE = 'andresan-v2026-final';
+const CACHE = 'andresan-v2026-v2';
 const ARCHIVOS = [
   './',
   './index.html',
@@ -33,4 +33,5 @@ self.addEventListener('fetch', e => {
     fetch(e.request).catch(() => caches.match(e.request))
   );
 });
+
 
