@@ -1839,18 +1839,16 @@
     </div><!-- /app-body -->
   </div><!-- /app-screen -->
 
-  <!-- ═══════════════════════ SCRIPTS ═══════════════════════ -->
-  <script src="./shared/constants.js"></script>
-  <script src="./data/supabase_client.js"></script>
-  <script src="./domain/grades_service.js"></script>
+  <!-- ═══════════════════════ SCRIPT ═══════════════════════ -->
   <script>
-    // ⚙️ CONFIGURACIÓN — usa APP_CONFIG global
-    const LOGO_URL = window.APP_CONFIG.LOGO_URL;
-    const FONDO_URL = window.APP_CONFIG.FONDO_URL;
+    // ⚙️ CONFIGURACIÓN — cambia solo estas dos líneas
+    const LOGO_URL = "https://pmfrdrihzdhhjxokabjm.supabase.co/storage/v1/object/public/assets/andresanbordessinfondo.png";
+    const FONDO_URL = "https://pmfrdrihzdhhjxokabjm.supabase.co/storage/v1/object/public/assets/DSC06323.JPG";
 
     // ── Supabase config ──────────────────────────────────────
-    // Ya inicializado en window.sb
-    const sb = window.sb;
+    const SB_URL = "https://pmfrdrihzdhhjxokabjm.supabase.co";
+    const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtZnJkcmloemRoaGp4b2thYmptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4NTA5OTIsImV4cCI6MjA5MTQyNjk5Mn0.FnQWmxg0p4oUgAQBVhoy6wqIMOk3qk4pifI2voeQvV0";
+    const sb = supabase.createClient(SB_URL, SB_KEY);
 
     // ── Estado global ────────────────────────────────────────
     let DB = { asigs: [], ests: [], acts: [], hor: [] };
@@ -2873,8 +2871,12 @@
       
       if (valText === '') {
         badge('wait', 'Borrando…');
-        const { error } = await window.GradesService.deleteNota(estId, actId);
-        if (error) { badge('no', 'Error al borrar'); return; }
+        const { data: existente } = await sb.from('notas').select('id')
+          .eq('estudiante_id', estId).eq('actividad_id', actId).maybeSingle();
+        if (existente) {
+          const { error } = await sb.from('notas').delete().eq('id', existente.id);
+          if (error) { badge('no', 'Error al borrar'); return; }
+        }
         badge('ok', 'Borrado ✓');
         if (lbl) {
           lbl.className = 'ds ds-sin';
@@ -2892,7 +2894,19 @@
       
       badge('wait', 'Guardando…');
       
-      let { error } = await window.GradesService.upsertNota(estId, actId, asigId, valor, periodo, anio);
+      const { data: existente } = await sb.from('notas').select('id')
+        .eq('estudiante_id', estId).eq('actividad_id', actId).maybeSingle();
+
+      let error;
+      if (existente) {
+        ({ error } = await sb.from('notas').update({ valor }).eq('id', existente.id));
+      } else {
+        ({ error } = await sb.from('notas').insert({
+          estudiante_id: estId, actividad_id: actId,
+          asignatura_id: asigId,
+          valor, periodo, año: anio
+        }));
+      }
 
       if (error) {
         inputElem.style.borderColor = '#dc2626';

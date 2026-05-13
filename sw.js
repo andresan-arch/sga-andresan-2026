@@ -1,4 +1,4 @@
-const CACHE = 'andresan-v2026-v2';
+const CACHE = 'andresan-v2026-v3';
 const ARCHIVOS = [
   './',
   './index.html',
@@ -26,12 +26,28 @@ self.addEventListener('activate', e => {
       Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
     )
   );
+  self.clients.claim(); // Toma el control de inmediato
 });
 
 self.addEventListener('fetch', e => {
+  // Ignorar peticiones que no sean GET
+  if (e.request.method !== 'GET') return;
+
   e.respondWith(
-    fetch(e.request).catch(() => caches.match(e.request))
+    fetch(e.request)
+      .then(response => {
+        // Actualizamos caché si hay red
+        if (response && response.status === 200) {
+          const responseToCache = response.clone();
+          caches.open(CACHE).then(cache => {
+            cache.put(e.request, responseToCache);
+          });
+        }
+        return response;
+      })
+      .catch(() => {
+        // Fallback a caché si no hay red
+        return caches.match(e.request);
+      })
   );
 });
-
-
