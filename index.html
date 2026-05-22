@@ -1184,7 +1184,7 @@
     <div id="sidebar" class="no-print">
       <div class="sb-header">
         <img id="sb-logo" src="" alt="Logo" style="display:none; max-width: 100%; height: auto;">
-        <div style="font-weight: 800; font-size: 18px; color: var(--text-main); margin-top: 10px;" id="sb-title">SGA AndréSán 2026</div>
+        <div style="font-weight: 800; font-size: 18px; color: var(--text-main); margin-top: 10px;" id="sb-title">SIGA AndréSán 2026</div>
         <div id="sb-user-lbl" style="font-size: 12px; color: var(--text-sec); margin-top: 5px; word-break: break-all;"></div>
       </div>
       <div class="sb-nav">
@@ -1193,6 +1193,8 @@
         <button class="sb-nav-item tab tab-res" onclick="tab('resumen', this); if(gRes) selRes(gRes); closeSidebar()"><span>📊</span> Resumen</button>
         <button class="sb-nav-item tab tab-ing" onclick="tab('ingreso', this); closeSidebar()"><span>✏️</span> Ingreso</button>
         <button class="sb-nav-item tab tab-act" onclick="tab('actividades', this); closeSidebar()"><span>📋</span> Actividades</button>
+        <button class="sb-nav-item tab tab-est" onclick="tab('estudiantes', this); closeSidebar()"><span>👥</span> Estudiantes</button>
+        <button class="sb-nav-item tab tab-cur" onclick="tab('cursos', this); closeSidebar()"><span>📚</span> Cursos</button>
         <button class="sb-nav-item tab tab-inf" onclick="tab('informe', this); closeSidebar()"><span>📄</span> Informe</button>
       </div>
       <div class="sb-footer">
@@ -1357,14 +1359,60 @@
         <div id="p-inf"></div>
       </div>
 
+      <!-- ── ESTUDIANTES ── -->
+      <div id="s-estudiantes" class="sec">
+        <div class="card card-est">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <span style="font-size:32px">👥</span>
+              <h3 style="margin:0;border:none;padding:0">Gestión de Estudiantes</h3>
+            </div>
+            <button class="btn btn-save" onclick="abrirModalEstudiante()">➕ Nuevo Estudiante</button>
+          </div>
+          <div class="form-row" style="margin-bottom:15px;">
+            <div class="form-group" style="max-width: 300px;">
+              <label class="lbl">Filtrar por Grupo</label>
+              <select id="est-filtro-grado" onchange="renderEstudiantes()">
+                <option value="todos">Todos los grados</option>
+              </select>
+            </div>
+          </div>
+          <div id="p-estudiantes"></div>
+        </div>
+      </div>
+
+      <!-- ── CURSOS ── -->
+      <div id="s-cursos" class="sec">
+        <div class="card card-cur">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <span style="font-size:32px">📚</span>
+              <h3 style="margin:0;border:none;padding:0">Gestión de Cursos (Asignaturas)</h3>
+            </div>
+            <button class="btn btn-save" onclick="abrirModalCurso()">➕ Nueva Asignatura</button>
+          </div>
+          <div class="form-row" style="margin-bottom:15px;">
+            <div class="form-group" style="max-width: 300px;">
+              <label class="lbl">Filtrar por Grupo</label>
+              <select id="cur-filtro-grado" onchange="renderCursos()">
+                <option value="todos">Todos los grados</option>
+              </select>
+            </div>
+          </div>
+          <div id="p-cursos"></div>
+        </div>
+      </div>
+
     </div><!-- /app-body -->
 
       <!-- Bottom Nav (Mobile) -->
-      <div id="bottom-nav" class="no-print">
+      <div id="bottom-nav" class="no-print" style="overflow-x: auto; white-space: nowrap;">
         <button class="bn-item tab-notas active" onclick="tab('notas', this)"><span>📝</span>Notas</button>
         <button class="bn-item tab-res" onclick="tab('resumen', this); if(gRes) selRes(gRes)"><span>📊</span>Resumen</button>
         <button class="bn-item tab-ing" onclick="tab('ingreso', this)"><span>✏️</span>Ingreso</button>
         <button class="bn-item tab-act" onclick="tab('actividades', this)"><span>📋</span>Actividades</button>
+        <button class="bn-item tab-est" onclick="tab('estudiantes', this)"><span>👥</span>Estudiantes</button>
+        <button class="bn-item tab-cur" onclick="tab('cursos', this)"><span>📚</span>Cursos</button>
         <button class="bn-item tab-inf" onclick="tab('informe', this)"><span>📄</span>Informe</button>
       </div>
 
@@ -1446,13 +1494,15 @@
         sb.from('horarios').select('*')
       ]);
 
-      DB.asigs = ra.data || [];
-      DB.ests = re.data || [];
+      DB.asigs = (ra.data || []).filter(a => !a.año || a.año === anio);
+      DB.ests = (re.data || []).filter(e => !e.año || e.año === anio);
       DB.acts = rac.data || [];
       DB.hor = rh.data || [];
 
       const grados = [...new Set(DB.asigs.map(a => a.grado))].sort();
       const gradoOpts = '<option value="">Selecciona grupo…</option>' +
+        grados.map(g => `<option value="${g}">${g}</option>`).join('');
+      const gradoOptsTodos = '<option value="todos">Todos los grados</option>' +
         grados.map(g => `<option value="${g}">${g}</option>`).join('');
 
       // Pills
@@ -1462,6 +1512,8 @@
       // Selectores de formularios
       document.getElementById('ing-grado').innerHTML = gradoOpts;
       document.getElementById('inf-grado').innerHTML = gradoOpts;
+      document.getElementById('est-filtro-grado').innerHTML = gradoOptsTodos;
+      document.getElementById('cur-filtro-grado').innerHTML = gradoOptsTodos;
 
       // Iconos de actividades
       renderIconos();
@@ -1472,6 +1524,9 @@
 
       // Configurar Realtime
       setupRealtime();
+
+      renderEstudiantes();
+      renderCursos();
 
       badge('ok', 'Listo ✓');
     }
@@ -2709,6 +2764,224 @@
     // ════════════════════════════════════════════════════════
     // ARRANQUE — verificar sesión existente
     // ════════════════════════════════════════════════════════
+    // ════════════════════════════════════════════════════════
+    // ESTUDIANTES Y CURSOS
+    // ════════════════════════════════════════════════════════
+
+    function renderEstudiantes() {
+      const filtro = document.getElementById('est-filtro-grado').value;
+      const html = [];
+      const lista = filtro === 'todos' ? DB.ests : DB.ests.filter(e => e.grado === filtro);
+      
+      html.push('<div class="table-container"><table class="table" style="width:100%; border-collapse: collapse;">');
+      html.push('<thead><tr><th style="text-align:left; padding:10px; border-bottom:1px solid var(--border-glass)">Nombre</th><th style="text-align:center; padding:10px; border-bottom:1px solid var(--border-glass)">Grado</th><th style="text-align:center; padding:10px; border-bottom:1px solid var(--border-glass)">Acciones</th></tr></thead><tbody>');
+      
+      lista.forEach(e => {
+        html.push(`<tr>
+          <td style="padding:10px; border-bottom:1px solid var(--border-glass)">${e.nombre_completo}</td>
+          <td style="text-align:center; padding:10px; border-bottom:1px solid var(--border-glass)"><span class="badge" style="background:#e0e7ff; color:#3730a3">${e.grado}</span></td>
+          <td style="text-align:center; padding:10px; border-bottom:1px solid var(--border-glass)"><button class="btn" style="padding: 4px 10px; font-size: 12px; margin-left: 5px;" onclick="abrirModalEstudiante(${e.id})">✏️ Editar</button></td>
+        </tr>`);
+      });
+      html.push('</tbody></table></div>');
+      document.getElementById('p-estudiantes').innerHTML = html.join('');
+    }
+
+    function renderCursos() {
+      const filtro = document.getElementById('cur-filtro-grado').value;
+      const html = [];
+      const lista = filtro === 'todos' ? DB.asigs : DB.asigs.filter(e => e.grado === filtro);
+      
+      html.push('<div class="table-container"><table class="table" style="width:100%; border-collapse: collapse;">');
+      html.push('<thead><tr><th style="text-align:left; padding:10px; border-bottom:1px solid var(--border-glass)">Asignatura</th><th style="text-align:center; padding:10px; border-bottom:1px solid var(--border-glass)">Grado</th><th style="text-align:center; padding:10px; border-bottom:1px solid var(--border-glass)">Acciones</th></tr></thead><tbody>');
+      
+      lista.forEach(a => {
+        html.push(`<tr>
+          <td style="padding:10px; border-bottom:1px solid var(--border-glass)">${a.nombre}</td>
+          <td style="text-align:center; padding:10px; border-bottom:1px solid var(--border-glass)"><span class="badge" style="background:#fce7f3; color:#9d174d">${a.grado}</span></td>
+          <td style="text-align:center; padding:10px; border-bottom:1px solid var(--border-glass)"><button class="btn" style="padding: 4px 10px; font-size: 12px; margin-left: 5px;" onclick="abrirModalCurso(${a.id})">✏️ Editar</button></td>
+        </tr>`);
+      });
+      html.push('</tbody></table></div>');
+      document.getElementById('p-cursos').innerHTML = html.join('');
+    }
+
+    // Modal Estudiante
+    function abrirModalEstudiante(id = null) {
+      const est = id ? DB.ests.find(e => e.id === id) : null;
+      const title = est ? 'Editar Estudiante' : 'Nuevo Estudiante';
+      const grados = [...new Set(DB.asigs.map(a => a.grado))].sort();
+      const options = grados.map(g => `<option value="${g}" ${est && est.grado === g ? 'selected' : ''}>${g}</option>`).join('');
+      
+      const modalHtml = `
+      <div class="modal-overlay" id="modal-dinamico">
+        <div class="modal-card">
+          <div class="modal-head">
+            <h3>${title}</h3>
+            <button class="menu-btn" onclick="document.getElementById('modal-dinamico').remove()">✕</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label class="lbl">Nombre Completo</label>
+              <input type="text" id="m-est-nombre" value="${est ? est.nombre_completo : ''}" placeholder="Ej. Pérez Juan" style="width: 100%;">
+            </div>
+            <div class="form-group" style="margin-top:15px;">
+              <label class="lbl">Grado</label>
+              <select id="m-est-grado" style="width: 100%;">
+                <option value="">-- Selecciona --</option>
+                ${options}
+              </select>
+            </div>
+            <input type="hidden" id="m-est-id" value="${id || ''}">
+            <input type="hidden" id="m-est-grado-old" value="${est ? est.grado : ''}">
+          </div>
+          <div class="modal-foot">
+            <button class="btn" style="background:var(--bg-hover); color:var(--text-main)" onclick="document.getElementById('modal-dinamico').remove()">Cancelar</button>
+            <button class="btn btn-save" onclick="guardarEstudiante()">Guardar</button>
+          </div>
+        </div>
+      </div>`;
+      
+      let div = document.getElementById('modal-container');
+      if (!div) { div = document.createElement('div'); div.id = 'modal-container'; document.body.appendChild(div); }
+      div.innerHTML = modalHtml;
+    }
+
+    async function guardarEstudiante() {
+      badge('wait', 'Guardando...');
+      const id = document.getElementById('m-est-id').value;
+      const oldGrado = document.getElementById('m-est-grado-old').value;
+      const nombre = document.getElementById('m-est-nombre').value.trim().toUpperCase();
+      const grado = document.getElementById('m-est-grado').value;
+      if (!nombre || !grado) { badge('wait', 'Faltan datos'); setTimeout(hideBadge, 2000); return; }
+      
+      const obj = { nombre_completo: nombre, grado: grado, año: anio };
+      let updatedId = id;
+
+      if (id) {
+        // Edit
+        const { error } = await sb.from('estudiantes').update(obj).eq('id', id);
+        if (error) { badge('wait', 'Error al actualizar'); console.error(error); setTimeout(hideBadge, 2000); return; }
+        
+        // MIGRATION LOGIC
+        if (oldGrado && oldGrado !== grado) {
+           await migrarNotas(id, oldGrado, grado, anio);
+        }
+      } else {
+        // Insert
+        const { data, error } = await sb.from('estudiantes').insert(obj).select('id').single();
+        if (error) { badge('wait', 'Error al insertar'); console.error(error); setTimeout(hideBadge, 2000); return; }
+        updatedId = data.id;
+      }
+      
+      document.getElementById('modal-dinamico').remove();
+      badge('ok', 'Estudiante guardado');
+      await init(); // Reload data
+    }
+
+    async function migrarNotas(estudianteId, gradoViejo, gradoNuevo, anio) {
+       console.log(`Iniciando migración para estudiante ${estudianteId} de ${gradoViejo} a ${gradoNuevo}...`);
+       badge('wait', 'Migrando notas...');
+       const { data: notas } = await sb.from('notas').select('*').eq('estudiante_id', estudianteId).eq('año', anio);
+       if (!notas || notas.length === 0) return;
+
+       const oldActIds = [...new Set(notas.map(n => n.actividad_id))];
+       if (oldActIds.length === 0) return;
+
+       const { data: oldActs } = await sb.from('actividades').select('*').in('id', oldActIds);
+       const oldAsigIds = [...new Set(oldActs.map(a => a.asignatura_id))];
+       const { data: asigsViejas } = await sb.from('asignaturas').select('*').in('id', oldAsigIds);
+       
+       // Buscar las asignaturas en el grado nuevo
+       const { data: asigsNuevas } = await sb.from('asignaturas').select('*').eq('grado', gradoNuevo).eq('año', anio);
+       
+       const mapAsigs = {};
+       for (let av of asigsViejas) {
+          const an = asigsNuevas.find(a => a.nombre.toLowerCase().trim() === av.nombre.toLowerCase().trim());
+          if (an) mapAsigs[av.id] = an.id;
+       }
+
+       const newAsigIds = Object.values(mapAsigs);
+       if (newAsigIds.length === 0) return;
+
+       const { data: newActs } = await sb.from('actividades').select('*').in('asignatura_id', newAsigIds);
+
+       for (let nota of notas) {
+          const oldAct = oldActs.find(a => a.id === nota.actividad_id);
+          if (!oldAct) continue;
+          const newAsigId = mapAsigs[oldAct.asignatura_id];
+          if (!newAsigId) continue;
+
+          const newAct = newActs.find(a => a.asignatura_id === newAsigId && a.nombre.toLowerCase().trim() === oldAct.nombre.toLowerCase().trim() && a.periodo === oldAct.periodo);
+
+          if (newAct) {
+             await sb.from('notas').update({ actividad_id: newAct.id, asignatura_id: newAsigId }).eq('id', nota.id);
+          }
+       }
+    }
+
+    // Modal Cursos (Asignaturas)
+    function abrirModalCurso(id = null) {
+      const asig = id ? DB.asigs.find(a => a.id === id) : null;
+      const title = asig ? 'Editar Curso' : 'Nuevo Curso';
+      
+      const modalHtml = `
+      <div class="modal-overlay" id="modal-dinamico">
+        <div class="modal-card">
+          <div class="modal-head">
+            <h3>${title}</h3>
+            <button class="menu-btn" onclick="document.getElementById('modal-dinamico').remove()">✕</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label class="lbl">Nombre del Curso (Materia)</label>
+              <input type="text" id="m-cur-nombre" value="${asig ? asig.nombre : ''}" placeholder="Ej. Matemáticas" style="width: 100%;">
+            </div>
+            <div class="form-group" style="margin-top:15px;">
+              <label class="lbl">Grado</label>
+              <input type="text" id="m-cur-grado" value="${asig ? asig.grado : ''}" placeholder="Ej. 10A" style="width: 100%;">
+            </div>
+            <div class="form-group" style="margin-top:15px;">
+              <label class="lbl">Código Corto (opcional)</label>
+              <input type="text" id="m-cur-codigo" value="${asig ? (asig.codigo || '') : ''}" placeholder="Ej. MAT" style="width: 100%;">
+            </div>
+            <input type="hidden" id="m-cur-id" value="${id || ''}">
+          </div>
+          <div class="modal-foot">
+            <button class="btn" style="background:var(--bg-hover); color:var(--text-main)" onclick="document.getElementById('modal-dinamico').remove()">Cancelar</button>
+            <button class="btn btn-save" onclick="guardarCurso()">Guardar</button>
+          </div>
+        </div>
+      </div>`;
+      
+      let div = document.getElementById('modal-container');
+      if (!div) { div = document.createElement('div'); div.id = 'modal-container'; document.body.appendChild(div); }
+      div.innerHTML = modalHtml;
+    }
+
+    async function guardarCurso() {
+      badge('wait', 'Guardando...');
+      const id = document.getElementById('m-cur-id').value;
+      const nombre = document.getElementById('m-cur-nombre').value.trim();
+      const grado = document.getElementById('m-cur-grado').value.trim();
+      const codigo = document.getElementById('m-cur-codigo').value.trim();
+      if (!nombre || !grado) { badge('wait', 'Faltan datos'); setTimeout(hideBadge, 2000); return; }
+      
+      const obj = { nombre: nombre, grado: grado, codigo: codigo, año: anio };
+
+      if (id) {
+        const { error } = await sb.from('asignaturas').update(obj).eq('id', id);
+        if (error) { badge('wait', 'Error al actualizar'); console.error(error); setTimeout(hideBadge, 2000); return; }
+      } else {
+        const { error } = await sb.from('asignaturas').insert(obj);
+        if (error) { badge('wait', 'Error al insertar'); console.error(error); setTimeout(hideBadge, 2000); return; }
+      }
+      
+      document.getElementById('modal-dinamico').remove();
+      badge('ok', 'Curso guardado');
+      await init(); // Reload data
+    }
+
     function aplicarBranding() {
       if (FONDO_URL) document.body.style.backgroundImage = `url("${FONDO_URL}")`;
       ['login-logo','header-logo','sb-logo'].forEach(id => {
