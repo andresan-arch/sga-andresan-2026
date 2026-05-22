@@ -1323,12 +1323,15 @@
       </div>
       <div class="sb-nav">
         <div class="sb-section-title">MIS CLASES</div>
-        <button class="sb-nav-item tab tab-cur" onclick="tab('cursos', this); closeSidebar()"><span>🏠</span> Mis cursos</button>
-        <button class="sb-nav-item tab tab-notas active" onclick="tab('notas', this); closeSidebar()"><span>📝</span> Notas</button>
-        <button class="sb-nav-item tab tab-asist" onclick="tab('asistencia', this);abrirAsistencia(); closeSidebar()" style="display:none;"><span>📋</span> Pasar lista</button>
-        <button class="sb-nav-item tab tab-res" onclick="tab('resumen', this); if(gRes) selRes(gRes); closeSidebar()"><span>📊</span> Resumen / Horario</button>
+        <button class="sb-nav-item tab tab-notas active" onclick="tab('notas', this); closeSidebar()"><span>📝</span> Notas / Mis Cursos</button>
+        <button class="sb-nav-item tab tab-asist" onclick="tab('asistencia', this);abrirAsistencia(); closeSidebar()" style="display:none;"><span>✅</span> Asistencia</button>
+        <button class="sb-nav-item tab tab-res" onclick="tab('resumen', this); if(gRes) selRes(gRes); closeSidebar()"><span>📊</span> Resumen</button>
+        
         <div class="sb-section-title" style="margin-top: 15px;">GESTIÓN ACADÉMICA</div>
+        <button class="sb-nav-item tab tab-ing" onclick="tab('ingreso', this); closeSidebar()"><span>✏️</span> Ingreso de Notas</button>
+        <button class="sb-nav-item tab tab-act" onclick="tab('actividades', this); closeSidebar()"><span>📋</span> Actividades</button>
         <button class="sb-nav-item tab tab-est" onclick="tab('estudiantes', this); closeSidebar()"><span>👥</span> Estudiantes</button>
+        <button class="sb-nav-item tab tab-cur" onclick="tab('cursos', this); closeSidebar()"><span>📚</span> Configurar Cursos</button>
         <button class="sb-nav-item tab tab-inf" onclick="tab('informe', this); closeSidebar()"><span>📄</span> Informes</button>
       </div>
       <div class="sb-footer">
