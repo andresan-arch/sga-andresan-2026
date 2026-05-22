@@ -2872,7 +2872,7 @@
       const oldGrado = document.getElementById('m-est-grado-old').value;
       const nombre = document.getElementById('m-est-nombre').value.trim().toUpperCase();
       const grado = document.getElementById('m-est-grado').value;
-      if (!nombre || !grado) { badge('wait', 'Faltan datos'); setTimeout(hideBadge, 2000); return; }
+      if (!nombre || !grado) { badge('no', 'Faltan datos'); return; }
       
       const obj = { nombre_completo: nombre, grado: grado, año: anio };
       let updatedId = id;
@@ -2880,7 +2880,7 @@
       if (id) {
         // Edit
         const { error } = await sb.from('estudiantes').update(obj).eq('id', id);
-        if (error) { badge('wait', 'Error al actualizar'); console.error(error); setTimeout(hideBadge, 2000); return; }
+        if (error) { badge('no', 'Error al actualizar'); console.error(error); return; }
         
         // MIGRATION LOGIC
         if (oldGrado && oldGrado !== grado) {
@@ -2889,7 +2889,7 @@
       } else {
         // Insert
         const { data, error } = await sb.from('estudiantes').insert(obj).select('id').single();
-        if (error) { badge('wait', 'Error al insertar'); console.error(error); setTimeout(hideBadge, 2000); return; }
+        if (error) { badge('no', 'Error al insertar'); console.error(error); return; }
         updatedId = data.id;
       }
       
@@ -2987,16 +2987,16 @@
       const nombre = document.getElementById('m-cur-nombre').value.trim();
       const grado = document.getElementById('m-cur-grado').value.trim();
       const codigo = document.getElementById('m-cur-codigo').value.trim();
-      if (!nombre || !grado) { badge('wait', 'Faltan datos'); setTimeout(hideBadge, 2000); return; }
+      if (!nombre || !grado) { badge('no', 'Faltan datos'); return; }
       
       const obj = { nombre: nombre, grado: grado, codigo: codigo, año: anio };
 
       if (id) {
         const { error } = await sb.from('asignaturas').update(obj).eq('id', id);
-        if (error) { badge('wait', 'Error al actualizar'); console.error(error); setTimeout(hideBadge, 2000); return; }
+        if (error) { badge('no', 'Error al actualizar'); console.error(error); return; }
       } else {
         const { error } = await sb.from('asignaturas').insert(obj);
-        if (error) { badge('wait', 'Error al insertar'); console.error(error); setTimeout(hideBadge, 2000); return; }
+        if (error) { badge('no', 'Error al insertar'); console.error(error); return; }
       }
       
       document.getElementById('modal-dinamico').remove();
@@ -3010,9 +3010,10 @@
       badge('wait', 'Eliminando estudiante...');
       await sb.from('notas').delete().eq('estudiante_id', id);
       await sb.from('asistencia').delete().eq('estudiante_id', id);
-      await sb.from('eval_resultados').delete().eq('estudiante_id', id);
+      await sb.from('informes').delete().eq('estudiante_id', id);
+      await sb.from('comportamiento').delete().eq('estudiante_id', id);
       const { error } = await sb.from('estudiantes').delete().eq('id', id);
-      if (error) { badge('wait', 'Error al eliminar'); console.error(error); setTimeout(hideBadge, 2000); return; }
+      if (error) { badge('no', 'Error al eliminar'); console.error(error); return; }
       badge('ok', 'Estudiante eliminado');
       await init();
     }
@@ -3032,7 +3033,7 @@
       
       await sb.from('asistencia').delete().eq('asignatura_id', id);
       const { error } = await sb.from('asignaturas').delete().eq('id', id);
-      if (error) { badge('wait', 'Error al eliminar'); console.error(error); setTimeout(hideBadge, 2000); return; }
+      if (error) { badge('no', 'Error al eliminar'); console.error(error); return; }
       badge('ok', 'Curso eliminado');
       await init();
     }
@@ -3049,7 +3050,8 @@
       for (let est of ests) {
          await sb.from('notas').delete().eq('estudiante_id', est.id);
          await sb.from('asistencia').delete().eq('estudiante_id', est.id);
-         await sb.from('eval_resultados').delete().eq('estudiante_id', est.id);
+         await sb.from('informes').delete().eq('estudiante_id', est.id);
+         await sb.from('comportamiento').delete().eq('estudiante_id', est.id);
          await sb.from('estudiantes').delete().eq('id', est.id);
       }
 
