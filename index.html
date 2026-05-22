@@ -1047,8 +1047,6 @@
     .mobile-badge { display: none !important; }
     .mobile-date { display: none !important; }
     .mobile-greeting { display: none !important; }
-    .sb-section-title { display: none; }
-    .sb-profile-card { display: none; }
 
     @media (max-width: 768px) {
       body {
@@ -1063,7 +1061,7 @@
         padding: 15px 20px;
       }
       #header-title { color: #121E33; }
-      .menu-btn { color: #121E33; margin-right: 15px; }
+      .menu-btn { display: block !important; color: #121E33; margin-right: 15px; }
       .mobile-header-title { display: flex !important; flex-wrap: wrap; gap: 8px; }
       .mobile-badge { 
         display: inline-block !important; 
@@ -1119,27 +1117,20 @@
       
       .sb-section-title {
         display: block;
-        font-size: 10px;
+        font-size: 11px;
         color: rgba(255,255,255,0.4);
         letter-spacing: 1.5px;
-        margin: 15px 15px 5px;
+        margin: 20px 15px 10px;
         font-weight: 600;
       }
       
-      .sb-nav {
-        flex: 1;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 20px;
-      }
-
       .sb-nav-item.tab {
         color: #e2e8f0 !important;
         background: transparent !important;
-        border-radius: 10px !important;
-        padding: 10px 15px !important;
-        margin: 2px 15px !important;
-        font-size: 14px !important;
+        border-radius: 12px !important;
+        padding: 14px 15px !important;
+        margin: 4px 15px !important;
+        font-size: 15px !important;
         font-weight: 500 !important;
         border: none !important;
       }
@@ -1322,10 +1313,10 @@
         <!-- Sidebar -->
     <div id="sidebar" class="no-print">
       <div class="sb-header" style="flex-direction:row; align-items:center; justify-content:flex-start; padding: 25px 20px 15px;">
-        <img id="sb-logo" src="data:image/svg+xml;utf8,<svg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'><circle cx='50' cy='50' r='45' fill='white'/><path d='M20 50 Q 50 20 80 50 Q 50 80 20 50' fill='%231B5E6B'/></svg>" alt="Logo" style="height: 35px; margin-right: 15px; border-radius: 8px;">
+        <img id="sb-logo" src="" alt="Logo" style="height: 35px; margin-right: 15px; border-radius: 8px; display:none;">
         <div style="display:flex; flex-direction:column; text-align: left;">
-          <div style="font-family:'Playfair Display',serif; font-weight: 700; font-size: 22px; color: #fff; line-height: 1;">RAICE</div>
-          <div style="font-size: 10px; color: rgba(255,255,255,0.6); letter-spacing: 2px; margin-top: 4px;">DOCENTE</div>
+          <div style="font-family:'Playfair Display',serif; font-weight: 700; font-size: 20px; color: #fff; line-height: 1;">Control</div>
+          <div style="font-size: 10px; color: rgba(255,255,255,0.6); letter-spacing: 2px; margin-top: 4px;">ANDRÉSÁN</div>
         </div>
       </div>
       <div class="sb-nav">
