@@ -836,312 +836,7 @@
         color: #94a3b8;
         font-weight: 500;
       }
-    
-    /* ── DARK MODE & GLASSMORPHISM ── */
-    :root {
-      --bg-base: #0f172a;
-      --bg-card: rgba(30, 41, 59, 0.7);
-      --text-main: #f1f5f9;
-      --text-sec: #94a3b8;
-      --border-glass: rgba(255,255,255,0.08);
-      --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-      --act: #8b5cf6;
-    }
-
-    body {
-      background: var(--bg-base) !important;
-      color: var(--text-main) !important;
-      font-family: 'Inter', system-ui, sans-serif !important;
-    }
-
-    .card, .modal-card, .login-box {
-      background: var(--bg-card) !important;
-      border: 1px solid var(--border-glass) !important;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      box-shadow: var(--shadow-glass) !important;
-      color: var(--text-main) !important;
-      border-radius: 12px !important;
-    }
-    #login-screen {
-      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%) !important;
-    }
-
-    .modal-head, .modal-foot, #p-inf [style*="background:#f8fafc"] {
-      background: rgba(15, 23, 42, 0.8) !important;
-      color: var(--text-main) !important;
-      border-color: var(--border-glass) !important;
-    }
-
-    select, input[type="text"], input[type="number"], input[type="password"] {
-      background: rgba(15, 23, 42, 0.6) !important;
-      border: 1px solid var(--border-glass) !important;
-      color: var(--text-main) !important;
-    }
-    select:focus, input:focus {
-      border-color: var(--act) !important;
-      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3) !important;
-    }
-
-    /* Sidebar (Desktop) */
-    #app-screen {
-      flex-direction: row; 
-      height: 100vh;
-      overflow: hidden;
-    }
-    #sidebar {
-      width: 240px;
-      background: var(--bg-card);
-      border-right: 1px solid var(--border-glass);
-      display: flex;
-      flex-direction: column;
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: 1000;
-      backdrop-filter: blur(12px);
-      flex-shrink: 0;
-    }
-    #main-wrapper {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
-      position: relative;
-    }
-    .app-body {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px;
-    }
-    .app-header {
-      background: rgba(30, 41, 59, 0.5) !important;
-      border-bottom: 1px solid var(--border-glass) !important;
-      backdrop-filter: blur(10px);
-      color: var(--text-main) !important;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 20px;
-      height: 60px;
-      box-sizing: border-box;
-    }
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .menu-btn {
-      display: none;
-      background: transparent;
-      border: none;
-      color: var(--text-main);
-      font-size: 24px;
-      cursor: pointer;
-      padding: 0;
-    }
-
-    .sb-header {
-      padding: 20px;
-      border-bottom: 1px solid var(--border-glass);
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .sb-header img {
-      height: 40px;
-      margin-bottom: 10px;
-    }
-    .sb-nav {
-      flex: 1;
-      padding: 15px 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      overflow-y: auto;
-    }
-    .sb-nav-item {
-      background: transparent;
-      border: none;
-      color: var(--text-sec);
-      text-align: left;
-      padding: 12px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 15px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      transition: all 0.2s;
-    }
-    .sb-nav-item:hover {
-      background: rgba(255,255,255,0.05);
-      color: var(--text-main);
-    }
-    .sb-nav-item.active {
-      background: rgba(139, 92, 246, 0.15);
-      color: var(--act);
-      font-weight: 600;
-    }
-    .sb-footer {
-      padding: 20px;
-      border-top: 1px solid var(--border-glass);
-    }
-    .sb-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(4px);
-      z-index: 999;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-
-    /* Bottom Nav (Mobile) */
-    #bottom-nav {
-      display: none;
-      background: var(--bg-card);
-      border-top: 1px solid var(--border-glass);
-      padding: 8px 5px;
-      padding-bottom: env(safe-area-inset-bottom, 8px);
-      justify-content: space-around;
-      align-items: center;
-      backdrop-filter: blur(12px);
-      z-index: 100;
-    }
-    .bn-item {
-      background: transparent;
-      border: none;
-      color: var(--text-sec);
-      font-size: 11px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      cursor: pointer;
-      padding: 5px;
-      flex: 1;
-    }
-    .bn-item.active {
-      color: var(--act);
-    }
-    .bn-item span {
-      font-size: 20px;
-    }
-
-    .tabs { display: none !important; }
-
-    @media (max-width: 768px) {
-      #sidebar {
-        position: fixed;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        transform: translateX(-100%);
-      }
-      #sidebar.open {
-        transform: translateX(0);
-      }
-      .sb-overlay.open {
-        display: block;
-        opacity: 1;
-      }
-      .menu-btn {
-        display: block;
-      }
-      #bottom-nav {
-        display: flex;
-      }
-      .app-body {
-        padding: 10px;
-      }
-      .app-header h1 { font-size: 18px !important; }
-      #header-logo { display: none !important; }
-    }
-
-    .ds-np { background: #374151 !important; color: #fff !important; border-color: #374151 !important; }
-    .ds-np.on { border-color: #fff !important; }
-
-    .hd, .grid-al, th, td { border-color: var(--border-glass) !important; }
-    th { background: rgba(0,0,0,0.2) !important; color: var(--text-main) !important; }
-    .icon-item {
-      background: rgba(0,0,0,0.2) !important;
-      border-color: var(--border-glass) !important;
-      color: var(--text-sec) !important;
-    }
-    .icon-item.selected {
-      background: rgba(139, 92, 246, 0.2) !important;
-      border-color: var(--act) !important;
-      color: var(--act) !important;
-    }
-    .stat-card {
-      background: rgba(0,0,0,0.2) !important;
-      border-color: var(--border-glass) !important;
-      color: var(--text-main) !important;
-    }
-    .p-head { background: rgba(0,0,0,0.3) !important; color: var(--text-main) !important; }
-    .p-head.cerrado { background: rgba(0,0,0,0.5) !important; color: var(--text-sec) !important; }
-    
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
-
-    /* Contrast fixes for dark mode */
-    :root {
-      --notas-light: #a78bfa;
-      --asist-light: #34d399;
-      --res-light: #38bdf8;
-      --ing-light: #e879f9;
-      --act-light: #fbbf24;
-      --inf-light: #22d3ee;
-    }
-
-    .pill {
-      background: rgba(15, 23, 42, 0.6) !important;
-      color: var(--text-main) !important;
-      border-color: var(--border-glass) !important;
-    }
-    .pill-notas.pill-sel { background: var(--notas-light) !important; border-color: var(--notas-light) !important; color: #1e1b4b !important; }
-    .pill-asist.pill-sel { background: var(--asist-light) !important; border-color: var(--asist-light) !important; color: #1e1b4b !important; }
-    .pill-res.pill-sel { background: var(--res-light) !important; border-color: var(--res-light) !important; color: #1e1b4b !important; }
-
-    .sb-nav-item.tab {
-      background: transparent !important;
-      color: var(--text-sec) !important;
-      border: 1px solid transparent !important;
-      box-shadow: none !important;
-      transform: none !important;
-      opacity: 1 !important;
-    }
-    .sb-nav-item.tab.active {
-      transform: none !important;
-      box-shadow: none !important;
-      opacity: 1 !important;
-    }
-
-    .sb-nav-item.tab-notas.active { background: rgba(167, 139, 250, 0.15) !important; color: var(--notas-light) !important; border: 1px solid var(--border-glass) !important; }
-    .sb-nav-item.tab-asist.active { background: rgba(52, 211, 153, 0.15) !important; color: var(--asist-light) !important; border: 1px solid var(--border-glass) !important; }
-    .sb-nav-item.tab-res.active { background: rgba(56, 189, 248, 0.15) !important; color: var(--res-light) !important; border: 1px solid var(--border-glass) !important; }
-    .sb-nav-item.tab-ing.active { background: rgba(232, 121, 249, 0.15) !important; color: var(--ing-light) !important; border: 1px solid var(--border-glass) !important; }
-    .sb-nav-item.tab-act.active { background: rgba(251, 191, 36, 0.15) !important; color: var(--act-light) !important; border: 1px solid var(--border-glass) !important; }
-    .sb-nav-item.tab-inf.active { background: rgba(34, 211, 238, 0.15) !important; color: var(--inf-light) !important; border: 1px solid var(--border-glass) !important; }
-
-    .card-notas h3 { color: var(--notas-light) !important; border-left-color: var(--notas-light) !important; }
-    .card-asist h3 { color: var(--asist-light) !important; border-left-color: var(--asist-light) !important; }
-    .card-res h3 { color: var(--res-light) !important; border-left-color: var(--res-light) !important; }
-    .card-ing h3 { color: var(--ing-light) !important; border-left-color: var(--ing-light) !important; }
-    .card-act h3 { color: var(--act-light) !important; border-left-color: var(--act-light) !important; }
-    .card-inf h3 { color: var(--inf-light) !important; border-left-color: var(--inf-light) !important; }
-
-    #p-inf [style*="color:#0891b2"] { color: var(--inf-light) !important; }
-    #p-inf [style*="color:#6b7280"] { color: var(--text-sec) !important; }
-    #p-inf h3[style*="color:#1c1c1a"] { color: var(--text-main) !important; }
-
-</style>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    </style>
 </head>
 
 <body>
@@ -1170,56 +865,40 @@
   <!-- ═══════════════════════ APP ═══════════════════════ -->
   <div id="app-screen">
 
-        <!-- Sidebar -->
-    <div id="sidebar" class="no-print">
-      <div class="sb-header">
-        <img id="sb-logo" src="" alt="Logo" style="display:none; max-width: 100%; height: auto;">
-        <div style="font-weight: 800; font-size: 18px; color: var(--text-main); margin-top: 10px;" id="sb-title">SGA AndréSán 2026</div>
-        <div id="sb-user-lbl" style="font-size: 12px; color: var(--text-sec); margin-top: 5px; word-break: break-all;"></div>
-      </div>
-      <div class="sb-nav">
-        <button class="sb-nav-item tab tab-notas active" onclick="tab('notas', this); closeSidebar()"><span>📝</span> Notas</button>
-        <button class="sb-nav-item tab tab-asist" onclick="tab('asistencia', this);abrirAsistencia(); closeSidebar()" style="display:none;"><span>✅</span> Asistencia</button>
-        <button class="sb-nav-item tab tab-res" onclick="tab('resumen', this); if(gRes) selRes(gRes); closeSidebar()"><span>📊</span> Resumen</button>
-        <button class="sb-nav-item tab tab-ing" onclick="tab('ingreso', this); closeSidebar()"><span>✏️</span> Ingreso</button>
-        <button class="sb-nav-item tab tab-act" onclick="tab('actividades', this); closeSidebar()"><span>📋</span> Actividades</button>
-        <button class="sb-nav-item tab tab-inf" onclick="tab('informe', this); closeSidebar()"><span>📄</span> Informe</button>
-      </div>
-      <div class="sb-footer">
-        <button class="btn-logout" style="width: 100%;" onclick="logout()">Salir</button>
+    <!-- Header -->
+    <div class="app-header">
+      <h1>
+        <img id="header-logo" src="" alt="Logo"
+          style="height:38px;border-radius:6px;display:none;vertical-align:middle">
+        Control AndréSán 2026
+      </h1>
+      <div class="header-right">
+        <select id="sel-anio" class="ctrl" onchange="recargar()">
+          <option value="2026">2026</option>
+          <option value="2025">2025</option>
+        </select>
+        <select id="sel-periodo" class="ctrl" onchange="recargar()">
+          <option value="1">Periodo 1</option>
+          <option value="2">Periodo 2</option>
+          <option value="3">Periodo 3</option>
+        </select>
+        <span id="user-lbl" class="user-lbl"></span>
+        <span id="badge" class="badge b-wait">Cargando…</span>
+        <button class="btn-logout" onclick="logout()">Salir</button>
       </div>
     </div>
-    <div class="sb-overlay" onclick="closeSidebar()"></div>
 
-    <!-- Main Content Wrapper -->
-    <div id="main-wrapper">
-      
-      <!-- Header -->
-      <div class="app-header">
-        <div class="header-left">
-          <button class="menu-btn" onclick="openSidebar()">☰</button>
-          <h1 style="display: flex; align-items: center; margin: 0;">
-            <img id="header-logo" src="" alt="Logo" style="display:none; height: 30px; margin-right: 10px;">
-            <span id="header-title">SGA 2026</span>
-          </h1>
-        </div>
-        <div class="header-right" style="display: flex; align-items: center; gap: 8px;">
-          <select id="sel-anio" class="ctrl" onchange="recargar()">
-            <option value="2026">2026</option>
-            <option value="2025">2025</option>
-          </select>
-          <select id="sel-periodo" class="ctrl" onchange="recargar()">
-            <option value="1">Periodo 1</option>
-            <option value="2">Periodo 2</option>
-            <option value="3">Periodo 3</option>
-          </select>
-          <span id="user-lbl" class="user-lbl" style="display:none;"></span>
-          <span id="badge" class="badge b-wait">Cargando…</span>
-          <button class="btn-logout" style="display:none;" onclick="logout()">Salir</button>
-        </div>
-      </div>
+    <!-- Tabs -->
+    <div class="tabs no-print">
+      <button class="tab tab-notas active" onclick="tab('notas',this)">📝 Notas</button>
+      <button class="tab tab-asist" onclick="tab('asistencia',this);abrirAsistencia()">✅ Asistencia</button>
+      <button class="tab tab-res" onclick="tab('resumen',this); if(gRes) selRes(gRes)">📊 Resumen</button>
+      <button class="tab tab-ing" onclick="tab('ingreso',this)">✏️ Ingreso</button>
+      <button class="tab tab-act" onclick="tab('actividades',this)">📋 Actividades</button>
+      <button class="tab tab-inf" onclick="tab('informe',this)">📄 Informe</button>
+    </div>
 
-      <div class="app-body">
+    <div class="app-body">
 
       <!-- ── NOTAS ── -->
       <div id="s-notas" class="sec active">
@@ -1348,17 +1027,6 @@
       </div>
 
     </div><!-- /app-body -->
-
-      <!-- Bottom Nav (Mobile) -->
-      <div id="bottom-nav" class="no-print">
-        <button class="bn-item tab-notas active" onclick="tab('notas', this)"><span>📝</span>Notas</button>
-        <button class="bn-item tab-res" onclick="tab('resumen', this); if(gRes) selRes(gRes)"><span>📊</span>Resumen</button>
-        <button class="bn-item tab-ing" onclick="tab('ingreso', this)"><span>✏️</span>Ingreso</button>
-        <button class="bn-item tab-act" onclick="tab('actividades', this)"><span>📋</span>Actividades</button>
-        <button class="bn-item tab-inf" onclick="tab('informe', this)"><span>📄</span>Informe</button>
-      </div>
-
-    </div> <!-- End main-wrapper -->
   </div><!-- /app-screen -->
 
   <!-- ═══════════════════════ SCRIPT ═══════════════════════ -->
@@ -1412,7 +1080,7 @@
     function mostrarApp(email) {
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('app-screen').style.display = 'flex';
-      document.getElementById('user-lbl').textContent = email; document.getElementById('sb-user-lbl').textContent = email;
+      document.getElementById('user-lbl').textContent = email;
       aplicarBranding(); // re-aplicar para que ing-logo ya esté en el DOM visible
     }
 
@@ -1546,16 +1214,6 @@
     // ════════════════════════════════════════════════════════
     // HELPERS UI
     // ════════════════════════════════════════════════════════
-    
-    function openSidebar() {
-      document.getElementById('sidebar').classList.add('open');
-      document.querySelector('.sb-overlay').classList.add('open');
-    }
-    function closeSidebar() {
-      document.getElementById('sidebar').classList.remove('open');
-      document.querySelector('.sb-overlay').classList.remove('open');
-    }
-
     function badge(t, txt) {
       const b = document.getElementById('badge');
       b.className = 'badge b-' + t; b.textContent = txt;
@@ -1585,13 +1243,11 @@
     function dsClass(n) {
       if (n === null || n === undefined || isNaN(n)) return 'ds-sin';
       n = Number(n);
-      if (n === 0) return 'ds-np';
       return n >= 8.4 ? 'ds-sup' : n >= 7.2 ? 'ds-alt' : n >= 6.0 ? 'ds-bas' : 'ds-baj';
     }
     function dsLabel(n) {
       if (n === null || n === undefined || isNaN(n)) return '–';
       n = Number(n);
-      if (n === 0) return 'NP';
       return n >= 8.4 ? 'Superior' : n >= 7.2 ? 'Alto' : n >= 6.0 ? 'Básico' : 'Bajo';
     }
 
@@ -2701,15 +2357,10 @@
     // ════════════════════════════════════════════════════════
     function aplicarBranding() {
       if (FONDO_URL) document.body.style.backgroundImage = `url("${FONDO_URL}")`;
-      ['login-logo','header-logo','sb-logo'].forEach(id => {
+      ['login-logo','header-logo'].forEach(id => {
         const el = document.getElementById(id);
         if (el && LOGO_URL) { el.src = LOGO_URL; el.style.display = 'inline-block'; }
       });
-      // Set user label in sidebar
-      const sbUser = document.getElementById('sb-user-lbl');
-      const hdrUser = document.getElementById('user-lbl');
-      if (sbUser && hdrUser) sbUser.textContent = hdrUser.textContent;
-
       const emoji = document.getElementById('login-emoji');
       if (emoji && LOGO_URL) emoji.style.display = 'none';
     }
