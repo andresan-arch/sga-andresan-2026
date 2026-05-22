@@ -3010,8 +3010,8 @@
       badge('wait', 'Eliminando estudiante...');
       await sb.from('notas').delete().eq('estudiante_id', id);
       await sb.from('asistencia').delete().eq('estudiante_id', id);
-      await sb.from('informes').delete().eq('estudiante_id', id);
-      await sb.from('comportamiento').delete().eq('estudiante_id', id);
+      await sb.from('asistencia_historial').delete().eq('estudiante_id', id);
+      await sb.from('asistencia_historica').delete().eq('estudiante_id', id);
       const { error } = await sb.from('estudiantes').delete().eq('id', id);
       if (error) { badge('no', 'Error al eliminar'); console.error(error); return; }
       badge('ok', 'Estudiante eliminado');
@@ -3031,7 +3031,10 @@
         await sb.from('actividades').delete().in('id', actIds);
       }
       
+      await sb.from('notas').delete().eq('asignatura_id', id);
       await sb.from('asistencia').delete().eq('asignatura_id', id);
+      await sb.from('asistencia_historial').delete().eq('asignatura_id', id);
+      await sb.from('asistencia_historica').delete().eq('asignatura_id', id);
       const { error } = await sb.from('asignaturas').delete().eq('id', id);
       if (error) { badge('no', 'Error al eliminar'); console.error(error); return; }
       badge('ok', 'Curso eliminado');
@@ -3050,8 +3053,8 @@
       for (let est of ests) {
          await sb.from('notas').delete().eq('estudiante_id', est.id);
          await sb.from('asistencia').delete().eq('estudiante_id', est.id);
-         await sb.from('informes').delete().eq('estudiante_id', est.id);
-         await sb.from('comportamiento').delete().eq('estudiante_id', est.id);
+         await sb.from('asistencia_historial').delete().eq('estudiante_id', est.id);
+         await sb.from('asistencia_historica').delete().eq('estudiante_id', est.id);
          await sb.from('estudiantes').delete().eq('id', est.id);
       }
 
@@ -3064,7 +3067,10 @@
            await sb.from('notas').delete().in('actividad_id', actIds);
            await sb.from('actividades').delete().in('id', actIds);
          }
+         await sb.from('notas').delete().eq('asignatura_id', asig.id);
          await sb.from('asistencia').delete().eq('asignatura_id', asig.id);
+         await sb.from('asistencia_historial').delete().eq('asignatura_id', asig.id);
+         await sb.from('asistencia_historica').delete().eq('asignatura_id', asig.id);
          await sb.from('asignaturas').delete().eq('id', asig.id);
       }
 
