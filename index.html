@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SGA AndréSán 2026</title>
+  <title>SIGA AndréSán 2026</title>
   <link rel="manifest" href="app-manifest.json?v=2026.3">
   <meta name="theme-color" content="#0891b2">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -849,9 +849,12 @@
     }
 
     body {
-      background: var(--bg-base) !important;
+      background-color: var(--bg-base) !important;
       color: var(--text-main) !important;
       font-family: 'Inter', system-ui, sans-serif !important;
+    }
+    body::before {
+      background: rgba(15, 23, 42, 0.85) !important;
     }
 
     .card, .modal-card, .login-box {
@@ -1207,7 +1210,7 @@
           <button class="menu-btn" onclick="openSidebar()">☰</button>
           <h1 style="display: flex; align-items: center; margin: 0;">
             <img id="header-logo" src="" alt="Logo" style="display:none; height: 30px; margin-right: 10px;">
-            <span id="header-title">SGA 2026</span>
+            <span id="header-title">SIGA 2026</span>
           </h1>
         </div>
         <div class="header-right" style="display: flex; align-items: center; gap: 8px;">
@@ -2768,7 +2771,7 @@
   <footer>
     <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
       <img src="https://pmfrdrihzdhhjxokabjm.supabase.co/storage/v1/object/public/assets/andresanbordessinfondo.png" class="footer-logo" alt="AndréSán Footer">
-      <p class="footer-copy">© 2026 SGA AndréSán - Sistema Integrado de Gestión Académica</p>
+      <p class="footer-copy">© 2026 SIGA AndréSán - Sistema Integrado de Gestión Académica</p>
     </div>
   </footer>
 </body>
