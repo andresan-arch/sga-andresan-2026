@@ -2827,10 +2827,10 @@
             </div>
             <div class="form-group" style="margin-top:15px;">
               <label class="lbl">Grado</label>
-              <select id="m-est-grado" style="width: 100%;">
-                <option value="">-- Selecciona --</option>
+              <input type="text" id="m-est-grado" list="dl-grados" value="${est ? est.grado : ''}" placeholder="Selecciona o escribe un nuevo grado..." style="width: 100%;">
+              <datalist id="dl-grados">
                 ${options}
-              </select>
+              </datalist>
             </div>
             <input type="hidden" id="m-est-id" value="${id || ''}">
             <input type="hidden" id="m-est-grado-old" value="${est ? est.grado : ''}">
