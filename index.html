@@ -1369,13 +1369,14 @@
             </div>
             <button class="btn btn-save" onclick="abrirModalEstudiante()">➕ Nuevo Estudiante</button>
           </div>
-          <div class="form-row" style="margin-bottom:15px;">
-            <div class="form-group" style="max-width: 300px;">
+          <div class="form-row" style="margin-bottom:15px; align-items:flex-end;">
+            <div class="form-group" style="max-width: 300px; flex: 1;">
               <label class="lbl">Filtrar por Grupo</label>
               <select id="est-filtro-grado" onchange="renderEstudiantes()">
                 <option value="todos">Todos los grados</option>
               </select>
             </div>
+            <div id="est-btn-eliminar-grupo"></div>
           </div>
           <div id="p-estudiantes"></div>
         </div>
@@ -1391,13 +1392,14 @@
             </div>
             <button class="btn btn-save" onclick="abrirModalCurso()">➕ Nueva Asignatura</button>
           </div>
-          <div class="form-row" style="margin-bottom:15px;">
-            <div class="form-group" style="max-width: 300px;">
+          <div class="form-row" style="margin-bottom:15px; align-items:flex-end;">
+            <div class="form-group" style="max-width: 300px; flex: 1;">
               <label class="lbl">Filtrar por Grupo</label>
               <select id="cur-filtro-grado" onchange="renderCursos()">
                 <option value="todos">Todos los grados</option>
               </select>
             </div>
+            <div id="cur-btn-eliminar-grupo"></div>
           </div>
           <div id="p-cursos"></div>
         </div>
@@ -2773,6 +2775,13 @@
       const html = [];
       const lista = filtro === 'todos' ? DB.ests : DB.ests.filter(e => e.grado === filtro);
       
+      const btnGroupDiv = document.getElementById('est-btn-eliminar-grupo');
+      if (filtro !== 'todos') {
+        btnGroupDiv.innerHTML = `<button class="btn" style="background:#fee2e2; color:#991b1b; padding:8px 12px; margin-bottom:8px" onclick="eliminarGrupo('${filtro}')">🗑️ Eliminar Grupo Completo</button>`;
+      } else {
+        btnGroupDiv.innerHTML = '';
+      }
+      
       html.push('<div class="table-container"><table class="table" style="width:100%; border-collapse: collapse;">');
       html.push('<thead><tr><th style="text-align:left; padding:10px; border-bottom:1px solid var(--border-glass)">Nombre</th><th style="text-align:center; padding:10px; border-bottom:1px solid var(--border-glass)">Grado</th><th style="text-align:center; padding:10px; border-bottom:1px solid var(--border-glass)">Acciones</th></tr></thead><tbody>');
       
@@ -2791,6 +2800,13 @@
       const filtro = document.getElementById('cur-filtro-grado').value;
       const html = [];
       const lista = filtro === 'todos' ? DB.asigs : DB.asigs.filter(e => e.grado === filtro);
+      
+      const btnGroupDiv = document.getElementById('cur-btn-eliminar-grupo');
+      if (filtro !== 'todos') {
+        btnGroupDiv.innerHTML = `<button class="btn" style="background:#fee2e2; color:#991b1b; padding:8px 12px; margin-bottom:8px" onclick="eliminarGrupo('${filtro}')">🗑️ Eliminar Grupo Completo</button>`;
+      } else {
+        btnGroupDiv.innerHTML = '';
+      }
       
       html.push('<div class="table-container"><table class="table" style="width:100%; border-collapse: collapse;">');
       html.push('<thead><tr><th style="text-align:left; padding:10px; border-bottom:1px solid var(--border-glass)">Asignatura</th><th style="text-align:center; padding:10px; border-bottom:1px solid var(--border-glass)">Grado</th><th style="text-align:center; padding:10px; border-bottom:1px solid var(--border-glass)">Acciones</th></tr></thead><tbody>');
@@ -2835,9 +2851,12 @@
             <input type="hidden" id="m-est-id" value="${id || ''}">
             <input type="hidden" id="m-est-grado-old" value="${est ? est.grado : ''}">
           </div>
-          <div class="modal-foot">
-            <button class="btn" style="background:var(--bg-hover); color:var(--text-main)" onclick="document.getElementById('modal-dinamico').remove()">Cancelar</button>
-            <button class="btn btn-save" onclick="guardarEstudiante()">Guardar</button>
+          <div class="modal-foot" style="display:flex; justify-content: space-between;">
+            ${id ? `<button class="btn" style="background:#fee2e2; color:#991b1b" onclick="eliminarEstudiante(${id})">🗑️ Eliminar</button>` : '<div></div>'}
+            <div>
+              <button class="btn" style="background:var(--bg-hover); color:var(--text-main)" onclick="document.getElementById('modal-dinamico').remove()">Cancelar</button>
+              <button class="btn btn-save" onclick="guardarEstudiante()">Guardar</button>
+            </div>
           </div>
         </div>
       </div>`;
@@ -2947,9 +2966,12 @@
             </div>
             <input type="hidden" id="m-cur-id" value="${id || ''}">
           </div>
-          <div class="modal-foot">
-            <button class="btn" style="background:var(--bg-hover); color:var(--text-main)" onclick="document.getElementById('modal-dinamico').remove()">Cancelar</button>
-            <button class="btn btn-save" onclick="guardarCurso()">Guardar</button>
+          <div class="modal-foot" style="display:flex; justify-content: space-between;">
+            ${id ? `<button class="btn" style="background:#fee2e2; color:#991b1b" onclick="eliminarCurso(${id})">🗑️ Eliminar</button>` : '<div></div>'}
+            <div>
+              <button class="btn" style="background:var(--bg-hover); color:var(--text-main)" onclick="document.getElementById('modal-dinamico').remove()">Cancelar</button>
+              <button class="btn btn-save" onclick="guardarCurso()">Guardar</button>
+            </div>
           </div>
         </div>
       </div>`;
@@ -2980,6 +3002,74 @@
       document.getElementById('modal-dinamico').remove();
       badge('ok', 'Curso guardado');
       await init(); // Reload data
+    }
+
+    async function eliminarEstudiante(id) {
+      if (!confirm("¿Estás seguro de que deseas eliminar este estudiante y TODAS sus notas y asistencias? Esta acción es irreversible.")) return;
+      document.getElementById('modal-dinamico').remove();
+      badge('wait', 'Eliminando estudiante...');
+      await sb.from('notas').delete().eq('estudiante_id', id);
+      await sb.from('asistencia').delete().eq('estudiante_id', id);
+      await sb.from('eval_resultados').delete().eq('estudiante_id', id);
+      const { error } = await sb.from('estudiantes').delete().eq('id', id);
+      if (error) { badge('wait', 'Error al eliminar'); console.error(error); setTimeout(hideBadge, 2000); return; }
+      badge('ok', 'Estudiante eliminado');
+      await init();
+    }
+
+    async function eliminarCurso(id) {
+      if (!confirm("¿Estás seguro de que deseas eliminar esta asignatura? Se eliminarán TODAS las actividades y notas asociadas. Esta acción es irreversible.")) return;
+      document.getElementById('modal-dinamico').remove();
+      badge('wait', 'Eliminando curso...');
+      
+      const { data: acts } = await sb.from('actividades').select('id').eq('asignatura_id', id);
+      if (acts && acts.length > 0) {
+        const actIds = acts.map(a => a.id);
+        await sb.from('notas').delete().in('actividad_id', actIds);
+        await sb.from('eval_resultados').delete().in('pregunta_num', actIds); // if applicable
+        await sb.from('actividades').delete().in('id', actIds);
+      }
+      
+      await sb.from('asistencia').delete().eq('asignatura_id', id);
+      const { error } = await sb.from('asignaturas').delete().eq('id', id);
+      if (error) { badge('wait', 'Error al eliminar'); console.error(error); setTimeout(hideBadge, 2000); return; }
+      badge('ok', 'Curso eliminado');
+      await init();
+    }
+
+    async function eliminarGrupo(grado) {
+      if (!grado || grado === 'todos') return;
+      if (!confirm(`⚠️ ATENCIÓN ⚠️\n\nEstás a punto de eliminar EL GRUPO COMPLETO "${grado}".\n\nEsto borrará permanentemente:\n- TODOS los estudiantes de ${grado}\n- TODAS las asignaturas de ${grado}\n- TODAS las notas, actividades y asistencias de ${grado}\n\n¿Estás ABSOLUTAMENTE SEGURO de continuar?`)) return;
+      if (!confirm(`Para confirmar, haz clic en Aceptar de nuevo. Se borrarán absolutamente todos los datos de ${grado}.`)) return;
+      
+      badge('wait', `Eliminando grupo ${grado}...`);
+      
+      // Borrar estudiantes
+      const ests = DB.ests.filter(e => e.grado === grado);
+      for (let est of ests) {
+         await sb.from('notas').delete().eq('estudiante_id', est.id);
+         await sb.from('asistencia').delete().eq('estudiante_id', est.id);
+         await sb.from('eval_resultados').delete().eq('estudiante_id', est.id);
+         await sb.from('estudiantes').delete().eq('id', est.id);
+      }
+
+      // Borrar asignaturas
+      const asigs = DB.asigs.filter(a => a.grado === grado);
+      for (let asig of asigs) {
+         const { data: acts } = await sb.from('actividades').select('id').eq('asignatura_id', asig.id);
+         if(acts && acts.length > 0) {
+           const actIds = acts.map(a => a.id);
+           await sb.from('notas').delete().in('actividad_id', actIds);
+           await sb.from('actividades').delete().in('id', actIds);
+         }
+         await sb.from('asistencia').delete().eq('asignatura_id', asig.id);
+         await sb.from('asignaturas').delete().eq('id', asig.id);
+      }
+
+      badge('ok', `Grupo ${grado} eliminado con éxito`);
+      document.getElementById('est-filtro-grado').value = 'todos';
+      document.getElementById('cur-filtro-grado').value = 'todos';
+      await init();
     }
 
     function aplicarBranding() {
