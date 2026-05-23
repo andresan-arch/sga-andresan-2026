@@ -1,8 +1,8 @@
 # AGENTS_NOTAS.md
 
-Guía operativa para agentes y desarrolladores en el proyecto SGA AndréSán (Aplicación de Notas).
+Guía operativa para agentes y desarrolladores en el proyecto SIGA AndréSán (Aplicación de Notas).
 
-Objetivo principal: evolucionar la arquitectura hacia clean architecture sin romper la funcionalidad actual de la gestión y registro de notas.
+Objetivo principal: evolucionar la arquitectura hacia clean architecture sin romper la funcionalidad actual de la gestión y registro de notas, SIEMPRE RESPONDER EN eSPAÑOL.
 
 ## 1. Principios Rectores
 

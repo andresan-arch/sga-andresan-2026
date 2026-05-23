@@ -1049,9 +1049,13 @@
     .mobile-greeting { display: none !important; }
 
     @media (max-width: 768px) {
+      body::before {
+        display: none !important;
+      }
       body {
         background-color: #F4F1E9 !important;
         background-image: none !important;
+        color: #121E33 !important;
       }
       .app-header {
         background: #fff !important;
@@ -1075,11 +1079,7 @@
       .mobile-badge-teal { background: #ccfbf1; color: #115e59; }
       
       .mobile-date {
-        display: block !important;
-        font-size: 11px;
-        color: #6b7280;
-        text-align: right;
-        line-height: 1.2;
+        display: none !important;
       }
 
       .mobile-greeting {
@@ -1098,7 +1098,17 @@
         margin: 0;
       }
 
-      .ctrl, .btn-logout, #badge { display: none !important; }
+      .btn-logout, #badge { display: none !important; }
+      .ctrl {
+        display: inline-block !important;
+        padding: 5px 8px !important;
+        border: 1.5px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+        font-size: 13px !important;
+        background: #fff !important;
+        color: #121E33 !important;
+        cursor: pointer !important;
+      }
 
       #sidebar {
         position: fixed;
@@ -1199,6 +1209,42 @@
       #bottom-nav { display: none !important; }
       .app-body { padding: 10px 20px; }
       #header-logo { display: none !important; }
+      .header-center { display: none !important; }
+
+      /* Mobile contrast and readable color adjustments */
+      .card-notas h3, .card-asist h3, .card-res h3, .card-ing h3, .card-act h3, .card-inf h3 {
+        color: #121E33 !important;
+      }
+      .app-body th, .app-body td {
+        color: #1e293b !important;
+      }
+      .app-body th {
+        background-color: #e2e8f0 !important;
+        border-color: #cbd5e1 !important;
+      }
+      .app-body td {
+        border-color: #cbd5e1 !important;
+      }
+      #app-screen select, #app-screen input[type="text"], #app-screen input[type="number"], #app-screen input[type="password"] {
+        background-color: #fff !important;
+        color: #0f172a !important;
+        border: 1px solid #cbd5e1 !important;
+      }
+      .app-body .pill {
+        background: #f3f4f6 !important;
+        color: #374151 !important;
+        border: 1px solid #cbd5e1 !important;
+      }
+      .app-body .pill-notas.pill-sel, .app-body .pill-asist.pill-sel {
+        background: #dcfce7 !important;
+        color: #166534 !important;
+        border-color: #bbf7d0 !important;
+      }
+      .app-body .pill-res.pill-sel {
+        background: #e0f2fe !important;
+        color: #0369a1 !important;
+        border-color: #bae6fd !important;
+      }
     }
 
     .ds-np { background: #374151 !important; color: #fff !important; border-color: #374151 !important; }
@@ -1355,6 +1401,12 @@
             <span class="mobile-badge mobile-badge-teal">DOCENTE</span>
           </div>
         </div>
+
+        <!-- Center Banner Logo -->
+        <div class="header-center no-print" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center;">
+          <img id="header-logo" src="" alt="Logo" style="display: none; height: 75px; max-height: 75px; object-fit: contain;">
+        </div>
+
         <div class="header-right" style="display: flex; align-items: center; gap: 8px;">
           <select id="sel-anio" class="ctrl" onchange="recargar()">
             <option value="2026">2026</option>
@@ -1622,6 +1674,13 @@
       const parts = email.split('@')[0].split(/[.\-_]/);
       let name = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
       if (parts.length > 1) name += ' ' + parts[1].charAt(0).toUpperCase() + parts[1].slice(1);
+      
+      // Force "AndréSán" for users matching andresan/andres
+      if (name.toLowerCase().includes('andresan') || email.toLowerCase().includes('andresan')) {
+        name = 'AndréSán';
+        email = 'AndréSán';
+      }
+      
       const initial = name.charAt(0).toUpperCase();
 
       document.getElementById('user-lbl').textContent = email; 

@@ -10,3 +10,5 @@ html new app.html
 # index.html
 # app/
 # *.csv
+
+.vercel
