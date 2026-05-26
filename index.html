@@ -853,11 +853,11 @@
 
     /* ── Footer ── */
     footer {
-      background: white;
+      background: rgb(31, 39, 65);
       padding: 5px 0;
       text-align: center;
       margin-top: 10px;
-      border-top: 1px solid #e5e7eb;
+      border-top: 1px solid #070707;
       position: relative;
       z-index: 1;
     }
@@ -3630,7 +3630,7 @@
           const currentPeriod = periodos.find(p => today >= p.fecha_inicio && today <= p.fecha_fin);
           if (currentPeriod) {
             const selectPeriodo = document.getElementById('sel-periodo');
-            if (selectPeriodo) selectPeriodo.value = currentPeriod.numero;
+            if (selectPeriodo) selectPeriodo.value = String(currentPeriod.numero);
           }
         }
       } catch (e) {
