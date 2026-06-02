@@ -2269,6 +2269,7 @@
       <table>
         <thead>
           <tr>
+            <th style="min-width:32px; text-align:center; color:#9ca3af">#</th>
             <th style="min-width:220px; text-align:left">Estudiante</th>`;
 
       // Cabeceras de solo las actividades
@@ -2283,8 +2284,9 @@
       html += `</tr></thead><tbody>`;
 
       // Filas de estudiantes
-      ests.forEach(est => {
+      ests.forEach((est, idx) => {
         html += `<tr>
+      <td style="font-size:12px;text-align:center;color:#9ca3af;font-weight:400;padding:4px 6px">${idx + 1}</td>
       <td style="font-size:13px;font-weight:500">${est.nombre_completo}</td>`;
 
         acts.forEach(act => {
@@ -2570,13 +2572,14 @@
     </div>
     <div class="overflow-x"><table>
       <thead><tr>
+        <th style="text-align:center;min-width:28px;color:#9ca3af">#</th>
         <th style="text-align:left;min-width:180px">Estudiante</th>
         <th>Marcar</th>
       </tr></thead><tbody>`;
 
-      ests.forEach(est => {
+      ests.forEach((est, idx) => {
         const actual = pend[est.id] !== undefined ? pend[est.id] : (saved[est.id] || '');
-        html += `<tr><td style="font-size:12px">${est.nombre_completo}</td><td>
+        html += `<tr><td style="font-size:11px;text-align:center;color:#9ca3af;padding:4px 6px">${idx + 1}</td><td style="font-size:12px">${est.nombre_completo}</td><td>
       <div class="asis-grp">`;
         ESTADOS.forEach(s => {
           const on = actual === s.v;
@@ -2839,15 +2842,16 @@
       let html = `<div class="card card-res">
     <h3>Resumen grupo ${g}</h3>
     <div class="overflow-x"><table><thead><tr>
+      <th style="text-align:center;min-width:28px;color:#9ca3af">#</th>
       <th style="text-align:left;min-width:150px">Estudiante</th>
       ${asigs.map(a => `<th title="${a.nombre}">${a.codigo}</th>`).join('')}
     </tr></thead><tbody>`;
 
-      ests.forEach(est => {
+      ests.forEach((est, idx) => {
         const mis_n = notasEst[est.id] || [];
         const mis_a = asistEst[est.id] || [];
         const defs = [];
-        html += `<tr><td style="font-size:12px">${est.nombre_completo}</td>`;
+        html += `<tr><td style="font-size:11px;text-align:center;color:#9ca3af;padding:4px 6px">${idx + 1}</td><td style="font-size:12px">${est.nombre_completo}</td>`;
 
         asigs.forEach(asig => {
           const actsA = DB.acts.filter(a => a.asignatura_id === asig.id);
@@ -3432,10 +3436,11 @@
       }
 
       html.push('<div class="table-container"><table class="table" style="width:100%; border-collapse: collapse;">');
-      html.push('<thead><tr><th style="text-align:left; padding:10px; border-bottom:1px solid var(--border-glass)">Nombre</th><th style="text-align:center; padding:10px; border-bottom:1px solid var(--border-glass)">Grado</th><th style="text-align:center; padding:10px; border-bottom:1px solid var(--border-glass)">Acciones</th></tr></thead><tbody>');
+      html.push('<thead><tr><th style="text-align:center; padding:10px; border-bottom:1px solid var(--border-glass); color:#9ca3af; min-width:32px">#</th><th style="text-align:left; padding:10px; border-bottom:1px solid var(--border-glass)">Nombre</th><th style="text-align:center; padding:10px; border-bottom:1px solid var(--border-glass)">Grado</th><th style="text-align:center; padding:10px; border-bottom:1px solid var(--border-glass)">Acciones</th></tr></thead><tbody>');
 
-      lista.forEach(e => {
+      lista.forEach((e, idx) => {
         html.push(`<tr>
+          <td style="text-align:center; padding:10px; border-bottom:1px solid var(--border-glass); font-size:12px; color:#9ca3af">${idx + 1}</td>
           <td style="padding:10px; border-bottom:1px solid var(--border-glass)">${e.nombre_completo}</td>
           <td style="text-align:center; padding:10px; border-bottom:1px solid var(--border-glass)"><span class="badge" style="background:#e0e7ff; color:#3730a3">${e.grado}</span></td>
           <td style="text-align:center; padding:10px; border-bottom:1px solid var(--border-glass)"><button class="btn" style="padding: 4px 10px; font-size: 12px; margin-left: 5px;" onclick="abrirModalEstudiante(${e.id})">✏️ Editar</button></td>
