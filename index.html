@@ -1822,6 +1822,21 @@
             </div>
             <div id="act-msg" style="font-size:13px;color:#059669;min-height:20px;margin-top:4px"></div>
           </div>
+
+          <!-- Lista de actividades existentes -->
+          <div class="card card-act" style="margin-top:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+              <h3 style="margin:0;border:none;padding:0">✏️ Actividades existentes</h3>
+              <div class="form-group" style="margin:0;min-width:200px">
+                <select id="act-lista-asig" onchange="renderListaActividades()" style="font-size:13px;padding:6px 10px">
+                  <option value="">-- Selecciona asignatura --</option>
+                </select>
+              </div>
+            </div>
+            <div id="act-lista-body">
+              <p style="text-align:center;color:#6b7280;font-size:13px;padding:20px">Selecciona una asignatura para ver sus actividades</p>
+            </div>
+          </div>
         </div>
 
         <!-- ── INFORME ── -->
@@ -2042,6 +2057,7 @@
 
       // Iconos de actividades
       renderIconos();
+      poblarSelectorListaActs();
 
 
       // Detectar clase actual por horario
@@ -3112,6 +3128,131 @@
       msg.textContent = `✅ Actividad "${nombre}" creada en ${rows.length} asignatura(s)`;
       badge('ok', 'Listo ✓');
       setTimeout(() => { msg.textContent = ''; }, 4000);
+      // Refrescar lista de actividades existentes
+      renderListaActividades();
+    }
+
+    // ── Poblar selector de asignatura en lista de actividades ──
+    function poblarSelectorListaActs() {
+      const sel = document.getElementById('act-lista-asig');
+      if (!sel) return;
+      const current = sel.value;
+      sel.innerHTML = '<option value="">-- Selecciona asignatura --</option>' +
+        DB.asigs.map(a => `<option value="${a.id}">${a.nombre} (${a.grado})</option>`).join('');
+      if (current) sel.value = current;
+    }
+
+    // ── Render lista de actividades de la asignatura seleccionada ──
+    function renderListaActividades() {
+      poblarSelectorListaActs();
+      const asigId = parseInt(document.getElementById('act-lista-asig').value);
+      const body = document.getElementById('act-lista-body');
+      if (!asigId) {
+        body.innerHTML = '<p style="text-align:center;color:#6b7280;font-size:13px;padding:20px">Selecciona una asignatura para ver sus actividades</p>';
+        return;
+      }
+      const acts = DB.acts.filter(a => a.asignatura_id === asigId);
+      if (!acts.length) {
+        body.innerHTML = '<p style="text-align:center;color:#6b7280;font-size:13px;padding:20px">No hay actividades creadas para esta asignatura</p>';
+        return;
+      }
+      body.innerHTML = `<div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead>
+            <tr style="border-bottom:2px solid var(--border-glass)">
+              <th style="text-align:left;padding:8px 10px;font-weight:600">Nombre</th>
+              <th style="text-align:center;padding:8px 10px;font-weight:600">Tipo</th>
+              <th style="text-align:center;padding:8px 10px;font-weight:600">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${acts.map(act => `
+              <tr style="border-bottom:1px solid var(--border-glass)">
+                <td style="padding:8px 10px;font-weight:500">${act.nombre}</td>
+                <td style="text-align:center;padding:8px 10px">
+                  <span style="font-size:11px;padding:3px 8px;border-radius:12px;background:${act.porcentaje===1?'rgba(99,102,241,0.15)':'rgba(251,191,36,0.15)'};color:${act.porcentaje===1?'#818cf8':'#f59e0b'}">
+                    ${act.porcentaje===1?'70% Saber/Hacer':'30% Evaluándonos'}
+                  </span>
+                </td>
+                <td style="text-align:center;padding:8px 6px;white-space:nowrap">
+                  <button class="btn" style="padding:4px 10px;font-size:12px;margin-right:4px" onclick="abrirModalActividad(${act.id})">✏️ Editar</button>
+                  <button class="btn" style="padding:4px 10px;font-size:12px;background:#fee2e2;color:#991b1b;border-color:#fca5a5" onclick="eliminarActividad(${act.id})">🗑️ Eliminar</button>
+                </td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+    }
+
+    // ── Modal editar actividad ──
+    function abrirModalActividad(id) {
+      const act = DB.acts.find(a => a.id === id);
+      if (!act) return;
+      const modalHtml = `
+      <div class="modal-overlay" id="modal-dinamico">
+        <div class="modal-card">
+          <div class="modal-head">
+            <h3>✏️ Editar Actividad</h3>
+            <button class="menu-btn" onclick="document.getElementById('modal-dinamico').remove()">✕</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label class="lbl">Nombre de la actividad</label>
+              <input type="text" id="m-act-nombre" value="${act.nombre}" placeholder="Ej. Taller 1" style="width:100%">
+            </div>
+            <div class="form-group" style="margin-top:15px">
+              <label class="lbl">Tipo / Peso</label>
+              <select id="m-act-por" style="width:100%">
+                <option value="1" ${act.porcentaje===1?'selected':''}>Saber / Hacer (70%)</option>
+                <option value="0" ${act.porcentaje===0?'selected':''}>Evaluándonos (30%)</option>
+              </select>
+            </div>
+            <input type="hidden" id="m-act-id" value="${id}">
+          </div>
+          <div class="modal-foot" style="display:flex;justify-content:space-between">
+            <div></div>
+            <div>
+              <button class="btn" style="background:var(--bg-hover);color:var(--text-main)" onclick="document.getElementById('modal-dinamico').remove()">Cancelar</button>
+              <button class="btn btn-save" onclick="guardarActividad()">💾 Guardar</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+      let div = document.getElementById('modal-container');
+      if (!div) { div = document.createElement('div'); div.id = 'modal-container'; document.body.appendChild(div); }
+      div.innerHTML = modalHtml;
+    }
+
+    // ── Guardar edición de actividad ──
+    async function guardarActividad() {
+      badge('wait', 'Guardando...');
+      const id = document.getElementById('m-act-id').value;
+      const nombre = document.getElementById('m-act-nombre').value.trim();
+      const porcentaje = parseInt(document.getElementById('m-act-por').value);
+      if (!nombre) { badge('no', 'Escribe el nombre'); return; }
+      const { error } = await sb.from('actividades').update({ nombre, porcentaje }).eq('id', id);
+      if (error) { badge('no', 'Error al guardar'); console.error(error); return; }
+      document.getElementById('modal-dinamico').remove();
+      badge('ok', 'Actividad actualizada ✓');
+      // Actualizar en memoria
+      const { data } = await sb.from('actividades').select('*').eq('periodo', periodo);
+      DB.acts = data || [];
+      renderListaActividades();
+    }
+
+    // ── Eliminar actividad ──
+    async function eliminarActividad(id) {
+      const act = DB.acts.find(a => a.id === id);
+      if (!confirm(`¿Eliminar la actividad "${act?.nombre || id}"? Se borrarán TODAS las notas asociadas. Esta acción es irreversible.`)) return;
+      badge('wait', 'Eliminando actividad...');
+      await sb.from('notas').delete().eq('actividad_id', id);
+      const { error } = await sb.from('actividades').delete().eq('id', id);
+      if (error) { badge('no', 'Error al eliminar'); console.error(error); return; }
+      badge('ok', 'Actividad eliminada ✓');
+      // Actualizar en memoria
+      const { data } = await sb.from('actividades').select('*').eq('periodo', periodo);
+      DB.acts = data || [];
+      renderListaActividades();
     }
 
     async function borrarNota(estId, actId) {
