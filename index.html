@@ -1824,17 +1824,15 @@
           </div>
 
           <!-- Lista de actividades existentes -->
-          <div class="card card-act" style="margin-top:16px">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-              <h3 style="margin:0;border:none;padding:0">✏️ Actividades existentes</h3>
-              <div class="form-group" style="margin:0;min-width:200px">
-                <select id="act-lista-asig" onchange="renderListaActividades()" style="font-size:13px;padding:6px 10px">
-                  <option value="">-- Selecciona asignatura --</option>
-                </select>
-              </div>
+          <div class="card card-act" style="margin-top:16px;padding-bottom:8px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+              <h3 style="margin:0;border:none;padding:0;font-size:15px">✏️ Editar / Eliminar actividades</h3>
+              <select id="act-lista-asig" onchange="renderListaActividades()" style="font-size:13px;padding:5px 8px;border-radius:8px;border:1px solid var(--border-glass);background:var(--bg-hover);color:var(--text-main);max-width:220px;flex:1">
+                <option value="">-- Selecciona asignatura --</option>
+              </select>
             </div>
             <div id="act-lista-body">
-              <p style="text-align:center;color:#6b7280;font-size:13px;padding:20px">Selecciona una asignatura para ver sus actividades</p>
+              <p style="text-align:center;color:#6b7280;font-size:12px;padding:12px 0">Selecciona una asignatura para ver sus actividades</p>
             </div>
           </div>
         </div>
