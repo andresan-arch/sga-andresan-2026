@@ -1966,6 +1966,7 @@
         showErr(error.message.includes('Invalid') ? 'Correo o contraseña incorrectos.' : error.message);
       } else {
         mostrarApp(data.user.email);
+        await detectarPeriodoActual(); // <-- auto-seleccionar el periodo actual
         await init();
       }
       btn.disabled = false; btn.textContent = 'Ingresar';
@@ -3758,29 +3759,38 @@
       if (emoji && LOGO_URL) emoji.style.display = 'none';
     }
 
-    (async () => {
-      // Establecer periodo por defecto segun la fecha actual desde Supabase
+    // ── Detectar y seleccionar el periodo actual desde la tabla 'periodos' ──
+    async function detectarPeriodoActual() {
       try {
-        const { data: periodos, error } = await sb.from('periodos').select('*');
+        const { data: periodos, error } = await sb.from('periodos').select('*').order('numero');
         if (!error && periodos && periodos.length > 0) {
-          // Obtener la fecha local en formato YYYY-MM-DD
+          // Fecha local en formato YYYY-MM-DD
           const tzoffset = (new Date()).getTimezoneOffset() * 60000;
           const today = (new Date(Date.now() - tzoffset)).toISOString().split('T')[0];
 
           const currentPeriod = periodos.find(p => today >= p.fecha_inicio && today <= p.fecha_fin);
           if (currentPeriod) {
             const selectPeriodo = document.getElementById('sel-periodo');
-            if (selectPeriodo) selectPeriodo.value = String(currentPeriod.numero);
+            if (selectPeriodo) {
+              selectPeriodo.value = String(currentPeriod.numero);
+              console.log('[Periodo] Auto-seleccionado periodo', currentPeriod.numero,
+                '(' + currentPeriod.fecha_inicio + ' – ' + currentPeriod.fecha_fin + ')');
+            }
+          } else {
+            console.warn('[Periodo] No se encontró un periodo activo para hoy:', today);
           }
         }
       } catch (e) {
-        console.error("Error obteniendo periodo actual:", e);
+        console.error('[Periodo] Error obteniendo periodo actual:', e);
       }
+    }
 
+    (async () => {
       aplicarBranding();
       const { data: { session } } = await sb.auth.getSession();
       if (session) {
         mostrarApp(session.user.email);
+        await detectarPeriodoActual(); // <-- auto-seleccionar el periodo al recargar
         await init();
       }
     })();
