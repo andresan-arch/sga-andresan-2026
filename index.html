@@ -1666,7 +1666,7 @@
       </div>
       <div class="sb-footer">
         <div class="sb-profile-card">
-          <div class="sb-profile-avatar" id="sb-user-avatar">?</div>
+          <img class="sb-profile-avatar" id="sb-user-avatar" src="https://pmfrdrihzdhhjxokabjm.supabase.co/storage/v1/object/public/assets/logo%20vectorizado.png" style="background: transparent; object-fit: contain; padding: 2px;" alt="Avatar">
           <div class="sb-profile-info">
             <div id="sb-user-lbl"
               style="font-weight: 600; color: #fff; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
@@ -1997,7 +1997,7 @@
       document.getElementById('sb-user-lbl').textContent = name;
 
       const avatar = document.getElementById('sb-user-avatar');
-      if (avatar) avatar.textContent = initial;
+      // if (avatar) avatar.textContent = initial; // Reemplazado por logo fijo
 
       const greeting = document.getElementById('mobile-greeting-text');
       if (greeting) greeting.textContent = 'Buenos días, ' + name + ' 👋';
