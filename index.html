@@ -3154,31 +3154,18 @@
         body.innerHTML = '<p style="text-align:center;color:#6b7280;font-size:13px;padding:20px">No hay actividades creadas para esta asignatura</p>';
         return;
       }
-      body.innerHTML = `<div style="overflow-x:auto">
-        <table style="width:100%;border-collapse:collapse;font-size:13px">
-          <thead>
-            <tr style="border-bottom:2px solid var(--border-glass)">
-              <th style="text-align:left;padding:8px 10px;font-weight:600">Nombre</th>
-              <th style="text-align:center;padding:8px 10px;font-weight:600">Tipo</th>
-              <th style="text-align:center;padding:8px 10px;font-weight:600">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${acts.map(act => `
-              <tr style="border-bottom:1px solid var(--border-glass)">
-                <td style="padding:8px 10px;font-weight:500">${act.nombre}</td>
-                <td style="text-align:center;padding:8px 10px">
-                  <span style="font-size:11px;padding:3px 8px;border-radius:12px;background:${act.porcentaje===1?'rgba(99,102,241,0.15)':'rgba(251,191,36,0.15)'};color:${act.porcentaje===1?'#818cf8':'#f59e0b'}">
-                    ${act.porcentaje===1?'70% Saber/Hacer':'30% Evaluándonos'}
-                  </span>
-                </td>
-                <td style="text-align:center;padding:8px 6px;white-space:nowrap">
-                  <button class="btn" style="padding:4px 10px;font-size:12px;margin-right:4px" onclick="abrirModalActividad(${act.id})">✏️ Editar</button>
-                  <button class="btn" style="padding:4px 10px;font-size:12px;background:#fee2e2;color:#991b1b;border-color:#fca5a5" onclick="eliminarActividad(${act.id})">🗑️ Eliminar</button>
-                </td>
-              </tr>`).join('')}
-          </tbody>
-        </table>
+      body.innerHTML = `<div style="display:flex;flex-direction:column;gap:8px;padding-top:4px">
+        ${acts.map(act => `
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 4px;border-bottom:1px solid var(--border-glass)">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:600;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${act.nombre}</div>
+              <span style="display:inline-block;margin-top:3px;font-size:11px;padding:2px 7px;border-radius:10px;background:${act.porcentaje===1?'rgba(99,102,241,0.15)':'rgba(251,191,36,0.15)'};color:${act.porcentaje===1?'#818cf8':'#f59e0b'}">${act.porcentaje===1?'70% Saber/Hacer':'30% Evaluándonos'}</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+              <button class="btn" style="padding:4px 10px;font-size:12px;width:90px" onclick="abrirModalActividad(${act.id})">✏️ Editar</button>
+              <button class="btn" style="padding:4px 10px;font-size:12px;width:90px;background:#fee2e2;color:#991b1b;border-color:#fca5a5" onclick="eliminarActividad(${act.id})">🗑️ Eliminar</button>
+            </div>
+          </div>`).join('')}
       </div>`;
     }
 
